@@ -483,15 +483,177 @@
   /* ─── LEAFLET DARK TILES OVERRIDE ─── */
   .leaflet-tile-pane { filter: brightness(0.6) saturate(0.3) hue-rotate(200deg); }
 
+  /* ─── BOTTOM TAB BAR (mobile only) ─── */
+  .tab-bar {
+    display: none;
+  }
+
   /* ─── RESPONSIVE ─── */
   @media (max-width: 768px) {
-    .app-layout {
-      grid-template-columns: 1fr;
-      grid-template-rows: 60vh 40vh;
+
+    body { overflow: hidden; }
+
+    header {
+      height: 52px;
+      padding: 0 14px;
     }
-    .sidebar { order: 2; height: 100%; }
-    #map-container { order: 1; }
-    .stats-bar { gap: 12px; }
+
+    .logo { font-size: 22px; }
+    .logo-icon { width: 26px; height: 26px; font-size: 14px; }
+    .header-badge { font-size: 9px; padding: 3px 8px; }
+
+    /* Main layout: fill screen minus header and tab bar */
+    .app-layout {
+      display: block;
+      height: calc(100dvh - 52px - 56px);
+      position: relative;
+    }
+
+    /* Sidebar and map are full-size panels, toggled by JS */
+    .sidebar {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      z-index: 10;
+    }
+
+    .sidebar.active { display: flex; }
+
+    #map-container {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: none;
+      z-index: 10;
+    }
+
+    #map-container.active { display: block; }
+
+    /* Search panel: scrollable, collapsible */
+    .search-panel {
+      padding: 12px 14px;
+      flex-shrink: 0;
+    }
+
+    .search-title { font-size: 16px; margin-bottom: 10px; }
+
+    .search-row { gap: 6px; }
+
+    select, input { font-size: 14px; padding: 10px 12px; }
+    .btn { font-size: 13px; padding: 10px 14px; }
+
+    .fuel-filter { gap: 5px; margin-top: 8px; }
+    .fuel-chip { font-size: 12px; padding: 6px 11px; }
+
+    /* Stats bar */
+    .stats-bar {
+      gap: 0;
+      padding: 10px 14px;
+      flex-shrink: 0;
+    }
+
+    .stat-value { font-size: 15px; }
+    .stat-label { font-size: 9px; }
+    .stat-item { flex: 1; }
+
+    /* Sort row */
+    .sort-row { padding: 8px 14px; flex-shrink: 0; }
+    .sort-btn { padding: 5px 10px; font-size: 11px; }
+
+    /* Stations list: takes remaining space, natural scroll */
+    .stations-list {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 10px;
+      /* let the list scroll naturally */
+      overscroll-behavior: contain;
+    }
+
+    .station-card { padding: 12px; margin-bottom: 7px; }
+    .station-name { font-size: 13px; }
+    .price-badge { font-size: 17px; }
+    .station-address { font-size: 11px; }
+
+    /* State panels */
+    .state-panel { padding: 30px 20px; }
+    .state-icon { font-size: 40px; }
+    .state-text { font-size: 13px; }
+
+    /* Bottom tab bar */
+    .tab-bar {
+      display: flex;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 56px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      z-index: 200;
+    }
+
+    .tab-btn {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--muted);
+      font-family: var(--font-sans);
+      font-size: 11px;
+      letter-spacing: 0.3px;
+      transition: color 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .tab-btn .tab-icon { font-size: 20px; line-height: 1; }
+
+    .tab-btn.active {
+      color: var(--amber);
+    }
+
+    .tab-btn.active .tab-icon {
+      filter: drop-shadow(0 0 6px rgba(245,166,35,0.5));
+    }
+
+    /* Collapse/expand search on mobile */
+    .search-collapse-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      margin-bottom: 0;
+    }
+
+    .search-collapse-btn .chevron {
+      font-size: 12px;
+      color: var(--muted);
+      transition: transform 0.25s;
+    }
+
+    .search-body {
+      overflow: hidden;
+      transition: max-height 0.3s ease, opacity 0.25s;
+      max-height: 0;
+      opacity: 0;
+    }
+
+    .search-body.open {
+      max-height: 400px;
+      opacity: 1;
+    }
+
+    .search-body-inner { padding-top: 10px; }
   }
 </style>
 </head>
@@ -510,33 +672,40 @@
   <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="search-panel">
-      <div class="search-title">BUSCAR GASOLINERAS</div>
-
-      <div class="search-row">
-        <select id="sel-prov" onchange="onProvinciaChange()">
-          <option value="">— Selecciona provincia —</option>
-        </select>
+      <div class="search-title search-collapse-btn" onclick="toggleSearch()">
+        BUSCAR GASOLINERAS
+        <span class="chevron" id="search-chevron">▼</span>
       </div>
 
-      <div class="search-row">
-        <select id="sel-mun" disabled>
-          <option value="">— Primero elige provincia —</option>
-        </select>
-        <button class="btn" onclick="buscarPorMunicipio()">Buscar</button>
-      </div>
+      <div class="search-body" id="search-body">
+        <div class="search-body-inner">
+          <div class="search-row">
+            <select id="sel-prov" onchange="onProvinciaChange()">
+              <option value="">— Selecciona provincia —</option>
+            </select>
+          </div>
 
-      <div class="search-row" style="margin-top:10px;">
-        <button class="btn btn-ghost" onclick="usarMiUbicacion()" style="width:100%">
-          📍 Usar mi ubicación
-        </button>
-      </div>
+          <div class="search-row">
+            <select id="sel-mun" disabled>
+              <option value="">— Primero elige provincia —</option>
+            </select>
+            <button class="btn" onclick="buscarPorMunicipio()">Buscar</button>
+          </div>
 
-      <div class="fuel-filter" id="fuel-filter">
-        <div class="fuel-chip active" data-fuel="gasolina95" onclick="toggleFuel(this)">Gasolina 95</div>
-        <div class="fuel-chip" data-fuel="gasolina98" onclick="toggleFuel(this)">Gasolina 98</div>
-        <div class="fuel-chip" data-fuel="gasoleoA" onclick="toggleFuel(this)">Gasóleo A</div>
-        <div class="fuel-chip" data-fuel="gasoleoB" onclick="toggleFuel(this)">Gasóleo B</div>
-        <div class="fuel-chip" data-fuel="glp" onclick="toggleFuel(this)">GLP</div>
+          <div class="search-row" style="margin-top:10px;">
+            <button class="btn btn-ghost" onclick="usarMiUbicacion()" style="width:100%">
+              📍 Usar mi ubicación
+            </button>
+          </div>
+
+          <div class="fuel-filter" id="fuel-filter">
+            <div class="fuel-chip active" data-fuel="gasolina95" onclick="toggleFuel(this)">Gasolina 95</div>
+            <div class="fuel-chip" data-fuel="gasolina98" onclick="toggleFuel(this)">Gasolina 98</div>
+            <div class="fuel-chip" data-fuel="gasoleoA" onclick="toggleFuel(this)">Gasóleo A</div>
+            <div class="fuel-chip" data-fuel="gasoleoB" onclick="toggleFuel(this)">Gasóleo B</div>
+            <div class="fuel-chip" data-fuel="glp" onclick="toggleFuel(this)">GLP</div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -584,7 +753,64 @@
 
 </div>
 
+<!-- BOTTOM TAB BAR (mobile) -->
+<nav class="tab-bar">
+  <button class="tab-btn active" id="tab-lista" onclick="switchTab('lista')">
+    <span class="tab-icon">☰</span>
+    Lista
+  </button>
+  <button class="tab-btn" id="tab-mapa" onclick="switchTab('mapa')">
+    <span class="tab-icon">🗺️</span>
+    Mapa
+  </button>
+</nav>
+
 <script>
+// ─── MOBILE TABS ──────────────────────────────────────────
+let currentTab = 'lista';
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.getElementById('tab-lista').classList.toggle('active', tab === 'lista');
+  document.getElementById('tab-mapa').classList.toggle('active', tab === 'mapa');
+
+  const sidebar = document.querySelector('.sidebar');
+  const mapContainer = document.getElementById('map-container');
+
+  if (tab === 'lista') {
+    sidebar.classList.add('active');
+    mapContainer.classList.remove('active');
+  } else {
+    sidebar.classList.remove('active');
+    mapContainer.classList.add('active');
+    // Leaflet needs a size refresh when container becomes visible
+    setTimeout(() => mapInstance && mapInstance.invalidateSize(), 50);
+  }
+}
+
+// On desktop, always show both panels
+function applyLayout() {
+  const isMobile = window.innerWidth <= 768;
+  const sidebar = document.querySelector('.sidebar');
+  const mapContainer = document.getElementById('map-container');
+  if (!isMobile) {
+    sidebar.classList.remove('active');
+    mapContainer.classList.remove('active');
+  } else {
+    switchTab(currentTab);
+  }
+}
+
+window.addEventListener('resize', applyLayout);
+
+// Search panel collapse (mobile)
+let searchOpen = false;
+function toggleSearch() {
+  searchOpen = !searchOpen;
+  document.getElementById('search-body').classList.toggle('open', searchOpen);
+  document.getElementById('search-chevron').style.transform = searchOpen ? 'rotate(180deg)' : '';
+}
+
 // ─── STATE ───────────────────────────────────────────────
 const API = 'https://sedeaplicaciones.minetur.gob.es/ServiciosRESTCarburantes/PreciosCarburantes';
 let allStations = [];
@@ -678,6 +904,7 @@ async function buscarPorMunicipio() {
     const data = await res.json();
     if (!data.ListaEESSPrecio) throw new Error('Sin datos');
     processStations(data.ListaEESSPrecio);
+    if (window.innerWidth <= 768) { if (searchOpen) toggleSearch(); switchTab('lista'); }
   } catch(e) { showError('No se encontraron datos para este municipio.'); }
 }
 
@@ -718,6 +945,7 @@ async function usarMiUbicacion() {
       });
       
       processStations(nearby, true);
+      if (window.innerWidth <= 768) { if (searchOpen) toggleSearch(); switchTab('lista'); }
     } catch(e) {
       showError('No se pudieron cargar gasolineras cercanas. Intenta buscar por municipio.');
     }
@@ -888,8 +1116,13 @@ function selectStation(i, scrollToCard = true) {
   }
   const s = filteredStations[i];
   if (s && !isNaN(s.lat) && !isNaN(s.lng)) {
-    mapInstance.setView([s.lat, s.lng], 15, { animate: true });
-    if (s._marker) s._marker.openPopup();
+    // On mobile, switch to map tab to show marker
+    if (window.innerWidth <= 768) switchTab('mapa');
+    setTimeout(() => {
+      mapInstance.invalidateSize();
+      mapInstance.setView([s.lat, s.lng], 15, { animate: true });
+      if (s._marker) s._marker.openPopup();
+    }, 80);
   }
 }
 
@@ -928,6 +1161,8 @@ function showError(msg) {
 // ─── INIT ─────────────────────────────────────────────────
 initMap();
 loadProvincias();
+applyLayout();
+if (window.innerWidth <= 768) { toggleSearch(); }
 </script>
 </body>
 </html>
