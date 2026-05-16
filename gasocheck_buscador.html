@@ -1,0 +1,246 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans)}
+.wrap{padding:1.5rem 0}
+.header{display:flex;align-items:center;gap:10px;margin-bottom:1.5rem}
+.logo-icon{width:36px;height:36px;background:#FF6B1A;border-radius:10px;display:flex;align-items:center;justify-content:center;color:white;font-size:20px;flex-shrink:0}
+.logo-title{font-size:20px;font-weight:500;color:var(--color-text-primary)}
+.logo-sub{font-size:13px;color:var(--color-text-secondary)}
+.search-row{display:flex;gap:8px;margin-bottom:1rem}
+.search-input-wrap{flex:1;position:relative}
+.search-input-wrap i{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--color-text-secondary);pointer-events:none}
+#loc-input{width:100%;padding-left:34px}
+#search-btn{white-space:nowrap;display:flex;align-items:center;gap:6px;padding:0 16px;cursor:pointer;border-radius:var(--border-radius-md);background:#FF6B1A;color:white;border:none;font-size:14px;font-weight:500;height:36px}
+#search-btn:hover{background:#e05a0f}
+#search-btn:disabled{opacity:.5;cursor:not-allowed}
+.fuel-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem}
+.fuel-tab{padding:5px 12px;border:0.5px solid var(--color-border-secondary);border-radius:20px;background:var(--color-background-primary);font-size:13px;color:var(--color-text-secondary);cursor:pointer;font-family:var(--font-sans)}
+.fuel-tab.active{background:#FF6B1A;border-color:#FF6B1A;color:white}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1rem}
+.stat-card{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:.75rem;text-align:center}
+.stat-label{font-size:11px;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.stat-val{font-size:18px;font-weight:500;color:var(--color-text-primary)}
+.stat-val.green{color:#1a8a4a}
+.stat-val.red{color:#c0392b}
+.stations{display:flex;flex-direction:column;gap:8px}
+.station{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:14px 16px;display:flex;align-items:center;gap:14px}
+.station.cheapest{border-color:#1a8a4a;border-width:1.5px}
+.rank{width:30px;height:30px;border-radius:50%;background:var(--color-background-secondary);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;color:var(--color-text-secondary);flex-shrink:0}
+.rank.gold{background:#FFF3CD;color:#997700}
+.sinfo{flex:1;min-width:0}
+.sname{font-size:15px;font-weight:500;color:var(--color-text-primary);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.badge{font-size:11px;padding:2px 7px;border-radius:20px;font-weight:400}
+.badge-cheap{background:#e6f9ef;color:#1a8a4a}
+.badge-h24{background:var(--color-background-info);color:var(--color-text-info)}
+.saddr{font-size:12px;color:var(--color-text-secondary);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.smaps{display:inline-flex;align-items:center;gap:4px;margin-top:6px;font-size:12px;color:#FF6B1A;text-decoration:none}
+.smaps:hover{text-decoration:underline}
+.sprice{text-align:right;flex-shrink:0}
+.price-val{font-size:24px;font-weight:500;color:var(--color-text-primary)}
+.price-val.cheap{color:#1a8a4a}
+.price-unit{font-size:11px;color:var(--color-text-secondary)}
+.price-diff{font-size:12px;margin-top:2px}
+.price-diff.over{color:#c0392b}
+.price-diff.best{color:#1a8a4a}
+.state{text-align:center;padding:3rem 1rem;color:var(--color-text-secondary)}
+.state i{font-size:40px;display:block;margin-bottom:12px;color:var(--color-text-secondary)}
+.state-title{font-size:16px;font-weight:500;color:var(--color-text-primary);margin-bottom:6px}
+.state p{font-size:13px;line-height:1.6}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.error-box{background:var(--color-background-danger);border:0.5px solid var(--color-border-danger);border-radius:var(--border-radius-md);padding:12px 14px;font-size:13px;color:var(--color-text-danger);display:flex;align-items:flex-start;gap:8px;margin-bottom:1rem}
+.loc-label{font-size:13px;color:var(--color-text-secondary);margin-bottom:.75rem;display:flex;align-items:center;gap:6px}
+</style>
+
+<div class="wrap">
+  <div class="header">
+    <div class="logo-icon"><i class="ti ti-gas-station" style="font-size:20px" aria-hidden="true"></i></div>
+    <div>
+      <div class="logo-title">GasoCheck</div>
+      <div class="logo-sub">Precios de combustible en España</div>
+    </div>
+  </div>
+
+  <div class="search-row">
+    <div class="search-input-wrap">
+      <i class="ti ti-map-pin" aria-hidden="true"></i>
+      <input id="loc-input" type="text" placeholder="Ciudad, dirección o código postal..." autocomplete="off" />
+    </div>
+    <button id="search-btn" onclick="doSearch()">
+      <i class="ti ti-search" aria-hidden="true"></i> Buscar
+    </button>
+  </div>
+
+  <div id="error-box" class="error-box" style="display:none">
+    <i class="ti ti-alert-circle" style="font-size:16px;flex-shrink:0;margin-top:1px" aria-hidden="true"></i>
+    <span id="error-msg"></span>
+  </div>
+
+  <div id="results" style="display:none">
+    <div class="loc-label">
+      <i class="ti ti-map-pin" aria-hidden="true"></i>
+      <span id="loc-name"></span>
+      <span id="upd-label" style="margin-left:auto;font-size:11px"></span>
+    </div>
+    <div class="fuel-tabs" id="fuel-tabs"></div>
+    <div class="stats-row" id="stats-row"></div>
+    <div class="stations" id="stations-list"></div>
+  </div>
+
+  <div id="empty-state" class="state">
+    <i class="ti ti-gas-station" aria-hidden="true"></i>
+    <div class="state-title">Busca gasolineras cerca de ti</div>
+    <p>Escribe una ciudad, dirección o código postal<br>y te mostraré los precios más baratos</p>
+  </div>
+</div>
+
+<script>
+const FUELS=[
+  {k:"g95",label:"Gasolina 95"},
+  {k:"g98",label:"Gasolina 98"},
+  {k:"ga",label:"Gasóleo A"},
+  {k:"gp",label:"Diésel Plus"},
+  {k:"glp",label:"GLP"},
+];
+let data=null, selFuel=0;
+
+function $(id){return document.getElementById(id);}
+
+async function doSearch(){
+  const loc=$("loc-input").value.trim();
+  if(!loc)return;
+  const btn=$("search-btn");
+  btn.disabled=true;
+  btn.innerHTML='<span class="spinner"></span> Buscando…';
+  $("error-box").style.display="none";
+  $("results").style.display="none";
+  $("empty-state").style.display="none";
+
+  try{
+    const prompt=`Busca los precios actuales de combustible en gasolineras en España cerca de: "${loc}"
+
+Devuelve ÚNICAMENTE un JSON válido con esta estructura exacta (sin markdown, sin texto adicional):
+{
+  "zona": "nombre del municipio o zona",
+  "estaciones": [
+    {
+      "nombre": "nombre del establecimiento o marca",
+      "direccion": "dirección completa",
+      "g95": 1.599,
+      "g98": null,
+      "ga": 1.499,
+      "gp": null,
+      "glp": null,
+      "h24": false,
+      "lat": 40.12345,
+      "lon": -3.45678
+    }
+  ]
+}
+
+Fuentes a consultar: gasolinea.com, preciosgasolina.com, fuelmap.es, gasolineras.eu o datos MINETUR España.
+Incluye mínimo 4 estaciones si existen, máximo 12.
+Para precios sin datos usa null. SOLO JSON.`;
+
+    const res=await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        model:"claude-sonnet-4-20250514",
+        max_tokens:1000,
+        tools:[{type:"web_search_20250305",name:"web_search"}],
+        messages:[{role:"user",content:prompt}]
+      })
+    });
+    const raw=await res.json();
+    if(!res.ok) throw new Error(raw.error?.message||"Error API");
+
+    const txt=raw.content.filter(b=>b.type==="text").map(b=>b.text).join("");
+    let json=txt.trim();
+    const m=json.match(/```(?:json)?\s*([\s\S]*?)```/);
+    if(m) json=m[1].trim();
+    const start=json.indexOf("{"), end=json.lastIndexOf("}");
+    if(start>-1&&end>-1) json=json.slice(start,end+1);
+
+    data=JSON.parse(json);
+    if(!data.estaciones||!data.estaciones.length) throw new Error("No se encontraron gasolineras para esa ubicación.");
+
+    selFuel=0;
+    render();
+  }catch(e){
+    $("error-box").style.display="flex";
+    $("error-msg").textContent=e.message||"No se pudo obtener la información. Intenta de nuevo.";
+    $("empty-state").style.display="block";
+  }finally{
+    btn.disabled=false;
+    btn.innerHTML='<i class="ti ti-search" aria-hidden="true"></i> Buscar';
+  }
+}
+
+function render(){
+  if(!data)return;
+  $("loc-name").textContent=data.zona||"Resultados";
+  $("results").style.display="block";
+  renderTabs();
+  renderList();
+}
+
+function renderTabs(){
+  const f=FUELS.filter(f=>data.estaciones.some(s=>s[f.k]!=null));
+  $("fuel-tabs").innerHTML=f.map((ft,i)=>`
+    <button class="fuel-tab ${i===selFuel?"active":""}" onclick="setFuel(${i})">${ft.label}</button>
+  `).join("");
+}
+
+function setFuel(i){selFuel=i;renderTabs();renderList();}
+
+function renderList(){
+  const f=FUELS.filter(ft=>data.estaciones.some(s=>s[ft.k]!=null))[selFuel];
+  if(!f){$("stations-list").innerHTML="";$("stats-row").innerHTML="";return;}
+  const withP=data.estaciones.filter(s=>s[f.k]!=null).map(s=>({...s,_p:s[f.k]}));
+  const sorted=[...withP].sort((a,b)=>a._p-b._p);
+  if(!sorted.length){
+    $("stats-row").innerHTML="";
+    $("stations-list").innerHTML=`<div class="state"><i class="ti ti-help" aria-hidden="true"></i><div class="state-title">Sin datos de ${f.label}</div><p>Prueba con otro tipo de combustible</p></div>`;
+    return;
+  }
+  const pp=sorted.map(s=>s._p);
+  const mn=Math.min(...pp),mx=Math.max(...pp),av=(pp.reduce((a,b)=>a+b,0)/pp.length);
+  $("stats-row").innerHTML=`
+    <div class="stat-card"><div class="stat-label">Mínimo</div><div class="stat-val green">${mn.toFixed(3)}</div></div>
+    <div class="stat-card"><div class="stat-label">Medio</div><div class="stat-val">${av.toFixed(3)}</div></div>
+    <div class="stat-card"><div class="stat-label">Máximo</div><div class="stat-val red">${mx.toFixed(3)}</div></div>
+    <div class="stat-card"><div class="stat-label">Estaciones</div><div class="stat-val">${sorted.length}</div></div>
+  `;
+  $("stations-list").innerHTML=sorted.map((s,i)=>{
+    const cheap=s._p===mn, diff=(s._p-mn).toFixed(3);
+    const lat=s.lat,lon=s.lon;
+    const maps=lat&&lon
+      ?`https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}`
+      :`https://www.google.com/maps/search/${encodeURIComponent((s.nombre||"")+" gasolinera "+(s.direccion||""))}`;
+    const rank=i===0?"1°":i===1?"2°":i===2?"3°":`#${i+1}`;
+    return `<div class="station ${cheap?"cheapest":""}">
+      <div class="rank ${i===0?"gold":""}">${rank}</div>
+      <div class="sinfo">
+        <div class="sname">
+          <span>${s.nombre||"Sin nombre"}</span>
+          ${cheap?'<span class="badge badge-cheap">más barata</span>':""}
+          ${s.h24?'<span class="badge badge-h24">24h</span>':""}
+        </div>
+        <div class="saddr">${s.direccion||""}</div>
+        <a href="${maps}" target="_blank" rel="noopener" class="smaps">
+          <i class="ti ti-map-2" style="font-size:13px" aria-hidden="true"></i> Cómo llegar
+        </a>
+      </div>
+      <div class="sprice">
+        <div class="price-val ${cheap?"cheap":""}">${s._p.toFixed(3)}</div>
+        <div class="price-unit">€/litro</div>
+        <div class="price-diff ${diff>0.001?"over":"best"}">${diff>0.001?"+"+diff+"€":"mejor precio"}</div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+$("loc-input").addEventListener("keydown",e=>{ if(e.key==="Enter") doSearch(); });
+</script>
