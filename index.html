@@ -767,9 +767,21 @@
     border: 1px solid var(--border) !important;
     font-family: var(--font-body) !important;
     color: var(--text) !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .leaflet-popup-content {
+    margin: 0 !important;
+    width: auto !important;
   }
 
   .leaflet-popup-tip { background: white !important; }
+
+  .popup-inner {
+    padding: 14px 16px 0;
+    min-width: 220px;
+  }
 
   .popup-name {
     font-family: var(--font-display);
@@ -781,7 +793,7 @@
 
   .popup-address { font-size: 11px; color: var(--text4); font-weight: 500; margin-bottom: 10px; }
 
-  .popup-prices { display: flex; flex-direction: column; gap: 6px; }
+  .popup-prices { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
 
   .popup-price-row {
     display: flex;
@@ -797,6 +809,92 @@
 
   .popup-fuel-name { color: var(--text3); }
   .popup-fuel-price { color: var(--text); font-weight: 800; }
+
+  /* ─── NAV BUTTONS in popup ─── */
+  .popup-nav-section {
+    border-top: 1px solid var(--border2);
+    padding: 10px 16px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .popup-nav-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text4);
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    margin-bottom: 2px;
+  }
+
+  .popup-nav-btns {
+    display: flex;
+    gap: 6px;
+  }
+
+  .nav-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 9px 6px;
+    border-radius: 10px;
+    border: 1.5px solid var(--border);
+    background: var(--surface3);
+    font-family: var(--font-body);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text2);
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.16s;
+    white-space: nowrap;
+  }
+
+  .nav-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .nav-btn.waze {
+    background: #FFFBE6;
+    border-color: #E6D200;
+    color: #856A00;
+  }
+  .nav-btn.waze:hover {
+    background: #33CCFF;
+    border-color: #33CCFF;
+    color: white;
+  }
+
+  .nav-btn.gmaps {
+    background: #EBF4FF;
+    border-color: #BDD7FF;
+    color: #1A56C9;
+  }
+  .nav-btn.gmaps:hover {
+    background: #1A73E8;
+    border-color: #1A73E8;
+    color: white;
+  }
+
+  .nav-btn.apple {
+    background: #F2F2F7;
+    border-color: #D1D1D6;
+    color: #3A3A3C;
+  }
+  .nav-btn.apple:hover {
+    background: #1C1C1E;
+    border-color: #1C1C1E;
+    color: white;
+  }
+
+  .nav-btn-icon {
+    font-size: 15px;
+    line-height: 1;
+  }
 
   /* ─── TAB BAR ─── */
   .tab-bar { display: none; }
@@ -908,6 +1006,10 @@
       -webkit-overflow-scrolling: touch;
       overscroll-behavior: contain;
     }
+
+    /* Wider popup on mobile */
+    .popup-nav-btns { gap: 5px; }
+    .nav-btn { font-size: 10px; padding: 8px 4px; }
   }
 </style>
 </head>
@@ -1126,6 +1228,37 @@ function getBrandEmoji(name) {
     if (upper.includes(brand)) return emoji;
   }
   return '⛽';
+}
+
+// ─── NAVIGATION URLS ──────────────────────────────────────
+function buildNavUrls(lat, lng, name) {
+  const encodedName = encodeURIComponent(name || 'Gasolinera');
+  return {
+    waze: `https://waze.com/ul?ll=${lat},${lng}&navigate=yes`,
+    gmaps: `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&destination_place_name=${encodedName}&travelmode=driving`,
+    apple: `https://maps.apple.com/?daddr=${lat},${lng}&dirflg=d`
+  };
+}
+
+function buildNavButtonsHTML(lat, lng, name) {
+  if (isNaN(lat) || isNaN(lng)) return '';
+  const urls = buildNavUrls(lat, lng, name);
+  return `
+    <div class="popup-nav-section">
+      <div class="popup-nav-label">🧭 Cómo llegar</div>
+      <div class="popup-nav-btns">
+        <a class="nav-btn waze" href="${urls.waze}" target="_blank" rel="noopener">
+          <span class="nav-btn-icon">🚗</span> Waze
+        </a>
+        <a class="nav-btn gmaps" href="${urls.gmaps}" target="_blank" rel="noopener">
+          <span class="nav-btn-icon">🗺️</span> Google
+        </a>
+        <a class="nav-btn apple" href="${urls.apple}" target="_blank" rel="noopener">
+          <span class="nav-btn-icon">🍎</span> Apple
+        </a>
+      </div>
+    </div>
+  `;
 }
 
 // ─── MAP INIT ─────────────────────────────────────────────
@@ -1383,13 +1516,17 @@ function renderMarkers() {
       .map(([k, v]) => `<div class="popup-price-row"><span class="popup-fuel-name">${v.label}</span><span class="popup-fuel-price">${s.prices[k]?.toFixed(3)} €</span></div>`)
       .join('');
 
+    // Build navigation buttons
+    const navButtons = buildNavButtonsHTML(s.lat, s.lng, s.Rótulo);
+
     marker.bindPopup(`
-      <div style="min-width:200px">
+      <div class="popup-inner">
         <div class="popup-name">🦕 ${s.Rótulo || 'Gasolinera'}</div>
         <div class="popup-address">📍 ${s.Dirección || ''} · ${s.Municipio || ''}</div>
         <div class="popup-prices">${otherRows}</div>
       </div>
-    `, { maxWidth: 260 });
+      ${navButtons}
+    `, { maxWidth: 280 });
 
     marker.on('click', () => selectStation(i, false));
     marker.addTo(markersLayer);
