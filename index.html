@@ -13,7 +13,7 @@
 <style>
 /* ─── RESET & TOKENS ──────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
+ 
 :root {
   --fire:        #FF6B2B;
   --fire-deep:   #E8501A;
@@ -28,11 +28,11 @@
   --danger:      #EF4444;
   --danger-bg:   rgba(239,68,68,0.10);
   --info:        #3B82F6;
+  --info-bg:     rgba(59,130,246,0.08);
+  --info-border: rgba(59,130,246,0.20);
   --bg-base:     #FAF8F5;
-  --bg-mesh:     linear-gradient(135deg,#FFF9F4 0%,#FAF5EE 40%,#F5F0E8 100%);
   --glass:       rgba(255,255,255,0.72);
   --glass-2:     rgba(255,255,255,0.50);
-  --glass-3:     rgba(255,255,255,0.30);
   --surface:     #FFFFFF;
   --surface-2:   #FAFAF8;
   --surface-3:   #F5F3EF;
@@ -52,18 +52,18 @@
   --shadow-xl:   0 24px 80px rgba(0,0,0,0.11), 0 8px 24px rgba(0,0,0,0.06);
   --shadow-fire: 0 4px 24px rgba(255,107,43,0.30), 0 2px 8px rgba(255,107,43,0.15);
   --shadow-fire-lg: 0 8px 40px rgba(255,107,43,0.35), 0 4px 16px rgba(255,107,43,0.20);
-  --r-xs:   6px; --r-sm:   10px; --r-md:   14px; --r-lg:   20px;
-  --r-xl:   28px; --r-2xl:  36px; --r-full: 9999px;
+  --r-xs:6px; --r-sm:10px; --r-md:14px; --r-lg:20px;
+  --r-xl:28px; --r-2xl:36px; --r-full:9999px;
   --font-display: 'Sora', sans-serif;
   --font-body:    'Plus Jakarta Sans', sans-serif;
   --header-h: 68px;
   --tab-h: 0px;
 }
-
+ 
 html, body { height: 100%; overflow: hidden; background: var(--bg-base); color: var(--text-1); font-family: var(--font-body); -webkit-font-smoothing: antialiased; -webkit-text-size-adjust: 100%; }
 button { font-family: var(--font-body); }
 a { text-decoration: none; }
-
+ 
 body::before {
   content: ''; position: fixed; inset: 0;
   background:
@@ -73,7 +73,7 @@ body::before {
     #FAF8F5;
   pointer-events: none; z-index: 0;
 }
-
+ 
 /* ─── HEADER ──────────────────────────────────────────────── */
 header {
   position: fixed; inset: 0 0 auto 0; height: var(--header-h); z-index: 1000;
@@ -83,7 +83,7 @@ header {
   display: flex; align-items: center; justify-content: space-between;
 }
 header::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(255,107,43,0.04) 0%, transparent 40%); pointer-events: none; }
-
+ 
 .logo { font-family: var(--font-display); font-size: 22px; font-weight: 800; color: var(--text-1); display: flex; align-items: center; gap: 12px; letter-spacing: -0.5px; position: relative; z-index: 1; }
 .logo-mark { width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, var(--fire) 0%, var(--amber) 100%); display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-fire); flex-shrink: 0; position: relative; overflow: hidden; }
 .logo-mark::before { content: ''; position: absolute; top: -8px; left: -8px; width: 24px; height: 24px; border-radius: 50%; background: rgba(255,255,255,0.25); filter: blur(6px); }
@@ -93,23 +93,23 @@ header::after { content: ''; position: absolute; inset: 0; background: linear-gr
 .logo-name span { color: var(--fire); }
 .logo-tagline { font-family: var(--font-body); font-size: 10px; font-weight: 500; color: var(--text-4); letter-spacing: 0.3px; line-height: 1; }
 .header-right { display: flex; align-items: center; gap: 10px; position: relative; z-index: 1; }
-
+ 
 .live-badge { display: flex; align-items: center; gap: 7px; background: var(--surface); border: 1px solid var(--border); padding: 7px 14px; border-radius: var(--r-full); box-shadow: var(--shadow-xs); }
 .live-dot { width: 7px; height: 7px; background: var(--success); border-radius: 50%; box-shadow: 0 0 8px rgba(34,197,94,0.6); animation: live-pulse 2.2s ease-in-out infinite; }
 @keyframes live-pulse { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.7; transform:scale(0.8); } }
 .live-text { font-size: 11px; font-weight: 600; color: var(--text-3); letter-spacing: 0.1px; white-space: nowrap; }
-
+ 
 .support-btn { display: flex; align-items: center; gap: 6px; background: var(--surface); border: 1px solid var(--border); color: var(--text-2); font-size: 12px; font-weight: 600; padding: 8px 16px; border-radius: var(--r-full); cursor: pointer; transition: all .2s cubic-bezier(0.34,1.56,0.64,1); white-space: nowrap; box-shadow: var(--shadow-xs); }
 .support-btn:hover { background: var(--fire); border-color: var(--fire); color: white; box-shadow: var(--shadow-fire); transform: translateY(-1px); }
 .support-btn-icon { font-size: 13px; animation: heartbeat 3s ease-in-out infinite; }
 @keyframes heartbeat { 0%,80%,100% { transform:scale(1); } 88% { transform:scale(1.25); } 94% { transform:scale(0.92); } }
-
+ 
 /* ─── APP LAYOUT ───────────────────────────────────────────── */
 .app-layout { position: fixed; top: var(--header-h); left: 0; right: 0; bottom: var(--tab-h); display: flex; overflow: hidden; z-index: 1; }
-
+ 
 /* ─── SIDEBAR ───────────────────────────────────────────────── */
 .sidebar { width: 400px; flex-shrink: 0; display: flex; flex-direction: column; height: 100%; background: transparent; border-right: 1px solid var(--border); overflow: hidden; }
-
+ 
 /* ─── SEARCH PANEL ──────────────────────────────────────────── */
 .search-panel { flex-shrink: 0; padding: 11px 13px 0; background: var(--glass); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-2); }
 .search-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); box-shadow: var(--shadow-sm); overflow: hidden; margin-bottom: 11px; }
@@ -134,7 +134,7 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn-search:hover::after { left: 140%; }
 .btn-search:hover { transform: translateY(-2px); box-shadow: var(--shadow-fire-lg); filter: brightness(1.04); }
 .btn-search:active { transform: translateY(0); }
-
+ 
 /* ─── FUEL CHIPS ───────────────────────────────────────────── */
 .fuel-section { flex-shrink: 0; padding: 9px 13px 10px; background: var(--glass); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-2); }
 .fuel-label { font-size: 10px; font-weight: 700; color: var(--text-4); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 7px; }
@@ -144,7 +144,7 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
 .fuel-chip.active { background: linear-gradient(135deg, var(--fire), var(--fire-light)); color: white; border-color: var(--fire); box-shadow: var(--shadow-fire); transform: translateY(-1px); }
 .fuel-chip.active .fuel-chip-dot { background: rgba(255,255,255,0.7); }
 .fuel-chip:hover:not(.active) { border-color: var(--border-fire); color: var(--fire); background: var(--amber-pale); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
-
+ 
 /* ─── STATS BAR ─────────────────────────────────────────────── */
 .stats-bar { flex-shrink: 0; padding: 8px 10px; display: none; gap: 5px; background: var(--glass); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-2); }
 .stats-bar.visible { display: flex; }
@@ -155,7 +155,7 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
 .stat-item:first-child .stat-value { color: var(--success); }
 .stat-item:last-child  .stat-value { color: var(--danger); }
 .stat-label { font-size: 9px; font-weight: 600; color: var(--text-4); text-transform: uppercase; letter-spacing: 0.7px; margin-top: 3px; }
-
+ 
 /* ─── SORT ROW ──────────────────────────────────────────────── */
 .sort-row { flex-shrink: 0; padding: 7px 13px; display: none; align-items: center; gap: 10px; background: var(--glass); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-2); }
 .sort-row.visible { display: flex; }
@@ -164,15 +164,23 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
 .sort-btn { font-family: var(--font-body); font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: var(--r-full); border: 1.5px solid var(--border); background: var(--surface); color: var(--text-3); cursor: pointer; transition: all .2s cubic-bezier(0.34,1.56,0.64,1); box-shadow: var(--shadow-xs); }
 .sort-btn.active { border-color: var(--fire); color: var(--fire); background: var(--amber-pale); font-weight: 700; box-shadow: 0 2px 8px var(--fire-glow); }
 .sort-btn:hover:not(.active) { border-color: var(--border-fire); color: var(--fire); transform: translateY(-1px); }
-
+ 
 /* ─── STATIONS SCROLL ──────────────────────────────────────── */
+/* FIX: touch-action allows native scrolling on iOS/Android without interference */
 .stations-scroll-wrap { flex: 1; min-height: 0; overflow: hidden; position: relative; }
-.stations-scroll { height: 100%; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain; padding: 12px 8px 16px 12px; scrollbar-width: thin; scrollbar-color: #D4C9CF transparent; }
+.stations-scroll {
+  height: 100%; overflow-y: auto; overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  touch-action: pan-y;           /* FIX: permite scroll nativo en móvil */
+  padding: 12px 8px 16px 12px;
+  scrollbar-width: thin; scrollbar-color: #D4C9CF transparent;
+}
 .stations-scroll::-webkit-scrollbar { width: 6px; }
 .stations-scroll::-webkit-scrollbar-track { background: transparent; margin: 6px 0; }
 .stations-scroll::-webkit-scrollbar-thumb { background: #D4C9CF; border-radius: 99px; }
 .stations-scroll::-webkit-scrollbar-thumb:hover { background: #B0A5AD; }
-
+ 
 /* ─── STATE PANELS ──────────────────────────────────────────── */
 .state-panel { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 48px 28px; text-align: center; }
 .state-icon-box { width: 88px; height: 88px; background: var(--surface); border: 1px solid var(--border); border-radius: 24px; display: flex; align-items: center; justify-content: center; font-size: 44px; box-shadow: var(--shadow-md); animation: float 4s ease-in-out infinite; }
@@ -182,21 +190,21 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
 .spinner { width: 38px; height: 38px; border: 3px solid var(--border); border-top-color: var(--fire); border-radius: 50%; animation: spin .75s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .error-toast { background: var(--danger-bg); border: 1.5px solid rgba(239,68,68,0.15); color: var(--danger); padding: 14px 18px; border-radius: var(--r-lg); font-size: 13px; font-weight: 600; line-height: 1.5; text-align: center; }
-
+ 
 /* ─── STATION CARDS ─────────────────────────────────────────── */
-.station-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; margin-bottom: 10px; cursor: pointer; transition: transform .24s cubic-bezier(0.34,1.56,0.64,1), box-shadow .24s ease, border-color .18s ease, background .18s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03); position: relative; overflow: hidden; animation: card-reveal .35s cubic-bezier(0.34,1.56,0.64,1) both; background-image: linear-gradient(160deg, rgba(255,255,255,1) 0%, rgba(250,248,245,1) 100%); }
+.station-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; margin-bottom: 10px; cursor: pointer; transition: transform .24s cubic-bezier(0.34,1.56,0.64,1), box-shadow .24s ease, border-color .18s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.05); position: relative; overflow: hidden; animation: card-reveal .35s cubic-bezier(0.34,1.56,0.64,1) both; background-image: linear-gradient(160deg, #fff 0%, #faf8f5 100%); }
 @keyframes card-reveal { from { opacity: 0; transform: translateY(12px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
-.station-card:nth-child(2) { animation-delay: .05s; } .station-card:nth-child(3) { animation-delay: .10s; } .station-card:nth-child(4) { animation-delay: .15s; } .station-card:nth-child(5) { animation-delay: .20s; } .station-card:nth-child(6) { animation-delay: .25s; } .station-card:nth-child(7) { animation-delay: .28s; } .station-card:nth-child(8) { animation-delay: .30s; }
+.station-card:nth-child(2) { animation-delay:.05s; } .station-card:nth-child(3) { animation-delay:.10s; } .station-card:nth-child(4) { animation-delay:.15s; } .station-card:nth-child(5) { animation-delay:.20s; } .station-card:nth-child(6) { animation-delay:.25s; } .station-card:nth-child(7) { animation-delay:.28s; } .station-card:nth-child(8) { animation-delay:.30s; }
 .station-card:last-child { margin-bottom: 0; }
-.station-card:hover { box-shadow: 0 8px 28px rgba(0,0,0,0.09), 0 3px 8px rgba(0,0,0,0.05); transform: translateY(-3px) scale(1.005); border-color: rgba(255,107,43,0.20); background-image: linear-gradient(160deg, #ffffff 0%, #fffbf8 100%); }
+.station-card:hover { box-shadow: 0 8px 28px rgba(0,0,0,0.09), 0 3px 8px rgba(0,0,0,0.05); transform: translateY(-3px) scale(1.005); border-color: rgba(255,107,43,0.20); }
 .station-card:active { transform: translateY(-1px) scale(0.998); transition-duration: .12s; }
 .station-card.selected { border-color: var(--fire); box-shadow: 0 0 0 3px var(--fire-glow), 0 8px 28px rgba(255,107,43,0.12); background-image: linear-gradient(160deg, #fff9f6 0%, #fff5ef 100%); }
 .winner-band { display: none; background: linear-gradient(90deg, var(--fire) 0%, var(--amber) 100%); color: white; font-size: 10.5px; font-weight: 700; padding: 6px 16px; align-items: center; gap: 5px; letter-spacing: 0.3px; }
 .station-card:first-child .winner-band { display: flex; }
 .card-body { padding: 16px 16px 12px; display: flex; align-items: flex-start; gap: 13px; }
 .station-card:first-child .card-body { padding-top: 38px; }
-.brand-logo { width: 52px; height: 52px; border-radius: 14px; background: var(--surface-2); display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; overflow: hidden; border: 1px solid var(--border-2); padding: 4px; transition: transform .22s cubic-bezier(0.34,1.56,0.64,1), box-shadow .22s ease; box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
-.station-card:hover .brand-logo { transform: scale(1.06) rotate(-1deg); box-shadow: 0 4px 12px rgba(0,0,0,0.10); }
+.brand-logo { width: 52px; height: 52px; border-radius: 14px; background: var(--surface-2); display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; overflow: hidden; border: 1px solid var(--border-2); padding: 4px; transition: transform .22s cubic-bezier(0.34,1.56,0.64,1); box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
+.station-card:hover .brand-logo { transform: scale(1.06) rotate(-1deg); }
 .card-info { flex: 1; min-width: 0; padding-top: 1px; }
 .station-name { font-family: var(--font-display); font-weight: 800; font-size: 15px; color: var(--text-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: -0.3px; line-height: 1.2; }
 .station-meta { display: flex; align-items: center; gap: 5px; margin-top: 4px; flex-wrap: wrap; }
@@ -208,26 +216,29 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
 .price-display { line-height: 1; display: flex; align-items: baseline; gap: 0; }
 .price-val { font-family: var(--font-display); font-weight: 900; font-size: 30px; letter-spacing: -1.5px; transition: transform .18s; }
 .station-card:hover .price-val { transform: scale(1.03); }
-.price-unit { font-size: 11px; font-weight: 600; color: var(--text-4); margin-left: 3px; align-self: flex-end; margin-bottom: 3px; letter-spacing: 0; }
+.price-unit { font-size: 11px; font-weight: 600; color: var(--text-4); margin-left: 3px; align-self: flex-end; margin-bottom: 3px; }
 .price-cheap    .price-val { color: var(--success); }
 .price-avg      .price-val { color: var(--fire); }
 .price-expensive .price-val { color: var(--danger); }
 .badge-pill { font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: var(--r-full); letter-spacing: 0.1px; white-space: nowrap; }
 .badge-winner { background: var(--success-bg); color: var(--success); }
 .badge-saving  { background: var(--surface-3); color: var(--text-4); }
-.fav-btn { background: none; border: none; cursor: pointer; font-size: 15px; color: var(--text-5); transition: all .2s cubic-bezier(0.34,1.56,0.64,1); padding: 3px; line-height: 1; margin-top: 1px; }
+.fav-btn { background: none; border: none; cursor: pointer; font-size: 15px; color: var(--text-5); transition: all .2s cubic-bezier(0.34,1.56,0.64,1); padding: 3px; line-height: 1; }
 .fav-btn:hover { color: var(--danger); transform: scale(1.3); }
 .fav-btn.saved { color: #F59E0B; }
+ 
+/* Card action buttons group */
+.card-action-btns { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
+.card-action-row  { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+ 
 .card-footer { padding: 0 16px 14px; display: flex; gap: 5px; flex-wrap: wrap; }
 .fuel-pill { font-size: 11px; font-weight: 600; padding: 4px 10px; background: var(--surface-3); border: 1px solid var(--border); border-radius: var(--r-full); color: var(--text-3); display: flex; align-items: center; gap: 4px; transition: all .15s; }
 .fuel-pill:hover { background: var(--amber-pale); border-color: var(--border-fire); color: var(--fire); }
 .fuel-pill-tag { font-size: 9.5px; font-weight: 700; color: var(--text-4); background: var(--surface-4); padding: 1px 5px; border-radius: 4px; }
-
+ 
 /* ─── MAP ────────────────────────────────────────────────────── */
 #map-container { flex: 1; height: 100%; overflow: hidden; position: relative; }
 #map { width: 100%; height: 100%; }
-
-/* Leaflet popup */
 .leaflet-popup-content-wrapper { background: var(--surface) !important; border-radius: 18px !important; box-shadow: var(--shadow-xl) !important; border: 1px solid var(--border) !important; font-family: var(--font-body) !important; padding: 0 !important; overflow: hidden !important; }
 .leaflet-popup-content { margin: 0 !important; width: auto !important; }
 .leaflet-popup-tip { background: var(--surface) !important; }
@@ -249,66 +260,48 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
 .nav-btn.gmaps:hover { background: #1A73E8; border-color: #1A73E8; color: white; }
 .nav-btn.apple { background: var(--surface-3); border-color: var(--border); color: var(--text-2); }
 .nav-btn.apple:hover { background: #1C1C1E; border-color: #1C1C1E; color: white; }
-
+ 
 /* ─── FLOATING SUPPORT ──────────────────────────────────────── */
 .donate-float { position: fixed; bottom: calc(var(--tab-h) + 20px); right: 20px; z-index: 500; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
 .donate-tooltip { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-xl); padding: 16px 18px; box-shadow: var(--shadow-xl); max-width: 210px; opacity: 0; transform: translateY(8px) scale(.94); pointer-events: none; transition: all .25s cubic-bezier(0.34,1.56,0.64,1); transform-origin: bottom right; }
 .donate-tooltip.open { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
 .donate-tooltip-title { font-family: var(--font-display); font-size: 14px; font-weight: 800; color: var(--text-1); margin-bottom: 5px; display: flex; align-items: center; gap: 6px; letter-spacing: -0.3px; }
-.donate-tooltip-sub { font-size: 12px; font-weight: 400; color: var(--text-3); line-height: 1.6; margin-bottom: 12px; }
+.donate-tooltip-sub { font-size: 12px; color: var(--text-3); line-height: 1.6; margin-bottom: 12px; }
 .donate-paypal-btn { display: flex; align-items: center; justify-content: center; gap: 7px; width: 100%; background: #0070BA; color: white; font-family: var(--font-body); font-size: 12px; font-weight: 700; padding: 10px 16px; border-radius: var(--r-md); transition: all .18s; letter-spacing: 0.1px; }
 .donate-paypal-btn:hover { background: #005EA6; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,112,186,.30); }
 .donate-pill { display: flex; align-items: center; gap: 8px; background: var(--glass); backdrop-filter: blur(16px); border: 1px solid var(--border); color: var(--text-2); font-family: var(--font-body); font-size: 12px; font-weight: 600; padding: 10px 16px 10px 12px; border-radius: var(--r-full); cursor: pointer; box-shadow: var(--shadow-md); transition: all .22s cubic-bezier(0.34,1.56,0.64,1); white-space: nowrap; user-select: none; }
-.donate-pill:hover { border-color: var(--border-fire); color: var(--fire); box-shadow: 0 4px 20px var(--fire-glow), var(--shadow-md); transform: translateY(-2px); }
-.donate-pill.active { border-color: var(--fire); color: var(--fire); background: var(--amber-pale); box-shadow: 0 4px 20px var(--fire-glow); }
+.donate-pill:hover { border-color: var(--border-fire); color: var(--fire); transform: translateY(-2px); }
+.donate-pill.active { border-color: var(--fire); color: var(--fire); background: var(--amber-pale); }
 .donate-pill-icon { font-size: 16px; animation: heartbeat 3s ease-in-out infinite; }
-
+ 
 /* ─── TAB BAR ──────────────────────────────────────────────── */
 .tab-bar { display: none; }
-
-/* ═══ MOBILE ════════════════════════════════════════════════ */
-@media (max-width: 768px) {
-  :root { --header-h: 58px; --tab-h: 62px; }
-  .app-layout { flex-direction: column; }
-  .sidebar { width: 100%; }
-  #map-container { position: fixed; top: var(--header-h); left: 0; right: 0; bottom: var(--tab-h); display: none; z-index: 50; }
-  #map-container.active { display: block; }
-  .sidebar.map-active { display: none; }
-  .search-panel { padding: 9px 10px 0; }
-  .selects-row  { grid-template-columns: 1fr; gap: 7px; }
-  .stations-scroll { padding: 8px 6px 16px 8px; }
-  .tab-bar { display: flex; position: fixed; bottom: 0; left: 0; right: 0; height: var(--tab-h); background: var(--glass); backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); border-top: 1px solid var(--border); z-index: 200; padding-bottom: env(safe-area-inset-bottom, 0); }
-  .tab-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; background: none; border: none; cursor: pointer; color: var(--text-4); font-family: var(--font-body); font-size: 10px; font-weight: 700; letter-spacing: 0.2px; transition: color .18s; -webkit-tap-highlight-color: transparent; }
-  .tab-icon { font-size: 20px; line-height: 1; }
-  .tab-btn.active { color: var(--fire); }
-  header { padding: 0 16px; }
-  .logo { font-size: 18px; }
-  .logo-mark { width: 34px; height: 34px; border-radius: 10px; }
-  .logo-tagline { display: none; }
-  .live-text { display: none; }
-  .support-btn span:last-child { display: none; }
-  .nav-btn { font-size: 10px; padding: 7px 4px; }
-  .auth-btn-text { display: none; }
-  .profile-panel { width: 100% !important; border-left: none !important; border-top: 1px solid var(--border); position: fixed; top: var(--header-h); left: 0; right: 0; bottom: var(--tab-h); z-index: 60; }
-}
-
-/* ═══ AUTH BUTTON ══════════════════════════════════════════ */
+ 
+/* ─── AUTH BUTTON ─────────────────────────────────────────── */
 .auth-btn { display: flex; align-items: center; gap: 7px; background: var(--surface); border: 1px solid var(--border); color: var(--text-2); font-family: var(--font-body); font-size: 12px; font-weight: 600; padding: 8px 14px; border-radius: var(--r-full); cursor: pointer; transition: all .2s cubic-bezier(0.34,1.56,0.64,1); box-shadow: var(--shadow-xs); white-space: nowrap; }
 .auth-btn:hover { border-color: var(--border-fire); color: var(--fire); box-shadow: var(--shadow-sm); transform: translateY(-1px); }
 .auth-btn.logged-in { background: var(--amber-pale); border-color: rgba(255,170,59,0.3); color: var(--text-1); }
 .auth-avatar { width: 22px; height: 22px; border-radius: 50%; background: linear-gradient(135deg, var(--fire), var(--amber)); color: white; font-size: 10px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-
-/* ═══ AUTH MODAL ═══════════════════════════════════════════ */
+ 
+/* ─── UPSELL BANNER ──────────────────────────────────────── */
+.upsell-banner { display: none; align-items: center; gap: 10px; padding: 10px 14px; background: linear-gradient(90deg, rgba(255,107,43,0.08) 0%, rgba(255,170,59,0.06) 100%); border-bottom: 1px solid rgba(255,107,43,0.15); flex-shrink: 0; }
+.upsell-banner.visible { display: flex; }
+.upsell-text { flex: 1; font-size: 12px; font-weight: 500; color: var(--text-2); line-height: 1.4; }
+.upsell-text strong { color: var(--fire); font-weight: 700; }
+.upsell-cta { background: var(--fire); color: white; border: none; font-family: var(--font-body); font-size: 11px; font-weight: 700; padding: 6px 13px; border-radius: var(--r-full); cursor: pointer; white-space: nowrap; transition: all .18s; box-shadow: var(--shadow-fire); flex-shrink: 0; }
+.upsell-cta:hover { background: var(--fire-deep); transform: translateY(-1px); }
+ 
+/* ─── MODALS ─────────────────────────────────────────────── */
 .modal-backdrop { position: fixed; inset: 0; background: rgba(24,22,26,0.45); backdrop-filter: blur(6px); z-index: 3000; display: flex; align-items: center; justify-content: center; padding: 20px; opacity: 0; pointer-events: none; transition: opacity .22s ease; }
 .modal-backdrop.open { opacity: 1; pointer-events: auto; }
-.modal { background: var(--surface); border-radius: 24px; box-shadow: var(--shadow-xl); width: 100%; max-width: 400px; overflow: hidden; transform: translateY(16px) scale(0.97); transition: transform .28s cubic-bezier(0.34,1.56,0.64,1); }
+.modal { background: var(--surface); border-radius: 24px; box-shadow: var(--shadow-xl); width: 100%; max-width: 400px; overflow: hidden; transform: translateY(16px) scale(0.97); transition: transform .28s cubic-bezier(0.34,1.56,0.64,1); max-height: 90vh; overflow-y: auto; }
 .modal-backdrop.open .modal { transform: translateY(0) scale(1); }
-.modal-header { padding: 24px 24px 0; display: flex; justify-content: space-between; align-items: flex-start; }
+.modal-header { padding: 24px 24px 0; display: flex; justify-content: space-between; align-items: flex-start; position: sticky; top: 0; background: var(--surface); z-index: 1; padding-bottom: 12px; border-bottom: 1px solid var(--border-2); }
 .modal-title { font-family: var(--font-display); font-size: 22px; font-weight: 800; color: var(--text-1); letter-spacing: -0.5px; line-height: 1.2; }
 .modal-sub { font-size: 13px; color: var(--text-3); margin-top: 4px; font-weight: 400; }
-.modal-close { background: var(--surface-3); border: none; cursor: pointer; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; color: var(--text-3); transition: all .15s; flex-shrink: 0; margin-left: 12px; }
+.modal-close { background: var(--surface-3); border: none; cursor: pointer; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; color: var(--text-3); transition: all .15s; flex-shrink: 0; margin-left: 12px; margin-top: 2px; }
 .modal-close:hover { background: var(--surface-4); color: var(--text-1); }
-.modal-body { padding: 20px 24px 24px; display: flex; flex-direction: column; gap: 12px; }
+.modal-body { padding: 16px 24px 24px; display: flex; flex-direction: column; gap: 12px; }
 .modal-tabs { display: flex; background: var(--surface-3); border-radius: 10px; padding: 3px; gap: 2px; margin-bottom: 4px; }
 .modal-tab { flex: 1; padding: 8px; border-radius: 8px; border: none; background: transparent; color: var(--text-3); font-family: var(--font-body); font-size: 13px; font-weight: 600; cursor: pointer; transition: all .18s; }
 .modal-tab.active { background: var(--surface); color: var(--text-1); box-shadow: var(--shadow-xs); }
@@ -322,37 +315,20 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
 .auth-msg { font-size: 12px; font-weight: 500; text-align: center; padding: 8px 12px; border-radius: var(--r-sm); display: none; }
 .auth-msg.error   { display: block; background: var(--danger-bg); color: var(--danger); }
 .auth-msg.success { display: block; background: var(--success-bg); color: var(--success); }
-
-/* ─── UPSELL BANNER ───────────────────────────────────────── */
-.upsell-banner {
-  display: none; align-items: center; gap: 10px;
-  padding: 10px 14px;
-  background: linear-gradient(90deg, rgba(255,107,43,0.08) 0%, rgba(255,170,59,0.06) 100%);
-  border-bottom: 1px solid rgba(255,107,43,0.15);
-  flex-shrink: 0;
-}
-.upsell-banner.visible { display: flex; }
-.upsell-text { flex: 1; font-size: 12px; font-weight: 500; color: var(--text-2); line-height: 1.4; }
-.upsell-text strong { color: var(--fire); font-weight: 700; }
-.upsell-cta { background: var(--fire); color: white; border: none; font-family: var(--font-body); font-size: 11px; font-weight: 700; padding: 6px 13px; border-radius: var(--r-full); cursor: pointer; white-space: nowrap; transition: all .18s; box-shadow: var(--shadow-fire); flex-shrink: 0; }
-.upsell-cta:hover { background: var(--fire-deep); transform: translateY(-1px); }
-
-/* ═══ REFUEL MODAL ═════════════════════════════════════════ */
+ 
+/* ─── REFUEL MODAL ──────────────────────────────────────────── */
 .refuel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.refuel-station-info { background: var(--amber-pale); border: 1px solid rgba(255,170,59,0.25); border-radius: var(--r-md); padding: 11px 14px; margin-bottom: 4px; }
+.refuel-station-info { background: var(--amber-pale); border: 1px solid rgba(255,170,59,0.25); border-radius: var(--r-md); padding: 11px 14px; }
 .refuel-station-name { font-family: var(--font-display); font-size: 14px; font-weight: 800; color: var(--text-1); }
 .refuel-station-addr { font-size: 11px; color: var(--text-3); margin-top: 2px; }
-.refuel-total-preview { background: var(--success-bg); border: 1px solid rgba(34,197,94,0.15); border-radius: var(--r-md); padding: 10px 14px; text-align: center; margin-top: 4px; display: none; }
+.refuel-total-preview { background: var(--success-bg); border: 1px solid rgba(34,197,94,0.15); border-radius: var(--r-md); padding: 10px 14px; text-align: center; display: none; }
 .refuel-total-preview.visible { display: block; }
 .refuel-total-label { font-size: 10px; font-weight: 700; color: var(--success); text-transform: uppercase; letter-spacing: 0.5px; }
 .refuel-total-val { font-family: var(--font-display); font-size: 22px; font-weight: 900; color: var(--success); }
-
-/* ═══ ALERT MODAL ══════════════════════════════════════════ */
-.alert-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 4px; }
-.alert-fuel-btn { padding: 10px 8px; border-radius: var(--r-md); border: 1.5px solid var(--border); background: var(--surface-3); color: var(--text-3); font-family: var(--font-body); font-size: 12px; font-weight: 600; cursor: pointer; text-align: center; transition: all .18s; }
-.alert-fuel-btn.active { border-color: var(--fire); background: var(--amber-pale); color: var(--fire); }
-
-/* ═══ PROFILE PANEL ════════════════════════════════════════ */
+.field-row { display: flex; gap: 8px; }
+.field-row .field-group { flex: 1; }
+ 
+/* ─── PROFILE PANEL ──────────────────────────────────────── */
 .profile-panel { width: 340px; flex-shrink: 0; height: 100%; background: var(--surface); border-left: 1px solid var(--border); display: none; flex-direction: column; overflow: hidden; }
 .profile-panel.open { display: flex; }
 .profile-header { padding: 20px 18px 16px; border-bottom: 1px solid var(--border-2); background: linear-gradient(135deg, rgba(255,107,43,0.05) 0%, transparent 60%); flex-shrink: 0; position: relative; }
@@ -378,18 +354,15 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
 .hi-top  { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
 .hi-name { font-family: var(--font-display); font-size: 13px; font-weight: 700; color: var(--text-1); }
 .hi-price{ font-family: var(--font-display); font-size: 15px; font-weight: 900; color: var(--fire); white-space: nowrap; }
-.hi-meta { font-size: 11px; color: var(--text-4); margin-top: 3px; }
-.hi-saved{ font-size: 11px; font-weight: 700; color: var(--success); margin-top: 4px; }
-.hi-delete { background: none; border: none; cursor: pointer; font-size: 13px; color: var(--text-5); padding: 2px; transition: color .15s; flex-shrink: 0; margin-top: 1px; }
+.hi-meta { font-size: 11px; color: var(--text-4); margin-top: 3px; line-height: 1.5; }
+.hi-delete { background: none; border: none; cursor: pointer; font-size: 13px; color: var(--text-5); padding: 2px; transition: color .15s; flex-shrink: 0; }
 .hi-delete:hover { color: var(--danger); }
 .btn-logout { margin: 8px 12px 12px; width: calc(100% - 24px); background: var(--surface-3); border: 1px solid var(--border); color: var(--text-3); font-family: var(--font-body); font-size: 13px; font-weight: 600; padding: 11px; border-radius: var(--r-md); cursor: pointer; transition: all .18s; flex-shrink: 0; }
 .btn-logout:hover { background: var(--danger-bg); border-color: rgba(239,68,68,0.2); color: var(--danger); }
-.btn-refuel-card { display: flex; align-items: center; gap: 4px; background: var(--amber-pale); border: 1px solid rgba(255,170,59,0.3); color: var(--fire); font-family: var(--font-body); font-size: 11px; font-weight: 700; padding: 5px 10px; border-radius: var(--r-full); cursor: pointer; transition: all .18s; white-space: nowrap; }
+.btn-refuel-card { display: inline-flex; align-items: center; gap: 4px; background: var(--amber-pale); border: 1px solid rgba(255,170,59,0.3); color: var(--fire); font-family: var(--font-body); font-size: 11px; font-weight: 700; padding: 5px 10px; border-radius: var(--r-full); cursor: pointer; transition: all .18s; white-space: nowrap; }
 .btn-refuel-card:hover { background: var(--fire); color: white; border-color: var(--fire); box-shadow: var(--shadow-fire); }
-.empty-state { text-align: center; padding: 32px 16px; color: var(--text-4); font-size: 13px; line-height: 1.6; }
+.empty-state { text-align: center; padding: 24px 16px; color: var(--text-4); font-size: 13px; line-height: 1.6; }
 .empty-state-icon { font-size: 32px; margin-bottom: 8px; }
-
-/* Alert items in profile */
 .alert-item { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r-md); padding: 11px 12px; margin-bottom: 7px; display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
 .alert-item-info { flex: 1; min-width: 0; }
 .alert-item-name { font-family: var(--font-display); font-size: 12px; font-weight: 700; color: var(--text-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -397,19 +370,147 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
 .alert-item-price { font-family: var(--font-display); font-size: 15px; font-weight: 900; color: var(--info); white-space: nowrap; }
 .alert-delete { background: none; border: none; cursor: pointer; font-size: 13px; color: var(--text-5); padding: 2px; transition: color .15s; }
 .alert-delete:hover { color: var(--danger); }
-
-/* km field in refuel */
-.field-row { display: flex; gap: 8px; }
-.field-row .field-group { flex: 1; }
+ 
+/* ══════════════════════════════════════════════════════════
+   NEW FEATURES CSS
+══════════════════════════════════════════════════════════ */
+ 
+/* ─── VERIFICATION OVERLAY ──────────────────────────────── */
+.verify-overlay {
+  position: fixed; inset: 0;
+  background: linear-gradient(160deg, rgba(255,249,244,0.98) 0%, rgba(255,245,232,0.98) 100%);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  z-index: 9999; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 16px; padding: 40px; text-align: center;
+  animation: verifyIn .4s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes verifyIn { from { opacity:0; transform:scale(0.96); } to { opacity:1; transform:scale(1); } }
+.verify-icon { font-size: 72px; line-height: 1; animation: verifyBounce .6s .2s cubic-bezier(0.34,1.56,0.64,1) both; }
+@keyframes verifyBounce { from { transform: scale(0); opacity:0; } to { transform: scale(1); opacity:1; } }
+.verify-title { font-family: var(--font-display); font-size: 28px; font-weight: 800; color: var(--text-1); letter-spacing: -0.6px; line-height: 1.2; }
+.verify-sub { font-size: 15px; color: var(--text-3); line-height: 1.7; max-width: 300px; }
+.verify-perks { display: flex; flex-direction: column; gap: 9px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 14px 18px; max-width: 300px; width: 100%; box-shadow: var(--shadow-sm); }
+.verify-perk { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text-2); text-align: left; }
+.verify-btn { background: linear-gradient(135deg, var(--fire), var(--fire-light)); color: white; border: none; padding: 14px 40px; border-radius: var(--r-full); font-family: var(--font-display); font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: var(--shadow-fire); transition: all .2s cubic-bezier(0.34,1.56,0.64,1); }
+.verify-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-fire-lg); }
+ 
+/* ─── DATE DISPLAY (auto) ──────────────────────────────── */
+.date-display {
+  background: var(--success-bg); border: 1px solid rgba(34,197,94,0.2);
+  border-radius: var(--r-md); padding: 10px 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+.date-display-text { flex: 1; font-size: 13px; font-weight: 600; color: var(--success); }
+.date-auto-badge { font-size: 10px; font-weight: 700; color: var(--success); background: rgba(34,197,94,0.15); padding: 3px 8px; border-radius: var(--r-full); white-space: nowrap; }
+ 
+/* ─── PROFILE ADD BUTTON ───────────────────────────────── */
+.ptab-add-btn {
+  display: flex; align-items: center; gap: 8px;
+  background: linear-gradient(135deg, var(--fire), var(--fire-light));
+  color: white; border: none; border-radius: var(--r-md);
+  padding: 12px 16px; font-family: var(--font-display); font-size: 13px;
+  font-weight: 700; cursor: pointer; box-shadow: var(--shadow-fire);
+  transition: all .2s cubic-bezier(0.34,1.56,0.64,1);
+  width: 100%; justify-content: center; margin-bottom: 12px;
+}
+.ptab-add-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-fire-lg); }
+.ptab-add-btn:active { transform: translateY(0); }
+ 
+/* ─── EMPTY TANK BUTTON ────────────────────────────────── */
+.btn-empty-tank {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--surface-3); border: 1px solid var(--border);
+  color: var(--text-3); font-family: var(--font-body); font-size: 11px;
+  font-weight: 600; padding: 5px 11px; border-radius: var(--r-full);
+  cursor: pointer; transition: all .18s; margin-top: 6px; white-space: nowrap;
+}
+.btn-empty-tank:hover { background: var(--danger-bg); border-color: rgba(239,68,68,0.2); color: var(--danger); }
+ 
+/* ─── DURATION BADGE ────────────────────────────────────── */
+.duration-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--info-bg); border: 1px solid var(--info-border);
+  color: var(--info); font-size: 11px; font-weight: 700;
+  padding: 4px 10px; border-radius: var(--r-full); margin-top: 5px;
+}
+ 
+/* ─── CARD ALERT BUTTON ─────────────────────────────────── */
+.btn-alert-card {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--info-bg); border: 1px solid var(--info-border);
+  color: var(--info); font-family: var(--font-body); font-size: 11px;
+  font-weight: 700; padding: 5px 10px; border-radius: var(--r-full);
+  cursor: pointer; transition: all .18s; white-space: nowrap;
+}
+.btn-alert-card:hover { background: var(--info); color: white; border-color: var(--info); }
+ 
+/* ─── AUTONOMY PREVIEW ──────────────────────────────────── */
+.autonomy-preview {
+  background: var(--info-bg); border: 1px solid var(--info-border);
+  border-radius: var(--r-md); padding: 10px 14px; text-align: center;
+  display: none;
+}
+.autonomy-preview.visible { display: block; }
+.autonomy-label { font-size: 10px; font-weight: 700; color: var(--info); text-transform: uppercase; letter-spacing: 0.5px; }
+.autonomy-val { font-family: var(--font-display); font-size: 20px; font-weight: 900; color: var(--info); }
+ 
+/* ══════════════════════════════════════════════════════════
+   MOBILE
+══════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  :root { --header-h: 58px; --tab-h: 62px; }
+  .app-layout { flex-direction: column; }
+  .sidebar { width: 100%; }
+  #map-container { position: fixed; top: var(--header-h); left: 0; right: 0; bottom: var(--tab-h); display: none; z-index: 50; }
+  #map-container.active { display: block; }
+  .sidebar.map-active { display: none; }
+  .search-panel { padding: 9px 10px 0; }
+  .selects-row  { grid-template-columns: 1fr; gap: 7px; }
+  .stations-scroll { padding: 8px 6px 16px 8px; }
+  /* FIX: mueve el botón de donar para que no tape la lista */
+  .donate-float { bottom: calc(var(--tab-h) + 70px) !important; right: 14px !important; }
+  .tab-bar { display: flex; position: fixed; bottom: 0; left: 0; right: 0; height: var(--tab-h); background: var(--glass); backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); border-top: 1px solid var(--border); z-index: 200; padding-bottom: env(safe-area-inset-bottom, 0); }
+  .tab-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; background: none; border: none; cursor: pointer; color: var(--text-4); font-family: var(--font-body); font-size: 10px; font-weight: 700; letter-spacing: 0.2px; transition: color .18s; -webkit-tap-highlight-color: transparent; }
+  .tab-icon { font-size: 20px; line-height: 1; }
+  .tab-btn.active { color: var(--fire); }
+  header { padding: 0 16px; }
+  .logo { font-size: 18px; }
+  .logo-mark { width: 34px; height: 34px; border-radius: 10px; }
+  .logo-tagline { display: none; }
+  .live-text { display: none; }
+  .support-btn span:last-child { display: none; }
+  .nav-btn { font-size: 10px; padding: 7px 4px; }
+  .profile-panel { width: 100% !important; border-left: none !important; border-top: 1px solid var(--border); position: fixed; top: var(--header-h); left: 0; right: 0; bottom: var(--tab-h); z-index: 60; }
+  /* Card buttons stacked on mobile */
+  .card-action-btns { gap: 4px; }
+  .card-action-row  { gap: 3px; }
+  .btn-refuel-card, .btn-alert-card { font-size: 10px; padding: 4px 8px; }
+}
 </style>
 </head>
 <body>
-
+ 
+<!-- ══════════════════════════════════════════════════════
+  VERIFICATION OVERLAY — se muestra tras confirmar email
+══════════════════════════════════════════════════════ -->
+<div id="verify-overlay" style="display:none;" class="verify-overlay">
+  <div class="verify-icon">✅</div>
+  <div class="verify-title">¡Email verificado!</div>
+  <div class="verify-sub">Tu cuenta en IberoFuel está activa y lista para usar.</div>
+  <div class="verify-perks">
+    <div class="verify-perk">⭐ Guarda gasolineras favoritas</div>
+    <div class="verify-perk">🧾 Registra y analiza tus repostajes</div>
+    <div class="verify-perk">📏 Seguimiento de autonomía del depósito</div>
+    <div class="verify-perk">🔔 Alertas de precio personalizadas</div>
+  </div>
+  <button class="verify-btn" onclick="dismissVerifyOverlay()">🔥 Empezar a ahorrar</button>
+</div>
+ 
 <!-- HEADER -->
 <header>
   <div class="logo">
     <div class="logo-mark">
-      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
         <path d="M11 3L13.5 8.5H19L14.5 12L16.5 18L11 14.5L5.5 18L7.5 12L3 8.5H8.5L11 3Z" fill="white" opacity="0.9"/>
       </svg>
     </div>
@@ -427,26 +528,24 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
       <span class="support-btn-icon">🫶</span>
       <span>Apoyar</span>
     </a>
-    <!-- AUTH BUTTON -->
     <button class="auth-btn" id="auth-btn" onclick="handleAuthBtn()">
       <span>👤</span>
       <span class="auth-btn-text">Acceder</span>
     </button>
   </div>
 </header>
-
+ 
 <!-- LAYOUT -->
 <div class="app-layout">
-
+ 
   <!-- SIDEBAR -->
   <aside class="sidebar" id="sidebar">
-
-    <!-- UPSELL BANNER (visible when not logged in and stations loaded) -->
+ 
     <div class="upsell-banner" id="upsell-banner">
       <div class="upsell-text">⭐ <strong>Regístrate gratis</strong> para guardar favoritas, registrar repostajes y recibir alertas de precio.</div>
       <button class="upsell-cta" onclick="openAuthModal()">Unirme</button>
     </div>
-
+ 
     <div class="search-panel">
       <div class="search-card">
         <div class="search-card-header">
@@ -482,7 +581,7 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
         </div>
       </div>
     </div>
-
+ 
     <div class="fuel-section">
       <div class="fuel-label">Combustible</div>
       <div class="fuel-chips" id="fuel-filter">
@@ -493,14 +592,14 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
         <div class="fuel-chip" data-fuel="glp"        onclick="toggleFuel(this)"><span class="fuel-chip-dot" style="background:#3B82F6"></span>GLP</div>
       </div>
     </div>
-
+ 
     <div id="stats-bar" class="stats-bar">
       <div class="stat-item"><div class="stat-value" id="stat-total">—</div><div class="stat-label">Estaciones</div></div>
       <div class="stat-item"><div class="stat-value" id="stat-min">—</div><div class="stat-label">Mín €/L</div></div>
       <div class="stat-item"><div class="stat-value" id="stat-avg">—</div><div class="stat-label">Media</div></div>
       <div class="stat-item"><div class="stat-value" id="stat-max">—</div><div class="stat-label">Máx €/L</div></div>
     </div>
-
+ 
     <div class="sort-row" id="sort-row">
       <span class="sort-label">Ordenar</span>
       <div class="sort-btns">
@@ -508,7 +607,7 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
         <button class="sort-btn" onclick="setSortMode('distancia',this)">📍 Distancia</button>
       </div>
     </div>
-
+ 
     <div class="stations-scroll-wrap" id="stations-scroll-wrap">
       <div class="stations-scroll" id="stations-scroll">
         <div class="state-panel">
@@ -519,12 +618,12 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
       </div>
     </div>
   </aside>
-
+ 
   <!-- MAP -->
   <div id="map-container">
     <div id="map"></div>
   </div>
-
+ 
   <!-- PROFILE PANEL -->
   <div class="profile-panel" id="profile-panel">
     <div class="profile-header">
@@ -537,7 +636,7 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
         </div>
       </div>
       <div class="profile-stats">
-        <div class="pstat"><div class="pstat-val green" id="pstat-ahorro">0€</div><div class="pstat-label">Ahorro est.</div></div>
+        <div class="pstat"><div class="pstat-val green" id="pstat-gasto">0€</div><div class="pstat-label">Gasto total</div></div>
         <div class="pstat"><div class="pstat-val" id="pstat-repostajes">0</div><div class="pstat-label">Repostajes</div></div>
         <div class="pstat"><div class="pstat-val" id="pstat-favoritas">0</div><div class="pstat-label">Favoritas</div></div>
       </div>
@@ -547,36 +646,32 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
       <button class="ptab" onclick="switchProfileTab('favoritas',this)">⭐ Favoritas</button>
       <button class="ptab" onclick="switchProfileTab('alertas',this)">🔔 Alertas</button>
     </div>
-    <div class="profile-scroll" id="profile-scroll">
-      <div class="empty-state"><div class="empty-state-icon">🧾</div>Aún no tienes repostajes registrados.</div>
-    </div>
+    <div class="profile-scroll" id="profile-scroll"></div>
     <button class="btn-logout" onclick="doLogout()">Cerrar sesión</button>
   </div>
-
-</div>
-
+ 
+</div><!-- /app-layout -->
+ 
 <!-- FLOATING SUPPORT -->
 <div class="donate-float" id="donate-float">
   <div class="donate-tooltip" id="donate-tooltip">
     <div class="donate-tooltip-title">⭐ Apoya IberoFuel</div>
     <div class="donate-tooltip-sub">Proyecto gratuito y sin anuncios. Si te ahorra dinero, ¿nos ayudas a mantenerlo?</div>
-    <a class="donate-paypal-btn" href="https://www.paypal.me/DinoCheck360" target="_blank" rel="noopener" onclick="closeTooltip()">
-      💙 Donar con PayPal
-    </a>
+    <a class="donate-paypal-btn" href="https://www.paypal.me/DinoCheck360" target="_blank" rel="noopener" onclick="closeTooltip()">💙 Donar con PayPal</a>
   </div>
   <div class="donate-pill" id="donate-pill" onclick="toggleTooltip()">
     <span class="donate-pill-icon">🫶</span>
     Apoyar el proyecto
   </div>
 </div>
-
+ 
 <!-- TAB BAR (mobile) -->
 <nav class="tab-bar">
-  <button class="tab-btn active" id="tab-lista"   onclick="switchTab('lista')"><span class="tab-icon">☰</span>Lista</button>
-  <button class="tab-btn"        id="tab-mapa"    onclick="switchTab('mapa')"><span class="tab-icon">🗺️</span>Mapa</button>
-  <button class="tab-btn"        id="tab-perfil"  onclick="switchTab('perfil')"><span class="tab-icon">👤</span>Perfil</button>
+  <button class="tab-btn active" id="tab-lista"  onclick="switchTab('lista')"><span class="tab-icon">☰</span>Lista</button>
+  <button class="tab-btn"        id="tab-mapa"   onclick="switchTab('mapa')"><span class="tab-icon">🗺️</span>Mapa</button>
+  <button class="tab-btn"        id="tab-perfil" onclick="switchTab('perfil')"><span class="tab-icon">👤</span>Perfil</button>
 </nav>
-
+ 
 <!-- ══════════ AUTH MODAL ══════════ -->
 <div class="modal-backdrop" id="auth-modal">
   <div class="modal">
@@ -588,19 +683,17 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
       <button class="modal-close" onclick="closeAuthModal()">✕</button>
     </div>
     <div class="modal-body">
-      <!-- PERKS LIST -->
       <div id="auth-perks" style="background:var(--amber-pale);border:1px solid rgba(255,170,59,0.25);border-radius:var(--r-md);padding:12px 14px;display:flex;flex-direction:column;gap:7px;">
         <div style="font-family:var(--font-display);font-size:12px;font-weight:700;color:var(--fire);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px;">Con cuenta obtienes:</div>
-        <div style="font-size:12px;color:var(--text-2);display:flex;gap:8px;align-items:center;">⭐ Guarda gasolineras favoritas</div>
-        <div style="font-size:12px;color:var(--text-2);display:flex;gap:8px;align-items:center;">🧾 Historial de repostajes + km de autonomía</div>
-        <div style="font-size:12px;color:var(--text-2);display:flex;gap:8px;align-items:center;">💰 Cálculo de ahorro real acumulado</div>
-        <div style="font-size:12px;color:var(--text-2);display:flex;gap:8px;align-items:center;">🔔 Alertas de precio en gasolineras cercanas</div>
+        <div style="font-size:12px;color:var(--text-2);">⭐ Guarda gasolineras favoritas</div>
+        <div style="font-size:12px;color:var(--text-2);">🧾 Historial de repostajes + autonomía</div>
+        <div style="font-size:12px;color:var(--text-2);">📏 Cuánto dura tu depósito (días + km)</div>
+        <div style="font-size:12px;color:var(--text-2);">🔔 Alertas de precio en gasolineras</div>
       </div>
       <div class="modal-tabs">
-        <button class="modal-tab active" id="tab-login" onclick="switchAuthTab('login')">Iniciar sesión</button>
-        <button class="modal-tab" id="tab-register" onclick="switchAuthTab('register')">Registrarse</button>
+        <button class="modal-tab active" id="tab-login"    onclick="switchAuthTab('login')">Iniciar sesión</button>
+        <button class="modal-tab"        id="tab-register" onclick="switchAuthTab('register')">Registrarse</button>
       </div>
-      <!-- NAME field (only register) -->
       <div class="field-group" id="auth-name-field" style="display:none;">
         <label class="field-label">Nombre</label>
         <input class="field-input" type="text" id="auth-name" placeholder="Tu nombre">
@@ -618,8 +711,8 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
     </div>
   </div>
 </div>
-
-<!-- ══════════ REFUEL MODAL ══════════ -->
+ 
+<!-- ══════════ REFUEL MODAL (desde tarjeta de gasolinera) ══════════ -->
 <div class="modal-backdrop" id="refuel-modal">
   <div class="modal">
     <div class="modal-header">
@@ -630,6 +723,10 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
       <button class="modal-close" onclick="closeRefuelModal()">✕</button>
     </div>
     <div class="modal-body">
+      <div class="date-display">
+        <div class="date-display-text" id="refuel-date-display">—</div>
+        <div class="date-auto-badge">📅 Automática</div>
+      </div>
       <div class="refuel-station-info">
         <div class="refuel-station-name" id="refuel-station-name">—</div>
         <div class="refuel-station-addr" id="refuel-station-addr">—</div>
@@ -654,11 +751,9 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
           <input class="field-input" type="number" id="refuel-liters" placeholder="40" step="0.1" min="0" style="padding-left:12px;" oninput="updateRefuelPreview()">
         </div>
       </div>
-      <div class="field-row">
-        <div class="field-group">
-          <label class="field-label">Km actuales (opcional)</label>
-          <input class="field-input" type="number" id="refuel-km" placeholder="ej. 85430" step="1" min="0" style="padding-left:12px;">
-        </div>
+      <div class="field-group">
+        <label class="field-label">Km actuales (opcional)</label>
+        <input class="field-input" type="number" id="refuel-km" placeholder="ej. 85430" step="1" min="0" style="padding-left:12px;">
       </div>
       <div class="refuel-total-preview" id="refuel-preview">
         <div class="refuel-total-label">Total a pagar</div>
@@ -669,7 +764,90 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
     </div>
   </div>
 </div>
-
+ 
+<!-- ══════════ QUICK REFUEL MODAL (desde perfil, manual) ══════════ -->
+<div class="modal-backdrop" id="quick-refuel-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">⛽ Nuevo repostaje</div>
+        <div class="modal-sub">Añadir manualmente al historial</div>
+      </div>
+      <button class="modal-close" onclick="closeQuickRefuelModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="date-display">
+        <div class="date-display-text" id="qr-date-display">—</div>
+        <div class="date-auto-badge">📅 Automática</div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Gasolinera</label>
+        <input class="field-input" type="text" id="qr-station" placeholder="ej. Repsol, BP, Cepsa, Independiente…" style="padding-left:12px;">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Combustible</label>
+        <select class="field-input" id="qr-fuel" style="padding-left:12px;" onchange="updateQRPreview()">
+          <option value="gasolina95">Gasolina 95</option>
+          <option value="gasolina98">Gasolina 98</option>
+          <option value="gasoleoA">Gasóleo A</option>
+          <option value="gasoleoB">Gasóleo B</option>
+          <option value="glp">GLP</option>
+        </select>
+      </div>
+      <div class="refuel-grid">
+        <div class="field-group">
+          <label class="field-label">Precio (€/L)</label>
+          <input class="field-input" type="number" id="qr-price" placeholder="1.459" step="0.001" min="0" style="padding-left:12px;" oninput="updateQRPreview()">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Litros</label>
+          <input class="field-input" type="number" id="qr-liters" placeholder="40" step="0.1" min="0" style="padding-left:12px;" oninput="updateQRPreview()">
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Km actuales (para seguimiento de autonomía)</label>
+        <input class="field-input" type="number" id="qr-km" placeholder="ej. 85430" step="1" min="0" style="padding-left:12px;">
+      </div>
+      <div class="refuel-total-preview" id="qr-preview">
+        <div class="refuel-total-label">Total estimado</div>
+        <div class="refuel-total-val" id="qr-total-val">—</div>
+      </div>
+      <div class="auth-msg" id="qr-msg"></div>
+      <button class="btn-auth-submit" onclick="saveQuickRefuel()">💾 Guardar repostaje</button>
+    </div>
+  </div>
+</div>
+ 
+<!-- ══════════ TANK EMPTY MODAL ══════════ -->
+<div class="modal-backdrop" id="tank-empty-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">🪫 Depósito vacío</div>
+        <div class="modal-sub" id="te-station-sub">Registrar cuándo se agotó</div>
+      </div>
+      <button class="modal-close" onclick="closeTankEmptyModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="date-display">
+        <div class="date-display-text" id="te-date-display">—</div>
+        <div class="date-auto-badge">📅 Automática</div>
+      </div>
+      <div id="te-days-info" style="background:var(--surface-3);border:1px solid var(--border);border-radius:var(--r-md);padding:10px 14px;font-size:12px;color:var(--text-3);"></div>
+      <div class="field-group">
+        <label class="field-label">Km actuales al vaciarse (opcional)</label>
+        <input class="field-input" type="number" id="te-km" placeholder="ej. 85920" step="1" min="0" style="padding-left:12px;" oninput="updateTEPreview()">
+      </div>
+      <div class="autonomy-preview" id="te-preview">
+        <div class="autonomy-label">Km recorridos con este depósito</div>
+        <div class="autonomy-val" id="te-km-val">—</div>
+      </div>
+      <div class="auth-msg" id="te-msg"></div>
+      <button class="btn-auth-submit" onclick="saveTankEmpty()">🪫 Marcar como vacío</button>
+    </div>
+  </div>
+</div>
+ 
 <!-- ══════════ PRICE ALERT MODAL ══════════ -->
 <div class="modal-backdrop" id="alert-modal">
   <div class="modal">
@@ -700,7 +878,10 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
     </div>
   </div>
 </div>
-
+ 
+<!-- ══════════════════════════════════════════════════════════
+  JAVASCRIPT
+══════════════════════════════════════════════════════════ -->
 <script>
 // ════════════════════════════════════════════════════════════
 //  SUPABASE INIT
@@ -708,13 +889,56 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
 const SUPABASE_URL  = 'https://gwycdrnwkzmoxbxcqxih.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd3eWNkcm53a3ptb3hieGNxeGloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwMzgyNDEsImV4cCI6MjA5NDYxNDI0MX0.fTm-TesEgil6NjaiiCspZdjMCX6PxAclFhlPs6PNngc';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
-
+ 
 let currentUser  = null;
-let favorites    = new Set();   // set of ideess strings
+let favorites    = new Set();
 let profileTab   = 'historial';
-let refuelTarget = null;        // station object for refuel modal
-let alertTarget  = null;        // station object for alert modal
-
+let refuelTarget = null;
+let alertTarget  = null;
+let tankEmptyTarget = null;
+ 
+// ════════════════════════════════════════════════════════════
+//  FIX: EMAIL VERIFICATION REDIRECT
+//  Cuando Supabase redirige al usuario tras confirmar el email,
+//  la URL contiene tokens (#access_token=... o ?code=...).
+//  Detectamos esto y mostramos un overlay amigable en vez del
+//  error de conexión que confundía al usuario.
+// ════════════════════════════════════════════════════════════
+function checkVerificationCallback() {
+  const hash   = window.location.hash || '';
+  const params = new URLSearchParams(window.location.search);
+ 
+  const isVerification =
+    hash.includes('access_token') ||
+    hash.includes('type=signup')  ||
+    params.get('code')            ||
+    params.get('type') === 'signup';
+ 
+  if (isVerification) {
+    document.getElementById('verify-overlay').style.display = 'flex';
+    // Limpia la URL para que no queden tokens expuestos
+    history.replaceState(null, '', window.location.pathname);
+  }
+}
+ 
+function dismissVerifyOverlay() {
+  document.getElementById('verify-overlay').style.display = 'none';
+}
+ 
+// ════════════════════════════════════════════════════════════
+//  HELPERS
+// ════════════════════════════════════════════════════════════
+function fmtDate(iso) {
+  return new Date(iso).toLocaleDateString('es-ES', { day:'2-digit', month:'short', year:'numeric' });
+}
+function fmtDateTime(iso) {
+  return new Date(iso).toLocaleDateString('es-ES', {
+    weekday:'long', day:'2-digit', month:'long', year:'numeric',
+    hour:'2-digit', minute:'2-digit'
+  });
+}
+function nowIso() { return new Date().toISOString(); }
+ 
 // ════════════════════════════════════════════════════════════
 //  DONATE
 // ════════════════════════════════════════════════════════════
@@ -732,13 +956,13 @@ function closeTooltip() {
 document.addEventListener('click', e => {
   if (tooltipOpen && !document.getElementById('donate-float').contains(e.target)) closeTooltip();
 });
-
+ 
 // ════════════════════════════════════════════════════════════
 //  MOBILE TABS
 // ════════════════════════════════════════════════════════════
 let currentTab = 'lista';
 function isMobile() { return window.innerWidth <= 768; }
-
+ 
 function switchTab(tab) {
   currentTab = tab;
   ['lista','mapa','perfil'].forEach(t => {
@@ -748,7 +972,7 @@ function switchTab(tab) {
   const sidebar   = document.getElementById('sidebar');
   const mapEl     = document.getElementById('map-container');
   const profileEl = document.getElementById('profile-panel');
-
+ 
   if (tab === 'lista') {
     sidebar.classList.remove('map-active');
     mapEl.classList.remove('active');
@@ -763,9 +987,10 @@ function switchTab(tab) {
     sidebar.classList.remove('map-active');
     mapEl.classList.remove('active');
     profileEl.classList.add('open');
+    loadProfileData();
   }
 }
-
+ 
 // ════════════════════════════════════════════════════════════
 //  SEARCH COLLAPSE
 // ════════════════════════════════════════════════════════════
@@ -775,16 +1000,16 @@ function toggleSearch() {
   document.getElementById('search-body').classList.toggle('collapsed', !searchOpen);
   document.getElementById('search-chevron').style.transform = searchOpen ? '' : 'rotate(-90deg)';
 }
-
+ 
 // ════════════════════════════════════════════════════════════
-//  STATE
+//  STATE / CONSTANTS
 // ════════════════════════════════════════════════════════════
 const API = 'https://sedeaplicaciones.minetur.gob.es/ServiciosRESTCarburantes/PreciosCarburantes';
 let allStations = [], filteredStations = [];
 let activeFuel = 'gasolina95', sortMode = 'precio';
 let mapInstance = null, markersLayer = null;
 let selectedCard = null, userPos = null;
-
+ 
 const FUEL_MAP = {
   gasolina95: { key: 'Precio Gasolina 95 E5',              label: 'G-95',      short: '95'  },
   gasolina98: { key: 'Precio Gasolina 98 E5',              label: 'G-98',      short: '98'  },
@@ -792,8 +1017,7 @@ const FUEL_MAP = {
   gasoleoB:   { key: 'Precio Gasoleo B',                   label: 'Gasóleo B', short: 'GB'  },
   glp:        { key: 'Precio Gases licuados del petróleo', label: 'GLP',       short: 'GLP' },
 };
-
-// ─── Brand logos ──────────────────────────────────────────
+ 
 const BRAND_SVGS = {
   'REPSOL':    `<svg viewBox="0 0 120 40" xmlns="http://www.w3.org/2000/svg" width="44" height="24"><rect width="120" height="40" rx="4" fill="#FF6B00"/><text x="60" y="28" font-family="Arial Black,sans-serif" font-size="18" font-weight="900" fill="white" text-anchor="middle" letter-spacing="1">REPSOL</text></svg>`,
   'CEPSA':     `<svg viewBox="0 0 110 40" xmlns="http://www.w3.org/2000/svg" width="44" height="24"><rect width="110" height="40" rx="4" fill="#004A97"/><text x="55" y="28" font-family="Arial Black,sans-serif" font-size="18" font-weight="900" fill="white" text-anchor="middle" letter-spacing="1">CEPSA</text></svg>`,
@@ -813,7 +1037,7 @@ const BRAND_SVGS = {
   'PETROPRIX': `<svg viewBox="0 0 140 40" xmlns="http://www.w3.org/2000/svg" width="44" height="20"><rect width="140" height="40" rx="4" fill="#E30613"/><text x="70" y="27" font-family="Arial Black,sans-serif" font-size="13" font-weight="900" fill="white" text-anchor="middle" letter-spacing="0.5">PETROPRIX</text></svg>`,
   'EROSKI':    `<svg viewBox="0 0 120 40" xmlns="http://www.w3.org/2000/svg" width="44" height="22"><rect width="120" height="40" rx="4" fill="#E30613"/><text x="60" y="27" font-family="Arial Black,sans-serif" font-size="16" font-weight="900" fill="white" text-anchor="middle" letter-spacing="0.5">EROSKI</text></svg>`,
 };
-
+ 
 function getBrandLogo(name) {
   if (!name) return `<span style="font-size:22px">⛽</span>`;
   const upper = name.toUpperCase();
@@ -824,23 +1048,20 @@ function getBrandLogo(name) {
   const hue = [...name].reduce((acc,c) => acc + c.charCodeAt(0), 0) % 360;
   return `<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" width="40" height="40"><rect width="40" height="40" rx="8" fill="hsl(${hue},55%,42%)"/><text x="20" y="26" font-family="Arial Black,sans-serif" font-size="14" font-weight="900" fill="white" text-anchor="middle">${initials}</text></svg>`;
 }
-
+ 
 function buildNavHTML(lat, lng, name) {
   if (isNaN(lat) || isNaN(lng)) return '';
   const enc = encodeURIComponent(name || 'Gasolinera');
-  const waze  = `https://waze.com/ul?ll=${lat},${lng}&navigate=yes`;
-  const gmaps = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&destination_place_name=${enc}&travelmode=driving`;
-  const apple = `https://maps.apple.com/?daddr=${lat},${lng}&dirflg=d`;
   return `<div class="popup-nav">
     <div class="popup-nav-label">🧭 Cómo llegar</div>
     <div class="popup-nav-btns">
-      <a class="nav-btn waze"  href="${waze}"  target="_blank" rel="noopener">🚗 Waze</a>
-      <a class="nav-btn gmaps" href="${gmaps}" target="_blank" rel="noopener">🗺️ Google</a>
-      <a class="nav-btn apple" href="${apple}" target="_blank" rel="noopener">🍎 Apple</a>
+      <a class="nav-btn waze"  href="https://waze.com/ul?ll=${lat},${lng}&navigate=yes" target="_blank" rel="noopener">🚗 Waze</a>
+      <a class="nav-btn gmaps" href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&destination_place_name=${enc}&travelmode=driving" target="_blank" rel="noopener">🗺️ Google</a>
+      <a class="nav-btn apple" href="https://maps.apple.com/?daddr=${lat},${lng}&dirflg=d" target="_blank" rel="noopener">🍎 Apple</a>
     </div>
   </div>`;
 }
-
+ 
 // ════════════════════════════════════════════════════════════
 //  MAP
 // ════════════════════════════════════════════════════════════
@@ -851,7 +1072,7 @@ function initMap() {
   }).addTo(mapInstance);
   markersLayer = L.layerGroup().addTo(mapInstance);
 }
-
+ 
 function makeIcon(color) {
   const cols = { cheap:'#22C55E', avg:'#FF6B2B', expensive:'#EF4444', default:'#9B93A0' };
   const c = cols[color] || cols.default;
@@ -861,7 +1082,7 @@ function makeIcon(color) {
     iconSize:[32,32], iconAnchor:[16,32], popupAnchor:[0,-34],
   });
 }
-
+ 
 // ════════════════════════════════════════════════════════════
 //  API — PROVINCIAS / MUNICIPIOS
 // ════════════════════════════════════════════════════════════
@@ -873,7 +1094,7 @@ async function loadProvincias() {
     data.forEach(p => sel.appendChild(new Option(p.Provincia, p.IDPovincia)));
   } catch { showError('No se pudieron cargar las provincias.'); }
 }
-
+ 
 async function onProvinciaChange() {
   const idProv = document.getElementById('sel-prov').value;
   const selMun = document.getElementById('sel-mun');
@@ -888,7 +1109,7 @@ async function onProvinciaChange() {
     selMun.disabled = false;
   } catch { showError('No se pudieron cargar los municipios.'); }
 }
-
+ 
 // ════════════════════════════════════════════════════════════
 //  SEARCH
 // ════════════════════════════════════════════════════════════
@@ -904,24 +1125,17 @@ async function buscarPorMunicipio() {
     if (isMobile()) { if (searchOpen) toggleSearch(); switchTab('lista'); }
   } catch { showError('No hay datos para este municipio. ¡Prueba con otro!'); }
 }
-
+ 
 // ════════════════════════════════════════════════════════════
-//  GEOLOCATION — iOS FIX
-//  iOS Safari requiere: enableHighAccuracy + timeout + que la
-//  llamada ocurra DIRECTAMENTE en el handler del click.
+//  GEOLOCATION
 // ════════════════════════════════════════════════════════════
 function usarMiUbicacion() {
-  if (!navigator.geolocation) {
-    alert('Tu navegador no soporta geolocalización.');
-    return;
-  }
-
+  if (!navigator.geolocation) { alert('Tu navegador no soporta geolocalización.'); return; }
   const btn = document.getElementById('locate-btn');
   btn.disabled = true;
   btn.innerHTML = '<span>⏳</span> Localizando…';
   showLoading('Detectando tu posición…');
-
-  // iOS necesita que esto se llame sin awaits previos en el mismo handler.
+ 
   navigator.geolocation.getCurrentPosition(
     async function(pos) {
       btn.disabled = false;
@@ -946,25 +1160,21 @@ function usarMiUbicacion() {
       btn.disabled = false;
       btn.innerHTML = '<span>◎</span> Ubicarme';
       let msg = 'No se pudo obtener tu ubicación. Activa la geolocalización 📍';
-      if (err.code === 1) msg = 'Permiso de ubicación denegado. Ve a Ajustes > Safari > Ubicación y permite el acceso.';
+      if (err.code === 1) msg = 'Permiso denegado. Ve a Ajustes > Safari > Ubicación y permite el acceso.';
       if (err.code === 2) msg = 'No se pudo determinar la posición. Comprueba tu señal GPS.';
       if (err.code === 3) msg = 'Tiempo de espera agotado. Asegúrate de tener GPS activo.';
       showError(msg);
     },
-    {
-      enableHighAccuracy: true,   // Clave para iOS
-      timeout: 15000,             // 15 segundos
-      maximumAge: 0               // No usar caché
-    }
+    { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
   );
 }
-
+ 
 function haversine(lat1,lng1,lat2,lng2) {
   const R=6371, dLat=(lat2-lat1)*Math.PI/180, dLng=(lng2-lng1)*Math.PI/180;
   const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
   return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
 }
-
+ 
 // ════════════════════════════════════════════════════════════
 //  PROCESS & RENDER
 // ════════════════════════════════════════════════════════════
@@ -985,12 +1195,9 @@ function processStations(raw) {
   renderAll();
   document.getElementById('stats-bar').classList.add('visible');
   document.getElementById('sort-row').classList.add('visible');
-  // Show upsell banner if not logged in
-  if (!currentUser) {
-    document.getElementById('upsell-banner').classList.add('visible');
-  }
+  if (!currentUser) document.getElementById('upsell-banner').classList.add('visible');
 }
-
+ 
 function renderAll() {
   filteredStations = allStations
     .filter(s => s.prices[activeFuel] !== null)
@@ -1003,7 +1210,7 @@ function renderAll() {
   renderList();
   renderMarkers();
 }
-
+ 
 function updateStats() {
   const prices = filteredStations.map(s=>s.prices[activeFuel]).filter(Boolean);
   document.getElementById('stat-total').textContent = filteredStations.length;
@@ -1011,7 +1218,7 @@ function updateStats() {
   document.getElementById('stat-avg').textContent   = prices.length ? (prices.reduce((a,b)=>a+b,0)/prices.length).toFixed(3) : '—';
   document.getElementById('stat-max').textContent   = prices.length ? Math.max(...prices).toFixed(3) : '—';
 }
-
+ 
 function getPriceClass(price, min, max) {
   if (!price) return 'default';
   const mid = (min+max)/2;
@@ -1019,7 +1226,7 @@ function getPriceClass(price, min, max) {
   if (price >= max-(max-mid)*0.4) return 'expensive';
   return 'avg';
 }
-
+ 
 function renderList() {
   const scroll = document.getElementById('stations-scroll');
   if (!filteredStations.length) {
@@ -1033,7 +1240,7 @@ function renderList() {
   const prices = filteredStations.map(s=>s.prices[activeFuel]).filter(Boolean);
   const minP = Math.min(...prices), maxP = Math.max(...prices);
   const frag = document.createDocumentFragment();
-
+ 
   filteredStations.forEach((s, i) => {
     const price   = s.prices[activeFuel];
     const cls     = getPriceClass(price, minP, maxP);
@@ -1047,18 +1254,22 @@ function renderList() {
       .filter(([k]) => k!==activeFuel && s.prices[k])
       .map(([k,v]) => `<div class="fuel-pill"><span class="fuel-pill-tag">${v.short}</span>${s.prices[k]?.toFixed(3)} €</div>`)
       .join('');
-    const distStr = s.dist!==null ? `<span class="station-dist">⊙ ${s.dist.toFixed(1)} km</span><span class="meta-dot">●</span>` : '';
     const ideess  = s.IDEESS || s['IDEESS'] || (s.Dirección + s.Municipio);
     const isFav   = favorites.has(ideess);
-    const favIcon = isFav ? '★' : '☆';
-    const favCls  = isFav ? 'fav-btn saved' : 'fav-btn';
-
-    // Extra buttons for logged-in users
+    const distStr = s.dist!==null ? `<span class="station-dist">⊙ ${s.dist.toFixed(1)} km</span><span class="meta-dot">●</span>` : '';
+ 
+    // ── Botones de acción (solo para usuarios logueados) ──
+    // FIX: cada botón tiene event.stopPropagation() para no activar el click de la tarjeta
     const loggedBtns = currentUser
-      ? `<button class="btn-refuel-card" onclick="event.stopPropagation();openRefuelModal(${i})">⛽ Repostar</button>
-         <button class="fav-btn ${isFav?'saved':''}" style="font-size:18px" onclick="event.stopPropagation();toggleFavorite(${i},this)">${favIcon}</button>`
+      ? `<div class="card-action-btns">
+           <div class="card-action-row">
+             <button class="btn-refuel-card" onclick="event.stopPropagation();openRefuelModal(${i})">⛽ Repostar</button>
+             <button class="btn-alert-card"  onclick="event.stopPropagation();openAlertModal(${i})">🔔</button>
+             <button class="fav-btn ${isFav?'saved':''}" style="font-size:18px" onclick="event.stopPropagation();toggleFavorite(${i},this)">${isFav?'★':'☆'}</button>
+           </div>
+         </div>`
       : `<button class="fav-btn" onclick="event.stopPropagation();openAuthModal()" title="Inicia sesión para guardar favoritas">☆</button>`;
-
+ 
     const card = document.createElement('div');
     card.className = 'station-card';
     card.id = `card-${i}`;
@@ -1085,15 +1296,32 @@ function renderList() {
       </div>
       ${otherPrices ? `<div class="card-footer">${otherPrices}</div>` : ''}
     `;
-    card.addEventListener('click', () => selectStation(i));
+ 
+    // FIX: diferenciamos scroll de tap en móvil para no disparar el click al hacer scroll
+    let touchStartY = 0;
+    let touchMoved  = false;
+    card.addEventListener('touchstart', e => {
+      touchStartY = e.touches[0].clientY;
+      touchMoved  = false;
+    }, { passive: true });
+    card.addEventListener('touchmove', e => {
+      if (Math.abs(e.touches[0].clientY - touchStartY) > 6) touchMoved = true;
+    }, { passive: true });
+    card.addEventListener('touchend', e => {
+      if (!touchMoved) selectStation(i);
+    });
+    card.addEventListener('click', () => {
+      if (!isMobile()) selectStation(i);
+    });
+ 
     frag.appendChild(card);
   });
-
+ 
   scroll.innerHTML = '';
   scroll.appendChild(frag);
   scroll.scrollTop = 0;
 }
-
+ 
 function renderMarkers() {
   markersLayer.clearLayers();
   if (userPos) {
@@ -1105,11 +1333,11 @@ function renderMarkers() {
       })
     }).addTo(markersLayer).bindPopup('📍 Estás aquí');
   }
-
+ 
   const prices = filteredStations.map(s=>s.prices[activeFuel]).filter(Boolean);
   const minP = Math.min(...prices), maxP = Math.max(...prices);
   const bounds = [];
-
+ 
   filteredStations.forEach((s, i) => {
     if (isNaN(s.lat)||isNaN(s.lng)) return;
     const cls    = getPriceClass(s.prices[activeFuel], minP, maxP);
@@ -1131,12 +1359,12 @@ function renderMarkers() {
     s._marker = marker;
     bounds.push([s.lat, s.lng]);
   });
-
+ 
   if (bounds.length) {
     mapInstance.fitBounds(bounds, { padding:[40,40], maxZoom: userPos?14:18 });
   }
 }
-
+ 
 function selectStation(i, scrollToCard=true) {
   if (selectedCard) selectedCard.classList.remove('selected');
   const card = document.getElementById(`card-${i}`);
@@ -1154,7 +1382,7 @@ function selectStation(i, scrollToCard=true) {
     if (s._marker) s._marker.openPopup();
   }, isMobile()?120:40);
 }
-
+ 
 // ════════════════════════════════════════════════════════════
 //  FILTERS / SORT
 // ════════════════════════════════════════════════════════════
@@ -1164,14 +1392,14 @@ function toggleFuel(el) {
   activeFuel = el.dataset.fuel;
   if (allStations.length) renderAll();
 }
-
+ 
 function setSortMode(mode, btn) {
   sortMode = mode;
   document.querySelectorAll('.sort-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   if (allStations.length) renderAll();
 }
-
+ 
 // ════════════════════════════════════════════════════════════
 //  LOADING / ERROR
 // ════════════════════════════════════════════════════════════
@@ -1189,12 +1417,12 @@ function showError(msg) {
       <div class="error-toast">${msg}</div>
     </div>`;
 }
-
+ 
 // ════════════════════════════════════════════════════════════
 //  AUTH
 // ════════════════════════════════════════════════════════════
 let authTab = 'login';
-
+ 
 function switchAuthTab(tab) {
   authTab = tab;
   document.getElementById('tab-login').classList.toggle('active', tab==='login');
@@ -1203,16 +1431,15 @@ function switchAuthTab(tab) {
   document.getElementById('auth-submit-btn').textContent = tab==='login' ? 'Entrar' : 'Crear cuenta';
   clearAuthMsg();
 }
-
+ 
 function openAuthModal() {
   document.getElementById('auth-modal').classList.add('open');
-  document.getElementById('auth-email').focus();
+  setTimeout(() => document.getElementById('auth-email').focus(), 100);
 }
 function closeAuthModal() {
   document.getElementById('auth-modal').classList.remove('open');
   clearAuthMsg();
 }
-
 function clearAuthMsg() {
   const el = document.getElementById('auth-msg');
   el.className = 'auth-msg'; el.textContent = '';
@@ -1221,30 +1448,36 @@ function showAuthMsg(msg, type='error') {
   const el = document.getElementById('auth-msg');
   el.className = `auth-msg ${type}`; el.textContent = msg;
 }
-
+ 
 async function doAuth() {
   const email = document.getElementById('auth-email').value.trim();
   const pass  = document.getElementById('auth-password').value;
   const name  = document.getElementById('auth-name').value.trim();
   const btn   = document.getElementById('auth-submit-btn');
-
+ 
   if (!email || !pass) { showAuthMsg('Completa todos los campos.'); return; }
   btn.disabled = true;
   btn.textContent = authTab==='login' ? 'Entrando…' : 'Creando cuenta…';
   clearAuthMsg();
-
+ 
   try {
     if (authTab === 'login') {
       const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
       if (error) throw error;
     } else {
+      // FIX: emailRedirectTo asegura que el link del email apunte a esta misma página
+      // en lugar del localhost por defecto de Supabase
+      const redirectTo = window.location.origin + window.location.pathname;
       const { data, error } = await sb.auth.signUp({
         email, password: pass,
-        options: { data: { display_name: name || email.split('@')[0] } }
+        options: {
+          emailRedirectTo: redirectTo,
+          data: { display_name: name || email.split('@')[0] }
+        }
       });
       if (error) throw error;
       if (data.user && !data.session) {
-        showAuthMsg('¡Revisa tu email para confirmar la cuenta!', 'success');
+        showAuthMsg('¡Revisa tu email para confirmar la cuenta! Al hacer clic en el enlace volverás aquí directamente.', 'success');
         btn.disabled = false;
         btn.textContent = 'Crear cuenta';
         return;
@@ -1257,33 +1490,29 @@ async function doAuth() {
     btn.textContent = authTab==='login' ? 'Entrar' : 'Crear cuenta';
   }
 }
-
+ 
 function translateAuthError(msg) {
-  if (msg.includes('Invalid login')) return 'Email o contraseña incorrectos.';
+  if (msg.includes('Invalid login'))       return 'Email o contraseña incorrectos.';
   if (msg.includes('User already registered')) return 'Este email ya está registrado. Inicia sesión.';
   if (msg.includes('Password should be')) return 'La contraseña debe tener al menos 6 caracteres.';
-  if (msg.includes('Invalid email')) return 'El formato del email no es válido.';
+  if (msg.includes('Invalid email'))       return 'El formato del email no es válido.';
   return msg;
 }
-
+ 
 async function doLogout() {
   await sb.auth.signOut();
 }
-
+ 
 function handleAuthBtn() {
   if (currentUser) {
-    // Toggle profile panel
     const panel = document.getElementById('profile-panel');
-    if (panel.classList.contains('open')) {
-      closeProfilePanel();
-    } else {
-      openProfilePanel();
-    }
+    if (panel.classList.contains('open')) closeProfilePanel();
+    else openProfilePanel();
   } else {
     openAuthModal();
   }
 }
-
+ 
 // ════════════════════════════════════════════════════════════
 //  PROFILE PANEL
 // ════════════════════════════════════════════════════════════
@@ -1294,7 +1523,7 @@ function openProfilePanel() {
 function closeProfilePanel() {
   document.getElementById('profile-panel').classList.remove('open');
 }
-
+ 
 function updateAuthButton() {
   const btn = document.getElementById('auth-btn');
   if (currentUser) {
@@ -1302,9 +1531,8 @@ function updateAuthButton() {
     btn.classList.add('logged-in');
     btn.innerHTML = `<div class="auth-avatar">${initial}</div><span class="auth-btn-text">${currentUser.user_metadata?.display_name || 'Mi perfil'}</span>`;
     document.getElementById('upsell-banner').classList.remove('visible');
-    // Profile header
     document.getElementById('profile-avatar-lg').textContent = initial;
-    document.getElementById('profile-name').textContent = currentUser.user_metadata?.display_name || currentUser.email.split('@')[0];
+    document.getElementById('profile-name').textContent  = currentUser.user_metadata?.display_name || currentUser.email.split('@')[0];
     document.getElementById('profile-email').textContent = currentUser.email;
   } else {
     btn.classList.remove('logged-in');
@@ -1313,90 +1541,113 @@ function updateAuthButton() {
     if (allStations.length) document.getElementById('upsell-banner').classList.add('visible');
   }
 }
-
+ 
 function switchProfileTab(tab, btn) {
   profileTab = tab;
   document.querySelectorAll('.ptab').forEach(b=>b.classList.remove('active'));
   if (btn) btn.classList.add('active');
   loadProfileData();
 }
-
+ 
 async function loadProfileData() {
   if (!currentUser) return;
   const scroll = document.getElementById('profile-scroll');
   scroll.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-4)"><div class="spinner" style="margin:0 auto"></div></div>';
-
   if (profileTab === 'historial') await renderHistorial(scroll);
   else if (profileTab === 'favoritas') await renderFavoritas(scroll);
-  else if (profileTab === 'alertas') await renderAlertas(scroll);
+  else if (profileTab === 'alertas')   await renderAlertas(scroll);
 }
-
+ 
+// ════════════════════════════════════════════════════════════
+//  HISTORIAL
+// ════════════════════════════════════════════════════════════
 async function renderHistorial(scroll) {
   const { data, error } = await sb
     .from('refuel_logs')
     .select('*')
     .eq('user_id', currentUser.id)
     .order('refueled_at', { ascending: false });
-
+ 
+  // Botón de añadir siempre visible
+  const addBtn = `<button class="ptab-add-btn" onclick="openQuickRefuelModal()">＋ Añadir repostaje</button>`;
+ 
   if (error || !data || !data.length) {
-    scroll.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🧾</div>Aún no tienes repostajes registrados.<br><span style="font-size:12px;margin-top:8px;display:block">Pulsa ⛽ Repostar en cualquier gasolinera.</span></div>`;
     document.getElementById('pstat-repostajes').textContent = '0';
-    document.getElementById('pstat-ahorro').textContent = '0€';
+    document.getElementById('pstat-gasto').textContent = '0€';
+    scroll.innerHTML = addBtn + `<div class="empty-state">
+      <div class="empty-state-icon">🧾</div>
+      Aún no tienes repostajes registrados.<br>
+      <span style="font-size:12px;margin-top:8px;display:block">Pulsa ⛽ Repostar en una gasolinera o el botón de arriba.</span>
+    </div>`;
     return;
   }
-
-  // Compute stats
-  let totalGasto = 0, totalLitros = 0;
-  data.forEach(r => { totalGasto += (r.total_cost||0); totalLitros += (r.liters||0); });
-  // Estimate saving: assume avg price vs our avg paid
-  const avgPaid = totalLitros ? totalGasto/totalLitros : 0;
+ 
+  let totalGasto = 0;
+  data.forEach(r => { totalGasto += (r.total_cost || 0); });
   document.getElementById('pstat-repostajes').textContent = data.length;
-  document.getElementById('pstat-ahorro').textContent = totalGasto.toFixed(0)+'€';
-
-  // KM per station analysis
-  const stationKm = {};
-  for (let i = 0; i < data.length-1; i++) {
-    const curr = data[i], next = data[i+1];
-    if (curr.km_at_refuel && next.km_at_refuel && curr.ideess === next.ideess) {
-      const km = curr.km_at_refuel - next.km_at_refuel;
-      if (!stationKm[curr.ideess]) stationKm[curr.ideess] = [];
-      stationKm[curr.ideess].push(km);
+  document.getElementById('pstat-gasto').textContent = totalGasto.toFixed(0) + '€';
+ 
+  const items = data.map(r => {
+    const dateStr   = fmtDate(r.refueled_at);
+    const total     = r.total_cost   ? r.total_cost.toFixed(2) + '€'   : '—';
+    const liters    = r.liters       ? r.liters.toFixed(1) + 'L'       : '—';
+    const price     = r.price_per_liter ? r.price_per_liter.toFixed(3) + '€/L' : '—';
+    const fuelLabel = FUEL_MAP[r.fuel_type]?.label || r.fuel_type || '—';
+ 
+    // ── Seguimiento de autonomía ──────────────────────────
+    let durationHTML = '';
+    if (r.emptied_at) {
+      // Ya marcado como vacío: mostrar duración
+      const refDate  = new Date(r.refueled_at);
+      const empDate  = new Date(r.emptied_at);
+      const days     = Math.max(0, Math.round((empDate - refDate) / 86400000));
+      const empStr   = fmtDate(r.emptied_at);
+      let kmStr = '';
+      if (r.km_at_refuel && r.km_when_empty && r.km_when_empty > r.km_at_refuel) {
+        const diff = r.km_when_empty - r.km_at_refuel;
+        kmStr = ` · 📏 ${diff} km`;
+      }
+      durationHTML = `<div class="duration-badge">⏱ ${days} día${days!==1?'s':''} de autonomía${kmStr} · Vacío: ${empStr}</div>`;
+    } else {
+      // Todavía activo: botón para marcar como vacío
+      const safeId      = r.id;
+      const safeName    = (r.station_name || '').replace(/'/g, "\\'").replace(/"/g, '\\"');
+      const kmAtRefuel  = r.km_at_refuel || 0;
+      durationHTML = `<button class="btn-empty-tank" onclick="openTankEmptyModal('${safeId}','${safeName}',${kmAtRefuel},'${r.refueled_at}')">🪫 ¿Se vació el depósito?</button>`;
     }
-  }
-
-  scroll.innerHTML = data.map(r => {
-    const date = new Date(r.refueled_at).toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'});
-    const total = r.total_cost ? r.total_cost.toFixed(2)+'€' : '—';
-    const liters = r.liters ? r.liters.toFixed(1)+'L' : '—';
-    const price  = r.price_per_liter ? r.price_per_liter.toFixed(3)+'€/L' : '—';
-    const kmAvg  = stationKm[r.ideess] ? Math.round(stationKm[r.ideess].reduce((a,b)=>a+b,0)/stationKm[r.ideess].length) : null;
-    const fuelLabel = FUEL_MAP[r.fuel_type]?.label || r.fuel_type;
+ 
     return `<div class="history-item">
       <div class="hi-top">
-        <div><div class="hi-name">${r.station_name||'Gasolinera'}</div>
-        <div class="hi-meta">${fuelLabel} · ${liters} · ${price} · ${date}</div>
-        ${kmAvg ? `<div class="hi-saved">📏 ~${kmAvg} km de autonomía media en esta gasolinera</div>` : ''}
+        <div style="flex:1;min-width:0;">
+          <div class="hi-name">${r.station_name || 'Gasolinera'}</div>
+          <div class="hi-meta">${fuelLabel} · ${liters} · ${price} · ${dateStr}</div>
+          ${durationHTML}
         </div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;">
           <div class="hi-price">${total}</div>
-          <button class="hi-delete" onclick="deleteRefuel('${r.id}')">🗑</button>
+          <button class="hi-delete" title="Borrar" onclick="deleteRefuel('${r.id}')">🗑</button>
         </div>
       </div>
     </div>`;
   }).join('');
+ 
+  scroll.innerHTML = addBtn + items;
 }
-
+ 
+// ════════════════════════════════════════════════════════════
+//  FAVORITAS
+// ════════════════════════════════════════════════════════════
 async function renderFavoritas(scroll) {
   const { data, error } = await sb
     .from('favorites')
     .select('*')
     .eq('user_id', currentUser.id)
     .order('created_at', { ascending: false });
-
+ 
   document.getElementById('pstat-favoritas').textContent = data?.length || 0;
-
+ 
   if (error || !data || !data.length) {
-    scroll.innerHTML = `<div class="empty-state"><div class="empty-state-icon">⭐</div>Aún no has guardado favoritas.<br><span style="font-size:12px;margin-top:8px;display:block">Pulsa ☆ en cualquier gasolinera.</span></div>`;
+    scroll.innerHTML = `<div class="empty-state"><div class="empty-state-icon">⭐</div>Aún no has guardado favoritas.<br><span style="font-size:12px;margin-top:8px;display:block">Pulsa ☆ en cualquier gasolinera de la lista.</span></div>`;
     return;
   }
   scroll.innerHTML = data.map(f => `
@@ -1404,7 +1655,7 @@ async function renderFavoritas(scroll) {
       <div class="hi-top">
         <div>
           <div class="hi-name">⭐ ${f.station_name}</div>
-          <div class="hi-meta">📍 ${f.station_address || ''} · ${f.municipio || ''}</div>
+          <div class="hi-meta">📍 ${f.station_address || ''} ${f.municipio ? '· ' + f.municipio : ''}</div>
         </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
           <button class="btn-refuel-card" onclick="openRefuelModalFromFav(${JSON.stringify(f).replace(/"/g,'&quot;')})">⛽ Repostar</button>
@@ -1413,7 +1664,10 @@ async function renderFavoritas(scroll) {
       </div>
     </div>`).join('');
 }
-
+ 
+// ════════════════════════════════════════════════════════════
+//  ALERTAS
+// ════════════════════════════════════════════════════════════
 async function renderAlertas(scroll) {
   const { data, error } = await sb
     .from('price_alerts')
@@ -1421,9 +1675,9 @@ async function renderAlertas(scroll) {
     .eq('user_id', currentUser.id)
     .eq('is_active', true)
     .order('created_at', { ascending: false });
-
+ 
   if (error || !data || !data.length) {
-    scroll.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🔔</div>No tienes alertas activas.<br><span style="font-size:12px;margin-top:8px;display:block">Abre una gasolinera en el mapa y pulsa "Alerta de precio".</span></div>`;
+    scroll.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🔔</div>No tienes alertas activas.<br><span style="font-size:12px;margin-top:8px;display:block">Pulsa 🔔 en cualquier gasolinera de la lista.</span></div>`;
     return;
   }
   scroll.innerHTML = data.map(a => {
@@ -1440,7 +1694,7 @@ async function renderAlertas(scroll) {
     </div>`;
   }).join('');
 }
-
+ 
 // ════════════════════════════════════════════════════════════
 //  FAVORITES
 // ════════════════════════════════════════════════════════════
@@ -1449,25 +1703,22 @@ async function loadFavorites() {
   const { data } = await sb.from('favorites').select('ideess').eq('user_id', currentUser.id);
   favorites = new Set((data||[]).map(f => f.ideess));
 }
-
+ 
 async function toggleFavorite(i, btn) {
   if (!currentUser) { openAuthModal(); return; }
   const s      = filteredStations[i];
   const ideess = s.IDEESS || s['IDEESS'] || (s.Dirección + s.Municipio);
-
+ 
   if (favorites.has(ideess)) {
-    // Remove
     await sb.from('favorites').delete().eq('user_id', currentUser.id).eq('ideess', ideess);
     favorites.delete(ideess);
     btn.textContent = '☆'; btn.classList.remove('saved');
   } else {
-    // Add
     await sb.from('favorites').upsert({
-      user_id: currentUser.id,
-      ideess,
-      station_name:    s.Rótulo || 'Gasolinera',
+      user_id: currentUser.id, ideess,
+      station_name: s.Rótulo || 'Gasolinera',
       station_address: s.Dirección || '',
-      municipio:       s.Municipio || '',
+      municipio: s.Municipio || '',
       lat: s.lat, lng: s.lng,
       fuel_type: activeFuel
     }, { onConflict: 'user_id,ideess' });
@@ -1475,23 +1726,23 @@ async function toggleFavorite(i, btn) {
     btn.textContent = '★'; btn.classList.add('saved');
   }
 }
-
+ 
 async function deleteFavorite(ideess) {
   await sb.from('favorites').delete().eq('user_id', currentUser.id).eq('ideess', ideess);
   favorites.delete(ideess);
   loadProfileData();
   if (allStations.length) renderList();
 }
-
+ 
 // ════════════════════════════════════════════════════════════
-//  REFUEL MODAL
+//  REFUEL MODAL (desde tarjeta de gasolinera)
 // ════════════════════════════════════════════════════════════
 function openRefuelModal(i) {
   if (!currentUser) { openAuthModal(); return; }
   refuelTarget = filteredStations[i];
+  document.getElementById('refuel-date-display').textContent = fmtDateTime(new Date());
   document.getElementById('refuel-station-name').textContent = refuelTarget.Rótulo || 'Gasolinera';
   document.getElementById('refuel-station-addr').textContent = `📍 ${refuelTarget.Dirección||''} · ${refuelTarget.Municipio||''}`;
-  // Pre-fill price with current active fuel price
   const price = refuelTarget.prices[activeFuel];
   document.getElementById('refuel-price').value  = price ? price.toFixed(3) : '';
   document.getElementById('refuel-fuel').value   = activeFuel;
@@ -1501,9 +1752,10 @@ function openRefuelModal(i) {
   document.getElementById('refuel-preview').classList.remove('visible');
   document.getElementById('refuel-modal').classList.add('open');
 }
-
+ 
 function openRefuelModalFromFav(fav) {
   refuelTarget = { Rótulo: fav.station_name, Dirección: fav.station_address, Municipio: fav.municipio, lat: fav.lat, lng: fav.lng, IDEESS: fav.ideess, prices: {} };
+  document.getElementById('refuel-date-display').textContent = fmtDateTime(new Date());
   document.getElementById('refuel-station-name').textContent = fav.station_name;
   document.getElementById('refuel-station-addr').textContent = `📍 ${fav.station_address||''} · ${fav.municipio||''}`;
   document.getElementById('refuel-price').value  = '';
@@ -1514,9 +1766,9 @@ function openRefuelModalFromFav(fav) {
   document.getElementById('refuel-preview').classList.remove('visible');
   document.getElementById('refuel-modal').classList.add('open');
 }
-
+ 
 function closeRefuelModal() { document.getElementById('refuel-modal').classList.remove('open'); }
-
+ 
 function updateRefuelPreview() {
   const price  = parseFloat(document.getElementById('refuel-price').value);
   const liters = parseFloat(document.getElementById('refuel-liters').value);
@@ -1528,7 +1780,7 @@ function updateRefuelPreview() {
     preview.classList.remove('visible');
   }
 }
-
+ 
 async function saveRefuel() {
   if (!currentUser || !refuelTarget) return;
   const price  = parseFloat(document.getElementById('refuel-price').value);
@@ -1536,33 +1788,166 @@ async function saveRefuel() {
   const km     = parseFloat(document.getElementById('refuel-km').value) || null;
   const fuel   = document.getElementById('refuel-fuel').value;
   const msgEl  = document.getElementById('refuel-msg');
-
   if (isNaN(price)||isNaN(liters)||price<=0||liters<=0) {
     msgEl.className='auth-msg error'; msgEl.textContent='Introduce precio y litros válidos.'; return;
   }
   const ideess = refuelTarget.IDEESS || (refuelTarget.Dirección + refuelTarget.Municipio);
   const { error } = await sb.from('refuel_logs').insert({
-    user_id:         currentUser.id,
-    ideess,
-    station_name:    refuelTarget.Rótulo || 'Gasolinera',
+    user_id: currentUser.id, ideess,
+    station_name: refuelTarget.Rótulo || 'Gasolinera',
     station_address: refuelTarget.Dirección || '',
-    municipio:       refuelTarget.Municipio || '',
-    lat:             refuelTarget.lat, lng: refuelTarget.lng,
-    fuel_type:       fuel,
-    price_per_liter: price,
-    liters,
-    total_cost:      price*liters,
-    km_at_refuel:    km
+    municipio: refuelTarget.Municipio || '',
+    lat: refuelTarget.lat || null, lng: refuelTarget.lng || null,
+    fuel_type: fuel, price_per_liter: price,
+    liters, total_cost: price*liters, km_at_refuel: km,
+    refueled_at: nowIso()
   });
   if (error) { msgEl.className='auth-msg error'; msgEl.textContent='Error al guardar: '+error.message; return; }
-  closeRefuelModal();
+  msgEl.className='auth-msg success'; msgEl.textContent='✅ Repostaje guardado.';
+  setTimeout(() => {
+    closeRefuelModal();
+    if (document.getElementById('profile-panel').classList.contains('open')) loadProfileData();
+  }, 800);
 }
-
+ 
 async function deleteRefuel(id) {
   await sb.from('refuel_logs').delete().eq('id', id);
   loadProfileData();
 }
-
+ 
+// ════════════════════════════════════════════════════════════
+//  QUICK REFUEL MODAL (añadir manual desde perfil)
+// ════════════════════════════════════════════════════════════
+function openQuickRefuelModal() {
+  if (!currentUser) { openAuthModal(); return; }
+  document.getElementById('qr-date-display').textContent = fmtDateTime(new Date());
+  document.getElementById('qr-station').value = '';
+  document.getElementById('qr-fuel').value    = 'gasolina95';
+  document.getElementById('qr-price').value   = '';
+  document.getElementById('qr-liters').value  = '';
+  document.getElementById('qr-km').value      = '';
+  document.getElementById('qr-msg').className = 'auth-msg';
+  document.getElementById('qr-preview').classList.remove('visible');
+  document.getElementById('quick-refuel-modal').classList.add('open');
+  setTimeout(() => document.getElementById('qr-station').focus(), 100);
+}
+ 
+function closeQuickRefuelModal() { document.getElementById('quick-refuel-modal').classList.remove('open'); }
+ 
+function updateQRPreview() {
+  const price  = parseFloat(document.getElementById('qr-price').value);
+  const liters = parseFloat(document.getElementById('qr-liters').value);
+  const preview= document.getElementById('qr-preview');
+  if (!isNaN(price) && !isNaN(liters) && price > 0 && liters > 0) {
+    document.getElementById('qr-total-val').textContent = (price*liters).toFixed(2) + ' €';
+    preview.classList.add('visible');
+  } else {
+    preview.classList.remove('visible');
+  }
+}
+ 
+async function saveQuickRefuel() {
+  if (!currentUser) return;
+  const station = document.getElementById('qr-station').value.trim();
+  const fuel    = document.getElementById('qr-fuel').value;
+  const price   = parseFloat(document.getElementById('qr-price').value);
+  const liters  = parseFloat(document.getElementById('qr-liters').value);
+  const km      = parseFloat(document.getElementById('qr-km').value) || null;
+  const msgEl   = document.getElementById('qr-msg');
+ 
+  if (!station) {
+    msgEl.className='auth-msg error'; msgEl.textContent='Introduce el nombre de la gasolinera.'; return;
+  }
+  if (isNaN(price)||isNaN(liters)||price<=0||liters<=0) {
+    msgEl.className='auth-msg error'; msgEl.textContent='Introduce precio y litros válidos.'; return;
+  }
+ 
+  const { error } = await sb.from('refuel_logs').insert({
+    user_id: currentUser.id,
+    ideess: 'manual_' + Date.now(),
+    station_name: station,
+    station_address: '', municipio: '',
+    lat: null, lng: null,
+    fuel_type: fuel, price_per_liter: price,
+    liters, total_cost: price * liters,
+    km_at_refuel: km,
+    refueled_at: nowIso()
+  });
+ 
+  if (error) { msgEl.className='auth-msg error'; msgEl.textContent='Error: '+error.message; return; }
+  msgEl.className='auth-msg success'; msgEl.textContent='✅ Repostaje guardado.';
+  setTimeout(() => { closeQuickRefuelModal(); loadProfileData(); }, 800);
+}
+ 
+// ════════════════════════════════════════════════════════════
+//  TANK EMPTY MODAL
+//  Permite registrar cuándo se agotó el depósito con km y días.
+//
+//  NOTA: Para que funcione la persistencia, añade en Supabase
+//  estas columnas a la tabla refuel_logs:
+//    - emptied_at  (timestamptz, nullable)
+//    - km_when_empty (int4 o float8, nullable)
+// ════════════════════════════════════════════════════════════
+function openTankEmptyModal(refuelId, stationName, kmAtRefuel, refueledAt) {
+  tankEmptyTarget = { id: refuelId, kmAtRefuel: parseFloat(kmAtRefuel)||null, refueledAt };
+ 
+  // Calcular días transcurridos desde el repostaje
+  const refDate  = new Date(refueledAt);
+  const now      = new Date();
+  const daysSince = Math.max(0, Math.round((now - refDate) / 86400000));
+  const daysText  = daysSince === 0 ? 'Hoy mismo' : `Han pasado ${daysSince} día${daysSince!==1?'s':''}`;
+ 
+  document.getElementById('te-date-display').textContent = fmtDateTime(now);
+  document.getElementById('te-station-sub').textContent  = stationName || 'Depósito';
+  document.getElementById('te-days-info').textContent    = `⛽ Desde ${fmtDate(refueledAt)} — ${daysText} desde el último repostaje`;
+  document.getElementById('te-km').value                 = '';
+  document.getElementById('te-msg').className            = 'auth-msg';
+  document.getElementById('te-preview').classList.remove('visible');
+  document.getElementById('tank-empty-modal').classList.add('open');
+}
+ 
+function updateTEPreview() {
+  if (!tankEmptyTarget) return;
+  const km = parseFloat(document.getElementById('te-km').value);
+  const preview = document.getElementById('te-preview');
+  if (!isNaN(km) && tankEmptyTarget.kmAtRefuel && km > tankEmptyTarget.kmAtRefuel) {
+    const diff = Math.round(km - tankEmptyTarget.kmAtRefuel);
+    document.getElementById('te-km-val').textContent = `${diff} km recorridos`;
+    preview.classList.add('visible');
+  } else {
+    preview.classList.remove('visible');
+  }
+}
+ 
+function closeTankEmptyModal() { document.getElementById('tank-empty-modal').classList.remove('open'); }
+ 
+async function saveTankEmpty() {
+  if (!currentUser || !tankEmptyTarget) return;
+  const km    = parseFloat(document.getElementById('te-km').value) || null;
+  const msgEl = document.getElementById('te-msg');
+ 
+  const { error } = await sb
+    .from('refuel_logs')
+    .update({ emptied_at: nowIso(), km_when_empty: km })
+    .eq('id', tankEmptyTarget.id)
+    .eq('user_id', currentUser.id);
+ 
+  if (error) {
+    // Error probable: columnas no existen todavía en Supabase
+    const isSchema = error.message?.toLowerCase().includes('column') ||
+                     error.message?.toLowerCase().includes('schema');
+    if (isSchema) {
+      msgEl.className='auth-msg error';
+      msgEl.textContent='⚠️ Añade las columnas "emptied_at" (timestamptz) y "km_when_empty" (int4) a la tabla refuel_logs en tu panel de Supabase.';
+    } else {
+      msgEl.className='auth-msg error'; msgEl.textContent='Error: '+error.message;
+    }
+    return;
+  }
+  msgEl.className='auth-msg success'; msgEl.textContent='🪫 Depósito marcado como vacío.';
+  setTimeout(() => { closeTankEmptyModal(); loadProfileData(); }, 800);
+}
+ 
 // ════════════════════════════════════════════════════════════
 //  PRICE ALERTS
 // ════════════════════════════════════════════════════════════
@@ -1570,13 +1955,13 @@ function openAlertModal(i) {
   if (!currentUser) { openAuthModal(); return; }
   alertTarget = filteredStations[i];
   document.getElementById('alert-station-name-sub').textContent = alertTarget.Rótulo || 'Gasolinera';
-  document.getElementById('alert-fuel').value = activeFuel;
+  document.getElementById('alert-fuel').value  = activeFuel;
   document.getElementById('alert-price').value = '';
   document.getElementById('alert-msg').className = 'auth-msg';
   document.getElementById('alert-modal').classList.add('open');
 }
 function closeAlertModal() { document.getElementById('alert-modal').classList.remove('open'); }
-
+ 
 async function saveAlert() {
   if (!currentUser || !alertTarget) return;
   const fuel   = document.getElementById('alert-fuel').value;
@@ -1585,24 +1970,21 @@ async function saveAlert() {
   if (isNaN(target)||target<=0) { msgEl.className='auth-msg error'; msgEl.textContent='Introduce un precio válido.'; return; }
   const ideess = alertTarget.IDEESS || (alertTarget.Dirección + alertTarget.Municipio);
   const { error } = await sb.from('price_alerts').upsert({
-    user_id:         currentUser.id,
-    ideess,
-    station_name:    alertTarget.Rótulo || 'Gasolinera',
+    user_id: currentUser.id, ideess,
+    station_name: alertTarget.Rótulo || 'Gasolinera',
     station_address: alertTarget.Dirección || '',
-    fuel_type:       fuel,
-    target_price:    target,
-    is_active:       true
+    fuel_type: fuel, target_price: target, is_active: true
   }, { onConflict: 'user_id,ideess,fuel_type' });
   if (error) { msgEl.className='auth-msg error'; msgEl.textContent='Error: '+error.message; return; }
   msgEl.className='auth-msg success'; msgEl.textContent='✅ Alerta activada.';
   setTimeout(closeAlertModal, 1400);
 }
-
+ 
 async function deleteAlert(id) {
   await sb.from('price_alerts').delete().eq('id', id);
   loadProfileData();
 }
-
+ 
 // ════════════════════════════════════════════════════════════
 //  AUTH STATE LISTENER
 // ════════════════════════════════════════════════════════════
@@ -1611,28 +1993,34 @@ sb.auth.onAuthStateChange(async (event, session) => {
   updateAuthButton();
   if (currentUser) {
     await loadFavorites();
-    if (allStations.length) renderList(); // refresh cards with fav buttons
+    if (allStations.length) renderList();
   } else {
     favorites.clear();
     if (allStations.length) renderList();
   }
 });
-
-// Close modals on backdrop click
-document.getElementById('auth-modal').addEventListener('click', e => { if(e.target===e.currentTarget) closeAuthModal(); });
-document.getElementById('refuel-modal').addEventListener('click', e => { if(e.target===e.currentTarget) closeRefuelModal(); });
-document.getElementById('alert-modal').addEventListener('click', e => { if(e.target===e.currentTarget) closeAlertModal(); });
-
-// Enter key in auth fields
+ 
+// ─── Cerrar modales al hacer clic fuera ─────────────────────
+['auth-modal','refuel-modal','quick-refuel-modal','tank-empty-modal','alert-modal'].forEach(id => {
+  document.getElementById(id).addEventListener('click', e => {
+    if (e.target === e.currentTarget) document.getElementById(id).classList.remove('open');
+  });
+});
+ 
+// ─── Enter key en formularios ────────────────────────────────
 document.getElementById('auth-password').addEventListener('keydown', e => { if (e.key==='Enter') doAuth(); });
-document.getElementById('auth-email').addEventListener('keydown', e => { if (e.key==='Enter') doAuth(); });
-
+document.getElementById('auth-email').addEventListener('keydown',    e => { if (e.key==='Enter') doAuth(); });
+document.getElementById('qr-station').addEventListener('keydown',    e => { if (e.key==='Enter') document.getElementById('qr-price').focus(); });
+ 
 // ════════════════════════════════════════════════════════════
 //  INIT
 // ════════════════════════════════════════════════════════════
 initMap();
 loadProvincias();
 if (isMobile()) toggleSearch();
+ 
+// FIX: detectar redirect de verificación de email
+checkVerificationCallback();
 </script>
 </body>
 </html>
