@@ -1215,41 +1215,112 @@ const FUEL_MAP = {
   glp:        { key: 'Precio Gases licuados del petróleo', label: 'GLP', short: 'GLP' },
 };
 
-const BRAND_LOGOS = {
-  'REPSOL':     'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Repsol_logo.svg/320px-Repsol_logo.svg.png',
-  'CEPSA':      'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Logo_Cepsa.svg/320px-Logo_Cepsa.svg.png',
-  'BP':         'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/BP_Logo.svg/240px-BP_Logo.svg.png',
-  'SHELL':      'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Shell_logo.svg/240px-Shell_logo.svg.png',
-  'GALP':       'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Galp_logo.svg/320px-Galp_logo.svg.png',
-  'BALLENOIL':  'https://www.ballenoil.es/wp-content/uploads/2020/01/logo-ballenoil.png',
-  'CAMPSA':     'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Campsa_logo.svg/320px-Campsa_logo.svg.png',
-  'PETRONOR':   'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Petronor_logo.svg/320px-Petronor_logo.svg.png',
-  'CARREFOUR':  'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Carrefour_logo.svg/320px-Carrefour_logo.svg.png',
-  'AVIA':       'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/AVIA_International_logo.svg/320px-AVIA_International_logo.svg.png',
-  'MOEVE':      'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Logo_Cepsa.svg/320px-Logo_Cepsa.svg.png',
-  'ALCAMPO':    'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Alcampo_logo.svg/320px-Alcampo_logo.svg.png',
-  'TAMOIL':     'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Tamoil_logo.svg/320px-Tamoil_logo.svg.png',
-  'Q8':         'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Q8_logo.svg/240px-Q8_logo.svg.png',
-  'PLENOIL':    'https://www.plenoil.es/images/logo-plenoil.png',
-  'PETROPRIX':  'https://www.petroprix.com/wp-content/uploads/2019/04/logo-petroprix.png',
-  'EROSKI':     'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Eroski_logo.svg/320px-Eroski_logo.svg.png',
+// Inline SVG logos — sin dependencias externas
+const BRAND_SVGS = {
+  'REPSOL': `<svg viewBox="0 0 120 40" xmlns="http://www.w3.org/2000/svg" width="44" height="24">
+    <rect width="120" height="40" rx="4" fill="#FF6B00"/>
+    <text x="60" y="28" font-family="Arial Black,sans-serif" font-size="18" font-weight="900" fill="white" text-anchor="middle" letter-spacing="1">REPSOL</text>
+  </svg>`,
+
+  'CEPSA': `<svg viewBox="0 0 110 40" xmlns="http://www.w3.org/2000/svg" width="44" height="24">
+    <rect width="110" height="40" rx="4" fill="#004A97"/>
+    <text x="55" y="28" font-family="Arial Black,sans-serif" font-size="18" font-weight="900" fill="white" text-anchor="middle" letter-spacing="1">CEPSA</text>
+  </svg>`,
+
+  'MOEVE': `<svg viewBox="0 0 110 40" xmlns="http://www.w3.org/2000/svg" width="44" height="24">
+    <rect width="110" height="40" rx="4" fill="#004A97"/>
+    <text x="55" y="28" font-family="Arial Black,sans-serif" font-size="16" font-weight="900" fill="white" text-anchor="middle" letter-spacing="1">MOEVE</text>
+  </svg>`,
+
+  'BP': `<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" width="40" height="40">
+    <circle cx="30" cy="30" r="30" fill="#009B3A"/>
+    <circle cx="30" cy="30" r="22" fill="#FFCC00"/>
+    <circle cx="30" cy="30" r="14" fill="#009B3A"/>
+    <text x="30" y="36" font-family="Arial Black,sans-serif" font-size="13" font-weight="900" fill="white" text-anchor="middle">BP</text>
+  </svg>`,
+
+  'SHELL': `<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" width="40" height="40">
+    <circle cx="30" cy="30" r="30" fill="#FFCC00"/>
+    <path d="M30 8 L34 22 L48 22 L37 31 L41 45 L30 36 L19 45 L23 31 L12 22 L26 22 Z" fill="#E63312"/>
+    <circle cx="30" cy="30" r="8" fill="#FFCC00"/>
+  </svg>`,
+
+  'GALP': `<svg viewBox="0 0 100 40" xmlns="http://www.w3.org/2000/svg" width="44" height="24">
+    <rect width="100" height="40" rx="4" fill="#E30613"/>
+    <text x="50" y="28" font-family="Arial Black,sans-serif" font-size="20" font-weight="900" fill="white" text-anchor="middle" letter-spacing="1">GALP</text>
+  </svg>`,
+
+  'CAMPSA': `<svg viewBox="0 0 120 40" xmlns="http://www.w3.org/2000/svg" width="44" height="24">
+    <rect width="120" height="40" rx="4" fill="#E30613"/>
+    <text x="60" y="28" font-family="Arial Black,sans-serif" font-size="16" font-weight="900" fill="white" text-anchor="middle" letter-spacing="1">CAMPSA</text>
+  </svg>`,
+
+  'PETRONOR': `<svg viewBox="0 0 140 40" xmlns="http://www.w3.org/2000/svg" width="44" height="20">
+    <rect width="140" height="40" rx="4" fill="#E30613"/>
+    <text x="70" y="27" font-family="Arial Black,sans-serif" font-size="14" font-weight="900" fill="white" text-anchor="middle" letter-spacing="0.5">PETRONOR</text>
+  </svg>`,
+
+  'CARREFOUR': `<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" width="40" height="40">
+    <circle cx="30" cy="30" r="30" fill="white"/>
+    <path d="M15 30 L25 10 L35 10 L25 30 L35 50 L25 50 Z" fill="#E63312"/>
+    <path d="M45 30 L35 10 L45 10 L45 50 L35 50 Z" fill="#004A97"/>
+    <circle cx="30" cy="30" r="5" fill="white"/>
+  </svg>`,
+
+  'AVIA': `<svg viewBox="0 0 100 40" xmlns="http://www.w3.org/2000/svg" width="44" height="24">
+    <rect width="100" height="40" rx="4" fill="#E30613"/>
+    <text x="50" y="28" font-family="Arial Black,sans-serif" font-size="20" font-weight="900" fill="white" text-anchor="middle" letter-spacing="2">AVIA</text>
+  </svg>`,
+
+  'BALLENOIL': `<svg viewBox="0 0 140 40" xmlns="http://www.w3.org/2000/svg" width="44" height="20">
+    <rect width="140" height="40" rx="4" fill="#1A1A2E"/>
+    <text x="70" y="27" font-family="Arial Black,sans-serif" font-size="13" font-weight="900" fill="#00D4FF" text-anchor="middle" letter-spacing="0.5">BALLENOIL</text>
+  </svg>`,
+
+  'ALCAMPO': `<svg viewBox="0 0 130 40" xmlns="http://www.w3.org/2000/svg" width="44" height="22">
+    <rect width="130" height="40" rx="4" fill="#E30613"/>
+    <text x="65" y="27" font-family="Arial Black,sans-serif" font-size="14" font-weight="900" fill="white" text-anchor="middle" letter-spacing="0.5">ALCAMPO</text>
+  </svg>`,
+
+  'TAMOIL': `<svg viewBox="0 0 120 40" xmlns="http://www.w3.org/2000/svg" width="44" height="22">
+    <rect width="120" height="40" rx="4" fill="#E63312"/>
+    <text x="60" y="27" font-family="Arial Black,sans-serif" font-size="16" font-weight="900" fill="white" text-anchor="middle" letter-spacing="0.5">TAMOIL</text>
+  </svg>`,
+
+  'Q8': `<svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg" width="40" height="30">
+    <rect width="60" height="40" rx="4" fill="#004A97"/>
+    <text x="30" y="28" font-family="Arial Black,sans-serif" font-size="20" font-weight="900" fill="white" text-anchor="middle">Q8</text>
+  </svg>`,
+
+  'PLENOIL': `<svg viewBox="0 0 120 40" xmlns="http://www.w3.org/2000/svg" width="44" height="22">
+    <rect width="120" height="40" rx="4" fill="#FF6B00"/>
+    <text x="60" y="27" font-family="Arial Black,sans-serif" font-size="15" font-weight="900" fill="white" text-anchor="middle" letter-spacing="0.5">PLENOIL</text>
+  </svg>`,
+
+  'PETROPRIX': `<svg viewBox="0 0 140 40" xmlns="http://www.w3.org/2000/svg" width="44" height="20">
+    <rect width="140" height="40" rx="4" fill="#E30613"/>
+    <text x="70" y="27" font-family="Arial Black,sans-serif" font-size="13" font-weight="900" fill="white" text-anchor="middle" letter-spacing="0.5">PETROPRIX</text>
+  </svg>`,
+
+  'EROSKI': `<svg viewBox="0 0 120 40" xmlns="http://www.w3.org/2000/svg" width="44" height="22">
+    <rect width="120" height="40" rx="4" fill="#E30613"/>
+    <text x="60" y="27" font-family="Arial Black,sans-serif" font-size="16" font-weight="900" fill="white" text-anchor="middle" letter-spacing="0.5">EROSKI</text>
+  </svg>`,
 };
 
 function getBrandLogo(name) {
-  const fallback = '⛽';
-  if (!name) return `<span style="font-size:24px">${fallback}</span>`;
+  if (!name) return `<span style="font-size:24px">⛽</span>`;
   const upper = name.toUpperCase();
-  for (const [brand, url] of Object.entries(BRAND_LOGOS)) {
-    if (upper.includes(brand)) {
-      return `<img
-        src="${url}"
-        alt="${brand}"
-        style="width:40px;height:40px;object-fit:contain;border-radius:6px;"
-        onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
-      /><span style="font-size:24px;display:none">${fallback}</span>`;
-    }
+  for (const [brand, svg] of Object.entries(BRAND_SVGS)) {
+    if (upper.includes(brand)) return svg;
   }
-  return `<span style="font-size:24px">${fallback}</span>`;
+  // Fallback: iniciales con color generado del nombre
+  const initials = name.trim().substring(0, 2).toUpperCase();
+  const hue = [...name].reduce((acc, c) => acc + c.charCodeAt(0), 0) % 360;
+  return `<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" width="40" height="40">
+    <rect width="40" height="40" rx="8" fill="hsl(${hue},60%,40%)"/>
+    <text x="20" y="26" font-family="Arial Black,sans-serif" font-size="14" font-weight="900" fill="white" text-anchor="middle">${initials}</text>
+  </svg>`;
 }
 
 // ─── NAVIGATION URLS ──────────────────────────────────────
