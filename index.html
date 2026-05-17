@@ -126,6 +126,14 @@
     letter-spacing: 0.1px;
   }
 
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    z-index: 1;
+  }
+
   .header-badge {
     background: rgba(255,255,255,0.2);
     border: 1px solid rgba(255,255,255,0.25);
@@ -136,8 +144,6 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    position: relative;
-    z-index: 1;
   }
 
   .header-badge-dot {
@@ -160,6 +166,168 @@
     color: rgba(255,255,255,0.92);
     letter-spacing: 0.1px;
     white-space: nowrap;
+  }
+
+  /* ─── DONATE BUTTON (header) ─── */
+  .donate-header-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.30);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: rgba(255,255,255,0.92);
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 13px;
+    border-radius: 30px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+    white-space: nowrap;
+    letter-spacing: 0.1px;
+  }
+
+  .donate-header-btn:hover {
+    background: rgba(255,255,255,0.28);
+    border-color: rgba(255,255,255,0.50);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  }
+
+  .donate-header-btn:active { transform: translateY(0); }
+
+  .donate-header-icon {
+    font-size: 14px;
+    line-height: 1;
+    animation: heartbeat 2.8s ease-in-out infinite;
+  }
+
+  @keyframes heartbeat {
+    0%, 80%, 100% { transform: scale(1); }
+    88%  { transform: scale(1.22); }
+    94%  { transform: scale(0.94); }
+  }
+
+  /* ─── DONATE FLOATING (bottom-right) ─── */
+  .donate-float {
+    position: fixed;
+    bottom: 24px;
+    right: 20px;
+    z-index: 500;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+  }
+
+  /* Tooltip bubble — visible on hover of the pill */
+  .donate-tooltip {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 12px 14px;
+    box-shadow: var(--shadow-lg);
+    max-width: 200px;
+    opacity: 0;
+    transform: translateY(6px) scale(0.96);
+    pointer-events: none;
+    transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transform-origin: bottom right;
+  }
+
+  .donate-tooltip.open {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+  }
+
+  .donate-tooltip-title {
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .donate-tooltip-sub {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text4);
+    line-height: 1.5;
+    margin-bottom: 10px;
+  }
+
+  .donate-paypal-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    background: #0070BA;
+    color: white;
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 700;
+    padding: 9px 14px;
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    transition: all 0.18s;
+    letter-spacing: 0.2px;
+  }
+
+  .donate-paypal-btn:hover {
+    background: #005ea6;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(0,112,186,0.35);
+  }
+
+  .donate-paypal-logo {
+    font-size: 15px;
+    line-height: 1;
+  }
+
+  .donate-pill {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    color: var(--text3);
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 700;
+    padding: 9px 16px 9px 12px;
+    border-radius: 30px;
+    cursor: pointer;
+    box-shadow: var(--shadow-md);
+    transition: all 0.2s;
+    white-space: nowrap;
+    user-select: none;
+  }
+
+  .donate-pill:hover {
+    border-color: rgba(255,107,0,0.25);
+    color: var(--orange);
+    box-shadow: 0 4px 18px rgba(255,107,0,0.14);
+    transform: translateY(-1px);
+  }
+
+  .donate-pill.active {
+    border-color: var(--orange);
+    color: var(--orange);
+    background: var(--orange-pale);
+  }
+
+  .donate-pill-icon {
+    font-size: 16px;
+    line-height: 1;
+    animation: heartbeat 2.8s ease-in-out infinite;
   }
 
   /* ─── LAYOUT ─── */
@@ -276,9 +444,7 @@
     gap: 8px;
   }
 
-  .select-wrap {
-    position: relative;
-  }
+  .select-wrap { position: relative; }
 
   .select-icon {
     position: absolute;
@@ -312,10 +478,7 @@
     box-shadow: 0 0 0 3px rgba(255,107,0,0.10);
   }
 
-  .search-actions {
-    display: flex;
-    gap: 8px;
-  }
+  .search-actions { display: flex; gap: 8px; }
 
   .btn-primary {
     flex: 1;
@@ -355,11 +518,7 @@
     margin-bottom: 8px;
   }
 
-  .fuel-chips {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-  }
+  .fuel-chips { display: flex; gap: 6px; flex-wrap: wrap; }
 
   .fuel-chip {
     display: flex;
@@ -526,9 +685,7 @@
   .card-top-badge {
     display: none;
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
+    top: 0; left: 0; right: 0;
     background: linear-gradient(90deg, var(--orange), var(--orange-light));
     color: white;
     font-size: 11px;
@@ -549,9 +706,7 @@
     gap: 12px;
   }
 
-  .station-card:first-child .card-body {
-    padding-top: 36px;
-  }
+  .station-card:first-child .card-body { padding-top: 36px; }
 
   .station-logo-wrap {
     width: 48px;
@@ -589,21 +744,8 @@
     flex-wrap: wrap;
   }
 
-  .station-dist {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--orange);
-    display: flex;
-    align-items: center;
-    gap: 3px;
-  }
-
-  .station-city {
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--text4);
-  }
-
+  .station-dist { font-size: 12px; font-weight: 600; color: var(--orange); display: flex; align-items: center; gap: 3px; }
+  .station-city { font-size: 12px; font-weight: 500; color: var(--text4); }
   .meta-sep { color: var(--text5); font-size: 10px; }
 
   .station-address {
@@ -625,49 +767,21 @@
     gap: 4px;
   }
 
-  .price-main {
-    font-family: var(--font-display);
-    font-weight: 900;
-    line-height: 1;
-    letter-spacing: -0.5px;
-  }
-
+  .price-main { font-family: var(--font-display); font-weight: 900; line-height: 1; letter-spacing: -0.5px; }
   .price-main-val { font-size: 28px; }
   .price-main-unit { font-size: 12px; font-weight: 700; color: var(--text4); margin-left: 1px; }
-
   .price-cheap .price-main-val { color: var(--green); }
   .price-avg .price-main-val { color: var(--orange); }
   .price-expensive .price-main-val { color: var(--red); }
 
-  .saving-badge {
-    font-size: 11px;
-    font-weight: 700;
-    padding: 3px 9px;
-    border-radius: 20px;
-    font-family: var(--font-body);
-  }
-
+  .saving-badge { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 20px; font-family: var(--font-body); }
   .saving-badge.good { background: var(--green-pale); color: var(--green); }
   .saving-badge.zero { background: var(--surface3); color: var(--text5); }
 
-  .heart-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 16px;
-    color: var(--text5);
-    transition: all 0.15s;
-    padding: 2px;
-    line-height: 1;
-  }
+  .heart-btn { background: none; border: none; cursor: pointer; font-size: 16px; color: var(--text5); transition: all 0.15s; padding: 2px; line-height: 1; }
   .heart-btn:hover { color: var(--red); transform: scale(1.2); }
 
-  .card-footer {
-    padding: 0 14px 12px;
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-  }
+  .card-footer { padding: 0 14px 12px; display: flex; gap: 6px; flex-wrap: wrap; }
 
   .mini-price {
     font-size: 11px;
@@ -683,14 +797,7 @@
     font-family: var(--font-body);
   }
 
-  .mini-price-label {
-    font-size: 10px;
-    font-weight: 700;
-    color: var(--text4);
-    background: var(--bg2);
-    padding: 1px 5px;
-    border-radius: 4px;
-  }
+  .mini-price-label { font-size: 10px; font-weight: 700; color: var(--text4); background: var(--bg2); padding: 1px 5px; border-radius: 4px; }
 
   /* ─── MAP ─── */
   #map { width: 100%; height: 100%; }
@@ -720,182 +827,40 @@
     animation: dino-bob 3s ease-in-out infinite;
   }
 
-  .state-title {
-    font-family: var(--font-display);
-    font-size: 18px;
-    font-weight: 800;
-    color: var(--text);
-    line-height: 1.3;
-  }
+  .state-title { font-family: var(--font-display); font-size: 18px; font-weight: 800; color: var(--text); line-height: 1.3; }
+  .state-sub { font-size: 13px; font-weight: 500; color: var(--text4); line-height: 1.6; max-width: 240px; }
 
-  .state-sub {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text4);
-    line-height: 1.6;
-    max-width: 240px;
-  }
-
-  .spinner {
-    width: 36px;
-    height: 36px;
-    border: 3px solid var(--border);
-    border-top-color: var(--orange);
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-  }
-
+  .spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--orange); border-radius: 50%; animation: spin 0.7s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  .error-card {
-    background: var(--red-pale);
-    border: 1.5px solid rgba(255,59,48,0.15);
-    color: var(--red);
-    padding: 14px 18px;
-    border-radius: var(--radius-lg);
-    font-size: 13px;
-    font-weight: 600;
-    margin: 16px;
-    line-height: 1.5;
-    text-align: center;
-  }
+  .error-card { background: var(--red-pale); border: 1.5px solid rgba(255,59,48,0.15); color: var(--red); padding: 14px 18px; border-radius: var(--radius-lg); font-size: 13px; font-weight: 600; margin: 16px; line-height: 1.5; text-align: center; }
 
   /* ─── MAP POPUP ─── */
-  .leaflet-popup-content-wrapper {
-    background: white !important;
-    border-radius: 16px !important;
-    box-shadow: var(--shadow-lg) !important;
-    border: 1px solid var(--border) !important;
-    font-family: var(--font-body) !important;
-    color: var(--text) !important;
-    padding: 0 !important;
-    overflow: hidden !important;
-  }
-
-  .leaflet-popup-content {
-    margin: 0 !important;
-    width: auto !important;
-  }
-
+  .leaflet-popup-content-wrapper { background: white !important; border-radius: 16px !important; box-shadow: var(--shadow-lg) !important; border: 1px solid var(--border) !important; font-family: var(--font-body) !important; color: var(--text) !important; padding: 0 !important; overflow: hidden !important; }
+  .leaflet-popup-content { margin: 0 !important; width: auto !important; }
   .leaflet-popup-tip { background: white !important; }
 
-  .popup-inner {
-    padding: 14px 16px 0;
-    min-width: 220px;
-  }
-
-  .popup-name {
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: 15px;
-    color: var(--orange);
-    margin-bottom: 2px;
-  }
-
+  .popup-inner { padding: 14px 16px 0; min-width: 220px; }
+  .popup-name { font-family: var(--font-display); font-weight: 800; font-size: 15px; color: var(--orange); margin-bottom: 2px; }
   .popup-address { font-size: 11px; color: var(--text4); font-weight: 500; margin-bottom: 10px; }
-
   .popup-prices { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
-
-  .popup-price-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 12px;
-    font-weight: 600;
-    gap: 20px;
-    padding: 6px 10px;
-    background: var(--surface3);
-    border-radius: 8px;
-  }
-
+  .popup-price-row { display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 600; gap: 20px; padding: 6px 10px; background: var(--surface3); border-radius: 8px; }
   .popup-fuel-name { color: var(--text3); }
   .popup-fuel-price { color: var(--text); font-weight: 800; }
 
-  /* ─── NAV BUTTONS in popup ─── */
-  .popup-nav-section {
-    border-top: 1px solid var(--border2);
-    padding: 10px 16px 14px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
+  .popup-nav-section { border-top: 1px solid var(--border2); padding: 10px 16px 14px; display: flex; flex-direction: column; gap: 6px; }
+  .popup-nav-label { font-size: 10px; font-weight: 700; color: var(--text4); text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 2px; }
+  .popup-nav-btns { display: flex; gap: 6px; }
 
-  .popup-nav-label {
-    font-size: 10px;
-    font-weight: 700;
-    color: var(--text4);
-    text-transform: uppercase;
-    letter-spacing: 0.7px;
-    margin-bottom: 2px;
-  }
-
-  .popup-nav-btns {
-    display: flex;
-    gap: 6px;
-  }
-
-  .nav-btn {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    padding: 9px 6px;
-    border-radius: 10px;
-    border: 1.5px solid var(--border);
-    background: var(--surface3);
-    font-family: var(--font-body);
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--text2);
-    cursor: pointer;
-    text-decoration: none;
-    transition: all 0.16s;
-    white-space: nowrap;
-  }
-
-  .nav-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-sm);
-  }
-
-  .nav-btn.waze {
-    background: #FFFBE6;
-    border-color: #E6D200;
-    color: #856A00;
-  }
-  .nav-btn.waze:hover {
-    background: #33CCFF;
-    border-color: #33CCFF;
-    color: white;
-  }
-
-  .nav-btn.gmaps {
-    background: #EBF4FF;
-    border-color: #BDD7FF;
-    color: #1A56C9;
-  }
-  .nav-btn.gmaps:hover {
-    background: #1A73E8;
-    border-color: #1A73E8;
-    color: white;
-  }
-
-  .nav-btn.apple {
-    background: #F2F2F7;
-    border-color: #D1D1D6;
-    color: #3A3A3C;
-  }
-  .nav-btn.apple:hover {
-    background: #1C1C1E;
-    border-color: #1C1C1E;
-    color: white;
-  }
-
-  .nav-btn-icon {
-    font-size: 15px;
-    line-height: 1;
-  }
+  .nav-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 5px; padding: 9px 6px; border-radius: 10px; border: 1.5px solid var(--border); background: var(--surface3); font-family: var(--font-body); font-size: 11px; font-weight: 700; color: var(--text2); cursor: pointer; text-decoration: none; transition: all 0.16s; white-space: nowrap; }
+  .nav-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+  .nav-btn.waze { background: #FFFBE6; border-color: #E6D200; color: #856A00; }
+  .nav-btn.waze:hover { background: #33CCFF; border-color: #33CCFF; color: white; }
+  .nav-btn.gmaps { background: #EBF4FF; border-color: #BDD7FF; color: #1A56C9; }
+  .nav-btn.gmaps:hover { background: #1A73E8; border-color: #1A73E8; color: white; }
+  .nav-btn.apple { background: #F2F2F7; border-color: #D1D1D6; color: #3A3A3C; }
+  .nav-btn.apple:hover { background: #1C1C1E; border-color: #1C1C1E; color: white; }
+  .nav-btn-icon { font-size: 15px; line-height: 1; }
 
   /* ─── TAB BAR ─── */
   .tab-bar { display: none; }
@@ -904,113 +869,43 @@
   @media (max-width: 768px) {
     body { overflow: hidden; }
 
-    header {
-      height: 56px;
-      padding: 0 16px;
-    }
-
+    header { height: 56px; padding: 0 16px; }
     .logo { font-size: 22px; }
     .logo-icon { width: 34px; height: 34px; font-size: 19px; }
     .logo-sub { display: none; }
-
     .header-badge-text { display: none; }
+    .donate-header-btn .donate-header-label { display: none; }
+    .donate-header-btn { padding: 6px 10px; }
 
-    .app-layout {
-      display: block;
-      height: calc(100dvh - 56px - 60px);
-      position: relative;
-    }
+    .app-layout { display: block; height: calc(100dvh - 56px - 60px); position: relative; }
 
-    .sidebar {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      display: none;
-      flex-direction: column;
-      overflow: hidden;
-      z-index: 10;
-    }
-
+    .sidebar { position: absolute; inset: 0; width: 100%; height: 100%; display: none; flex-direction: column; overflow: hidden; z-index: 10; }
     .sidebar.active { display: flex; }
 
-    #map-container {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      display: none;
-      z-index: 10;
-    }
-
+    #map-container { position: absolute; inset: 0; width: 100%; height: 100%; display: none; z-index: 10; }
     #map-container.active { display: block; }
 
     .search-panel { padding: 12px; }
-
     .selects-row { grid-template-columns: 1fr; gap: 7px; }
 
-    .tab-bar {
-      display: flex;
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 60px;
-      background: rgba(255,255,255,0.92);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border-top: 1px solid var(--border);
-      z-index: 200;
-    }
+    .tab-bar { display: flex; position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: rgba(255,255,255,0.92); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-top: 1px solid var(--border); z-index: 200; }
 
-    .tab-btn {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 3px;
-      background: none;
-      border: none;
-      cursor: pointer;
-      color: var(--text4);
-      font-family: var(--font-body);
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.2px;
-      transition: color 0.18s;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    .tab-icon {
-      font-size: 22px;
-      line-height: 1;
-    }
-
+    .tab-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; background: none; border: none; cursor: pointer; color: var(--text4); font-family: var(--font-body); font-size: 10px; font-weight: 700; letter-spacing: 0.2px; transition: color 0.18s; -webkit-tap-highlight-color: transparent; }
+    .tab-icon { font-size: 22px; line-height: 1; }
     .tab-btn.active { color: var(--orange); }
 
     .search-body.collapsed { max-height: 0; opacity: 0; }
     .search-body:not(.collapsed) { max-height: 500px; opacity: 1; }
 
-    #list-container {
-      flex: 1;
-      min-height: 0;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
+    #list-container { flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; }
+    .stations-list { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
 
-    .stations-list {
-      flex: 1;
-      min-height: 0;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-      overscroll-behavior: contain;
-    }
-
-    /* Wider popup on mobile */
     .popup-nav-btns { gap: 5px; }
     .nav-btn { font-size: 10px; padding: 8px 4px; }
+
+    /* Float button above tab bar on mobile */
+    .donate-float { bottom: 72px; right: 14px; }
+    .donate-pill { font-size: 11px; padding: 8px 13px 8px 10px; }
   }
 </style>
 </head>
@@ -1024,17 +919,22 @@
       <span class="logo-sub">El zumo más barato cerca de ti 🌿</span>
     </div>
   </div>
-  <div class="header-badge">
-    <div class="header-badge-dot"></div>
-    <span class="header-badge-text">Datos en tiempo real</span>
+  <div class="header-right">
+    <div class="header-badge">
+      <div class="header-badge-dot"></div>
+      <span class="header-badge-text">Datos en tiempo real</span>
+    </div>
+    <!-- Donate button in header — subtle, always visible -->
+    <a class="donate-header-btn" href="https://www.paypal.me/DinoCheck360" target="_blank" rel="noopener" title="Apoya DinoCheck">
+      <span class="donate-header-icon">🫶</span>
+      <span class="donate-header-label">Apoyar</span>
+    </a>
   </div>
 </header>
 
 <div class="app-layout">
 
   <aside class="sidebar">
-
-    <!-- SEARCH PANEL -->
     <div class="search-panel">
       <div class="search-card">
         <div class="search-card-header">
@@ -1047,7 +947,6 @@
             <span>◎</span> Mi ubicación
           </button>
         </div>
-
         <div class="search-body" id="search-body">
           <div class="search-body-inner">
             <div class="selects-row">
@@ -1074,49 +973,24 @@
       </div>
     </div>
 
-    <!-- FUEL CHIPS -->
     <div class="fuel-section">
       <div class="fuel-label">Tipo de combustible</div>
       <div class="fuel-chips" id="fuel-filter">
-        <div class="fuel-chip active" data-fuel="gasolina95" onclick="toggleFuel(this)">
-          <span class="fuel-chip-dot"></span> G-95
-        </div>
-        <div class="fuel-chip" data-fuel="gasolina98" onclick="toggleFuel(this)">
-          <span class="fuel-chip-dot" style="background:#FF9F0A"></span> G-98
-        </div>
-        <div class="fuel-chip" data-fuel="gasoleoA" onclick="toggleFuel(this)">
-          <span class="fuel-chip-dot" style="background:#636366"></span> Gasóleo A
-        </div>
-        <div class="fuel-chip" data-fuel="gasoleoB" onclick="toggleFuel(this)">
-          <span class="fuel-chip-dot" style="background:#8E8E93"></span> Gasóleo B
-        </div>
-        <div class="fuel-chip" data-fuel="glp" onclick="toggleFuel(this)">
-          <span class="fuel-chip-dot" style="background:#007AFF"></span> GLP
-        </div>
+        <div class="fuel-chip active" data-fuel="gasolina95" onclick="toggleFuel(this)"><span class="fuel-chip-dot"></span> G-95</div>
+        <div class="fuel-chip" data-fuel="gasolina98" onclick="toggleFuel(this)"><span class="fuel-chip-dot" style="background:#FF9F0A"></span> G-98</div>
+        <div class="fuel-chip" data-fuel="gasoleoA" onclick="toggleFuel(this)"><span class="fuel-chip-dot" style="background:#636366"></span> Gasóleo A</div>
+        <div class="fuel-chip" data-fuel="gasoleoB" onclick="toggleFuel(this)"><span class="fuel-chip-dot" style="background:#8E8E93"></span> Gasóleo B</div>
+        <div class="fuel-chip" data-fuel="glp" onclick="toggleFuel(this)"><span class="fuel-chip-dot" style="background:#007AFF"></span> GLP</div>
       </div>
     </div>
 
-    <!-- STATS BAR -->
     <div id="stats-bar" class="stats-bar">
-      <div class="stat-item">
-        <div class="stat-value" id="stat-total">—</div>
-        <div class="stat-label">Estaciones</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-value" id="stat-min">—</div>
-        <div class="stat-label">Mín €/L</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-value" id="stat-avg">—</div>
-        <div class="stat-label">Media €/L</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-value" id="stat-max">—</div>
-        <div class="stat-label">Máx €/L</div>
-      </div>
+      <div class="stat-item"><div class="stat-value" id="stat-total">—</div><div class="stat-label">Estaciones</div></div>
+      <div class="stat-item"><div class="stat-value" id="stat-min">—</div><div class="stat-label">Mín €/L</div></div>
+      <div class="stat-item"><div class="stat-value" id="stat-avg">—</div><div class="stat-label">Media €/L</div></div>
+      <div class="stat-item"><div class="stat-value" id="stat-max">—</div><div class="stat-label">Máx €/L</div></div>
     </div>
 
-    <!-- SORT ROW -->
     <div class="sort-row" id="sort-row">
       <span class="sort-label">Ordenar</span>
       <div class="sort-btns">
@@ -1125,7 +999,6 @@
       </div>
     </div>
 
-    <!-- LIST CONTAINER -->
     <div id="list-container">
       <div class="state-panel">
         <div class="state-icon-wrap">🦕</div>
@@ -1133,7 +1006,6 @@
         <div class="state-sub">Busca por municipio o usa tu ubicación para encontrar el zumo más barato cerca de ti.</div>
       </div>
     </div>
-
   </aside>
 
   <div id="map-container">
@@ -1142,18 +1014,50 @@
 
 </div>
 
+<!-- ─── DONATE FLOATING BUTTON ─── -->
+<div class="donate-float" id="donate-float">
+  <div class="donate-tooltip" id="donate-tooltip">
+    <div class="donate-tooltip-title">🦕 ¡Apoya DinoCheck!</div>
+    <div class="donate-tooltip-sub">Este proyecto es gratuito y sin anuncios. Si te ahorra dinero, ¿nos ayudas a mantenerlo?</div>
+    <a class="donate-paypal-btn" href="https://www.paypal.me/DinoCheck360" target="_blank" rel="noopener" onclick="closeTooltip()">
+      <span class="donate-paypal-logo">💙</span> Donar con PayPal
+    </a>
+  </div>
+  <div class="donate-pill" id="donate-pill" onclick="toggleTooltip()">
+    <span class="donate-pill-icon">🫶</span>
+    Apoyar el proyecto
+  </div>
+</div>
+
 <nav class="tab-bar">
-  <button class="tab-btn active" id="tab-lista" onclick="switchTab('lista')">
-    <span class="tab-icon">☰</span>
-    Lista
-  </button>
-  <button class="tab-btn" id="tab-mapa" onclick="switchTab('mapa')">
-    <span class="tab-icon">🗺️</span>
-    Mapa
-  </button>
+  <button class="tab-btn active" id="tab-lista" onclick="switchTab('lista')"><span class="tab-icon">☰</span>Lista</button>
+  <button class="tab-btn" id="tab-mapa" onclick="switchTab('mapa')"><span class="tab-icon">🗺️</span>Mapa</button>
 </nav>
 
 <script>
+// ─── DONATE TOOLTIP ───────────────────────────────────────
+let tooltipOpen = false;
+
+function toggleTooltip() {
+  tooltipOpen = !tooltipOpen;
+  const tooltip = document.getElementById('donate-tooltip');
+  const pill = document.getElementById('donate-pill');
+  tooltip.classList.toggle('open', tooltipOpen);
+  pill.classList.toggle('active', tooltipOpen);
+}
+
+function closeTooltip() {
+  tooltipOpen = false;
+  document.getElementById('donate-tooltip').classList.remove('open');
+  document.getElementById('donate-pill').classList.remove('active');
+}
+
+// Close tooltip when clicking outside
+document.addEventListener('click', function(e) {
+  const float = document.getElementById('donate-float');
+  if (tooltipOpen && !float.contains(e.target)) closeTooltip();
+});
+
 // ─── MOBILE TABS ──────────────────────────────────────────
 let currentTab = 'lista';
 
@@ -1215,97 +1119,24 @@ const FUEL_MAP = {
   glp:        { key: 'Precio Gases licuados del petróleo', label: 'GLP', short: 'GLP' },
 };
 
-// Inline SVG logos — sin dependencias externas
 const BRAND_SVGS = {
-  'REPSOL': `<svg viewBox="0 0 120 40" xmlns="http://www.w3.org/2000/svg" width="44" height="24">
-    <rect width="120" height="40" rx="4" fill="#FF6B00"/>
-    <text x="60" y="28" font-family="Arial Black,sans-serif" font-size="18" font-weight="900" fill="white" text-anchor="middle" letter-spacing="1">REPSOL</text>
-  </svg>`,
-
-  'CEPSA': `<svg viewBox="0 0 110 40" xmlns="http://www.w3.org/2000/svg" width="44" height="24">
-    <rect width="110" height="40" rx="4" fill="#004A97"/>
-    <text x="55" y="28" font-family="Arial Black,sans-serif" font-size="18" font-weight="900" fill="white" text-anchor="middle" letter-spacing="1">CEPSA</text>
-  </svg>`,
-
-  'MOEVE': `<svg viewBox="0 0 110 40" xmlns="http://www.w3.org/2000/svg" width="44" height="24">
-    <rect width="110" height="40" rx="4" fill="#004A97"/>
-    <text x="55" y="28" font-family="Arial Black,sans-serif" font-size="16" font-weight="900" fill="white" text-anchor="middle" letter-spacing="1">MOEVE</text>
-  </svg>`,
-
-  'BP': `<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" width="40" height="40">
-    <circle cx="30" cy="30" r="30" fill="#009B3A"/>
-    <circle cx="30" cy="30" r="22" fill="#FFCC00"/>
-    <circle cx="30" cy="30" r="14" fill="#009B3A"/>
-    <text x="30" y="36" font-family="Arial Black,sans-serif" font-size="13" font-weight="900" fill="white" text-anchor="middle">BP</text>
-  </svg>`,
-
-  'SHELL': `<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" width="40" height="40">
-    <circle cx="30" cy="30" r="30" fill="#FFCC00"/>
-    <path d="M30 8 L34 22 L48 22 L37 31 L41 45 L30 36 L19 45 L23 31 L12 22 L26 22 Z" fill="#E63312"/>
-    <circle cx="30" cy="30" r="8" fill="#FFCC00"/>
-  </svg>`,
-
-  'GALP': `<svg viewBox="0 0 100 40" xmlns="http://www.w3.org/2000/svg" width="44" height="24">
-    <rect width="100" height="40" rx="4" fill="#E30613"/>
-    <text x="50" y="28" font-family="Arial Black,sans-serif" font-size="20" font-weight="900" fill="white" text-anchor="middle" letter-spacing="1">GALP</text>
-  </svg>`,
-
-  'CAMPSA': `<svg viewBox="0 0 120 40" xmlns="http://www.w3.org/2000/svg" width="44" height="24">
-    <rect width="120" height="40" rx="4" fill="#E30613"/>
-    <text x="60" y="28" font-family="Arial Black,sans-serif" font-size="16" font-weight="900" fill="white" text-anchor="middle" letter-spacing="1">CAMPSA</text>
-  </svg>`,
-
-  'PETRONOR': `<svg viewBox="0 0 140 40" xmlns="http://www.w3.org/2000/svg" width="44" height="20">
-    <rect width="140" height="40" rx="4" fill="#E30613"/>
-    <text x="70" y="27" font-family="Arial Black,sans-serif" font-size="14" font-weight="900" fill="white" text-anchor="middle" letter-spacing="0.5">PETRONOR</text>
-  </svg>`,
-
-  'CARREFOUR': `<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" width="40" height="40">
-    <circle cx="30" cy="30" r="30" fill="white"/>
-    <path d="M15 30 L25 10 L35 10 L25 30 L35 50 L25 50 Z" fill="#E63312"/>
-    <path d="M45 30 L35 10 L45 10 L45 50 L35 50 Z" fill="#004A97"/>
-    <circle cx="30" cy="30" r="5" fill="white"/>
-  </svg>`,
-
-  'AVIA': `<svg viewBox="0 0 100 40" xmlns="http://www.w3.org/2000/svg" width="44" height="24">
-    <rect width="100" height="40" rx="4" fill="#E30613"/>
-    <text x="50" y="28" font-family="Arial Black,sans-serif" font-size="20" font-weight="900" fill="white" text-anchor="middle" letter-spacing="2">AVIA</text>
-  </svg>`,
-
-  'BALLENOIL': `<svg viewBox="0 0 140 40" xmlns="http://www.w3.org/2000/svg" width="44" height="20">
-    <rect width="140" height="40" rx="4" fill="#1A1A2E"/>
-    <text x="70" y="27" font-family="Arial Black,sans-serif" font-size="13" font-weight="900" fill="#00D4FF" text-anchor="middle" letter-spacing="0.5">BALLENOIL</text>
-  </svg>`,
-
-  'ALCAMPO': `<svg viewBox="0 0 130 40" xmlns="http://www.w3.org/2000/svg" width="44" height="22">
-    <rect width="130" height="40" rx="4" fill="#E30613"/>
-    <text x="65" y="27" font-family="Arial Black,sans-serif" font-size="14" font-weight="900" fill="white" text-anchor="middle" letter-spacing="0.5">ALCAMPO</text>
-  </svg>`,
-
-  'TAMOIL': `<svg viewBox="0 0 120 40" xmlns="http://www.w3.org/2000/svg" width="44" height="22">
-    <rect width="120" height="40" rx="4" fill="#E63312"/>
-    <text x="60" y="27" font-family="Arial Black,sans-serif" font-size="16" font-weight="900" fill="white" text-anchor="middle" letter-spacing="0.5">TAMOIL</text>
-  </svg>`,
-
-  'Q8': `<svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg" width="40" height="30">
-    <rect width="60" height="40" rx="4" fill="#004A97"/>
-    <text x="30" y="28" font-family="Arial Black,sans-serif" font-size="20" font-weight="900" fill="white" text-anchor="middle">Q8</text>
-  </svg>`,
-
-  'PLENOIL': `<svg viewBox="0 0 120 40" xmlns="http://www.w3.org/2000/svg" width="44" height="22">
-    <rect width="120" height="40" rx="4" fill="#FF6B00"/>
-    <text x="60" y="27" font-family="Arial Black,sans-serif" font-size="15" font-weight="900" fill="white" text-anchor="middle" letter-spacing="0.5">PLENOIL</text>
-  </svg>`,
-
-  'PETROPRIX': `<svg viewBox="0 0 140 40" xmlns="http://www.w3.org/2000/svg" width="44" height="20">
-    <rect width="140" height="40" rx="4" fill="#E30613"/>
-    <text x="70" y="27" font-family="Arial Black,sans-serif" font-size="13" font-weight="900" fill="white" text-anchor="middle" letter-spacing="0.5">PETROPRIX</text>
-  </svg>`,
-
-  'EROSKI': `<svg viewBox="0 0 120 40" xmlns="http://www.w3.org/2000/svg" width="44" height="22">
-    <rect width="120" height="40" rx="4" fill="#E30613"/>
-    <text x="60" y="27" font-family="Arial Black,sans-serif" font-size="16" font-weight="900" fill="white" text-anchor="middle" letter-spacing="0.5">EROSKI</text>
-  </svg>`,
+  'REPSOL': `<svg viewBox="0 0 120 40" xmlns="http://www.w3.org/2000/svg" width="44" height="24"><rect width="120" height="40" rx="4" fill="#FF6B00"/><text x="60" y="28" font-family="Arial Black,sans-serif" font-size="18" font-weight="900" fill="white" text-anchor="middle" letter-spacing="1">REPSOL</text></svg>`,
+  'CEPSA': `<svg viewBox="0 0 110 40" xmlns="http://www.w3.org/2000/svg" width="44" height="24"><rect width="110" height="40" rx="4" fill="#004A97"/><text x="55" y="28" font-family="Arial Black,sans-serif" font-size="18" font-weight="900" fill="white" text-anchor="middle" letter-spacing="1">CEPSA</text></svg>`,
+  'MOEVE': `<svg viewBox="0 0 110 40" xmlns="http://www.w3.org/2000/svg" width="44" height="24"><rect width="110" height="40" rx="4" fill="#004A97"/><text x="55" y="28" font-family="Arial Black,sans-serif" font-size="16" font-weight="900" fill="white" text-anchor="middle" letter-spacing="1">MOEVE</text></svg>`,
+  'BP': `<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" width="40" height="40"><circle cx="30" cy="30" r="30" fill="#009B3A"/><circle cx="30" cy="30" r="22" fill="#FFCC00"/><circle cx="30" cy="30" r="14" fill="#009B3A"/><text x="30" y="36" font-family="Arial Black,sans-serif" font-size="13" font-weight="900" fill="white" text-anchor="middle">BP</text></svg>`,
+  'SHELL': `<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" width="40" height="40"><circle cx="30" cy="30" r="30" fill="#FFCC00"/><path d="M30 8 L34 22 L48 22 L37 31 L41 45 L30 36 L19 45 L23 31 L12 22 L26 22 Z" fill="#E63312"/><circle cx="30" cy="30" r="8" fill="#FFCC00"/></svg>`,
+  'GALP': `<svg viewBox="0 0 100 40" xmlns="http://www.w3.org/2000/svg" width="44" height="24"><rect width="100" height="40" rx="4" fill="#E30613"/><text x="50" y="28" font-family="Arial Black,sans-serif" font-size="20" font-weight="900" fill="white" text-anchor="middle" letter-spacing="1">GALP</text></svg>`,
+  'CAMPSA': `<svg viewBox="0 0 120 40" xmlns="http://www.w3.org/2000/svg" width="44" height="24"><rect width="120" height="40" rx="4" fill="#E30613"/><text x="60" y="28" font-family="Arial Black,sans-serif" font-size="16" font-weight="900" fill="white" text-anchor="middle" letter-spacing="1">CAMPSA</text></svg>`,
+  'PETRONOR': `<svg viewBox="0 0 140 40" xmlns="http://www.w3.org/2000/svg" width="44" height="20"><rect width="140" height="40" rx="4" fill="#E30613"/><text x="70" y="27" font-family="Arial Black,sans-serif" font-size="14" font-weight="900" fill="white" text-anchor="middle" letter-spacing="0.5">PETRONOR</text></svg>`,
+  'CARREFOUR': `<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" width="40" height="40"><circle cx="30" cy="30" r="30" fill="white"/><path d="M15 30 L25 10 L35 10 L25 30 L35 50 L25 50 Z" fill="#E63312"/><path d="M45 30 L35 10 L45 10 L45 50 L35 50 Z" fill="#004A97"/><circle cx="30" cy="30" r="5" fill="white"/></svg>`,
+  'AVIA': `<svg viewBox="0 0 100 40" xmlns="http://www.w3.org/2000/svg" width="44" height="24"><rect width="100" height="40" rx="4" fill="#E30613"/><text x="50" y="28" font-family="Arial Black,sans-serif" font-size="20" font-weight="900" fill="white" text-anchor="middle" letter-spacing="2">AVIA</text></svg>`,
+  'BALLENOIL': `<svg viewBox="0 0 140 40" xmlns="http://www.w3.org/2000/svg" width="44" height="20"><rect width="140" height="40" rx="4" fill="#1A1A2E"/><text x="70" y="27" font-family="Arial Black,sans-serif" font-size="13" font-weight="900" fill="#00D4FF" text-anchor="middle" letter-spacing="0.5">BALLENOIL</text></svg>`,
+  'ALCAMPO': `<svg viewBox="0 0 130 40" xmlns="http://www.w3.org/2000/svg" width="44" height="22"><rect width="130" height="40" rx="4" fill="#E30613"/><text x="65" y="27" font-family="Arial Black,sans-serif" font-size="14" font-weight="900" fill="white" text-anchor="middle" letter-spacing="0.5">ALCAMPO</text></svg>`,
+  'TAMOIL': `<svg viewBox="0 0 120 40" xmlns="http://www.w3.org/2000/svg" width="44" height="22"><rect width="120" height="40" rx="4" fill="#E63312"/><text x="60" y="27" font-family="Arial Black,sans-serif" font-size="16" font-weight="900" fill="white" text-anchor="middle" letter-spacing="0.5">TAMOIL</text></svg>`,
+  'Q8': `<svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg" width="40" height="30"><rect width="60" height="40" rx="4" fill="#004A97"/><text x="30" y="28" font-family="Arial Black,sans-serif" font-size="20" font-weight="900" fill="white" text-anchor="middle">Q8</text></svg>`,
+  'PLENOIL': `<svg viewBox="0 0 120 40" xmlns="http://www.w3.org/2000/svg" width="44" height="22"><rect width="120" height="40" rx="4" fill="#FF6B00"/><text x="60" y="27" font-family="Arial Black,sans-serif" font-size="15" font-weight="900" fill="white" text-anchor="middle" letter-spacing="0.5">PLENOIL</text></svg>`,
+  'PETROPRIX': `<svg viewBox="0 0 140 40" xmlns="http://www.w3.org/2000/svg" width="44" height="20"><rect width="140" height="40" rx="4" fill="#E30613"/><text x="70" y="27" font-family="Arial Black,sans-serif" font-size="13" font-weight="900" fill="white" text-anchor="middle" letter-spacing="0.5">PETROPRIX</text></svg>`,
+  'EROSKI': `<svg viewBox="0 0 120 40" xmlns="http://www.w3.org/2000/svg" width="44" height="22"><rect width="120" height="40" rx="4" fill="#E30613"/><text x="60" y="27" font-family="Arial Black,sans-serif" font-size="16" font-weight="900" fill="white" text-anchor="middle" letter-spacing="0.5">EROSKI</text></svg>`,
 };
 
 function getBrandLogo(name) {
@@ -1314,16 +1145,11 @@ function getBrandLogo(name) {
   for (const [brand, svg] of Object.entries(BRAND_SVGS)) {
     if (upper.includes(brand)) return svg;
   }
-  // Fallback: iniciales con color generado del nombre
   const initials = name.trim().substring(0, 2).toUpperCase();
   const hue = [...name].reduce((acc, c) => acc + c.charCodeAt(0), 0) % 360;
-  return `<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" width="40" height="40">
-    <rect width="40" height="40" rx="8" fill="hsl(${hue},60%,40%)"/>
-    <text x="20" y="26" font-family="Arial Black,sans-serif" font-size="14" font-weight="900" fill="white" text-anchor="middle">${initials}</text>
-  </svg>`;
+  return `<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" width="40" height="40"><rect width="40" height="40" rx="8" fill="hsl(${hue},60%,40%)"/><text x="20" y="26" font-family="Arial Black,sans-serif" font-size="14" font-weight="900" fill="white" text-anchor="middle">${initials}</text></svg>`;
 }
 
-// ─── NAVIGATION URLS ──────────────────────────────────────
 function buildNavUrls(lat, lng, name) {
   const encodedName = encodeURIComponent(name || 'Gasolinera');
   return {
@@ -1340,54 +1166,29 @@ function buildNavButtonsHTML(lat, lng, name) {
     <div class="popup-nav-section">
       <div class="popup-nav-label">🧭 Cómo llegar</div>
       <div class="popup-nav-btns">
-        <a class="nav-btn waze" href="${urls.waze}" target="_blank" rel="noopener">
-          <span class="nav-btn-icon">🚗</span> Waze
-        </a>
-        <a class="nav-btn gmaps" href="${urls.gmaps}" target="_blank" rel="noopener">
-          <span class="nav-btn-icon">🗺️</span> Google
-        </a>
-        <a class="nav-btn apple" href="${urls.apple}" target="_blank" rel="noopener">
-          <span class="nav-btn-icon">🍎</span> Apple
-        </a>
+        <a class="nav-btn waze" href="${urls.waze}" target="_blank" rel="noopener"><span class="nav-btn-icon">🚗</span> Waze</a>
+        <a class="nav-btn gmaps" href="${urls.gmaps}" target="_blank" rel="noopener"><span class="nav-btn-icon">🗺️</span> Google</a>
+        <a class="nav-btn apple" href="${urls.apple}" target="_blank" rel="noopener"><span class="nav-btn-icon">🍎</span> Apple</a>
       </div>
-    </div>
-  `;
+    </div>`;
 }
 
-// ─── MAP INIT ─────────────────────────────────────────────
 function initMap() {
   mapInstance = L.map('map', { zoomControl: true }).setView([40.416, -3.703], 6);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap',
-    maxZoom: 19,
-  }).addTo(mapInstance);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap', maxZoom: 19 }).addTo(mapInstance);
   markersLayer = L.layerGroup().addTo(mapInstance);
 }
 
 function makeIcon(color) {
-  const colors = {
-    cheap: '#34C759',
-    avg: '#FF6B00',
-    expensive: '#FF3B30',
-    default: '#8E8E93'
-  };
+  const colors = { cheap: '#34C759', avg: '#FF6B00', expensive: '#FF3B30', default: '#8E8E93' };
   const c = colors[color] || colors.default;
   return L.divIcon({
     className: '',
-    html: `<div style="
-      width:32px;height:32px;border-radius:50% 50% 50% 0;
-      transform:rotate(-45deg);
-      background:${c};
-      border:3px solid white;
-      box-shadow:0 4px 12px rgba(0,0,0,0.22);
-    "></div>`,
-    iconSize: [32, 32],
-    iconAnchor: [16, 32],
-    popupAnchor: [0, -34],
+    html: `<div style="width:32px;height:32px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:${c};border:3px solid white;box-shadow:0 4px 12px rgba(0,0,0,0.22);"></div>`,
+    iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -34],
   });
 }
 
-// ─── LOAD PROVINCIAS ──────────────────────────────────────
 async function loadProvincias() {
   try {
     const res = await fetch(`${API}/Listados/Provincias/`);
@@ -1441,7 +1242,6 @@ async function usarMiUbicacion() {
   navigator.geolocation.getCurrentPosition(async pos => {
     userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
     mapInstance.setView([userPos.lat, userPos.lng], 13);
-
     showLoading('Buscando gasolineras cercanas…');
     try {
       const allRes = await fetch(`${API}/EstacionesTerrestres/`);
@@ -1455,9 +1255,7 @@ async function usarMiUbicacion() {
       });
       processStations(nearby);
       if (window.innerWidth <= 768) { if (searchOpen) toggleSearch(); switchTab('lista'); }
-    } catch(e) {
-      showError('No se pudieron cargar gasolineras cercanas. Prueba a buscar por municipio.');
-    }
+    } catch(e) { showError('No se pudieron cargar gasolineras cercanas. Prueba a buscar por municipio.'); }
   }, () => { showError('No se pudo obtener tu ubicación. Activa la geolocalización 📍'); });
 }
 
@@ -1481,7 +1279,6 @@ function processStations(raw) {
     });
     return { ...s, lat, lng, dist, prices };
   });
-  // Always reset to price order on every new search
   sortMode = 'precio';
   document.querySelectorAll('.sort-btn').forEach((b, idx) => b.classList.toggle('active', idx === 0));
   renderAll();
@@ -1524,10 +1321,8 @@ function renderList() {
     container.innerHTML = `<div class="state-panel"><div class="state-icon-wrap">🦖</div><div class="state-title">Sin resultados</div><div class="state-sub">No hay datos de ${FUEL_MAP[activeFuel].label} en esta zona. ¡Prueba otro combustible!</div></div>`;
     return;
   }
-
   const prices = filteredStations.map(s => s.prices[activeFuel]).filter(Boolean);
   const minP = Math.min(...prices), maxP = Math.max(...prices);
-
   container.innerHTML = '';
   const list = document.createElement('div');
   list.className = 'stations-list';
@@ -1538,36 +1333,23 @@ function renderList() {
     const saving = (price - minP).toFixed(3);
     const isMin = price === minP;
     const isNearest = i === 0 && sortMode === 'distancia';
-
-    const topBadgeText = sortMode === 'distancia'
-      ? '📍 Más cercana a ti'
-      : '🏆 Más barata de la zona';
-
+    const topBadgeText = sortMode === 'distancia' ? '📍 Más cercana a ti' : '🏆 Más barata de la zona';
     const savingBadge = isMin
       ? '<div class="saving-badge good">🏆 Más barata</div>'
       : sortMode === 'distancia' && isNearest
         ? '<div class="saving-badge good">📍 Más cercana</div>'
         : `<div class="saving-badge zero">Ahorra ${saving}€</div>`;
-
     const otherPrices = Object.entries(FUEL_MAP)
       .filter(([k]) => k !== activeFuel && s.prices[k])
-      .map(([k, v]) => `
-        <div class="mini-price">
-          <span class="mini-price-label">${v.short}</span>
-          ${s.prices[k]?.toFixed(3)} €
-        </div>`)
+      .map(([k, v]) => `<div class="mini-price"><span class="mini-price-label">${v.short}</span>${s.prices[k]?.toFixed(3)} €</div>`)
       .join('');
-
     const distStr = s.dist !== null ? `${s.dist.toFixed(1)} km` : '';
     const brandLogo = getBrandLogo(s.Rótulo);
-
     const card = document.createElement('div');
     card.className = 'station-card';
     card.id = `card-${i}`;
     card.innerHTML = `
-      <div class="card-top-badge">
-        ${topBadgeText}
-      </div>
+      <div class="card-top-badge">${topBadgeText}</div>
       <div class="card-body">
         <div class="station-logo-wrap">${brandLogo}</div>
         <div class="card-info">
@@ -1580,9 +1362,7 @@ function renderList() {
         </div>
         <div class="card-right">
           <div class="price-${cls}">
-            <div class="price-main">
-              <span class="price-main-val">${price?.toFixed(3)}</span><span class="price-main-unit"> €/L</span>
-            </div>
+            <div class="price-main"><span class="price-main-val">${price?.toFixed(3)}</span><span class="price-main-unit"> €/L</span></div>
           </div>
           ${savingBadge}
           <button class="heart-btn" onclick="event.stopPropagation()">♡</button>
@@ -1593,7 +1373,6 @@ function renderList() {
     card.onclick = () => selectStation(i);
     list.appendChild(card);
   });
-
   container.appendChild(list);
 }
 
@@ -1604,24 +1383,18 @@ function renderMarkers() {
       icon: L.divIcon({ className: '', html: '<div style="width:18px;height:18px;border-radius:50%;background:#007AFF;border:3px solid white;box-shadow:0 0 0 5px rgba(0,122,255,0.20)"></div>', iconSize:[18,18], iconAnchor:[9,9] })
     }).addTo(markersLayer).bindPopup('📍 Estás aquí');
   }
-
   const prices = filteredStations.map(s => s.prices[activeFuel]).filter(Boolean);
   const minP = Math.min(...prices), maxP = Math.max(...prices);
   const bounds = [];
-
   filteredStations.forEach((s, i) => {
     if (isNaN(s.lat) || isNaN(s.lng)) return;
     const cls = getPriceClass(s.prices[activeFuel], minP, maxP);
     const marker = L.marker([s.lat, s.lng], { icon: makeIcon(cls) });
-
     const otherRows = Object.entries(FUEL_MAP)
       .filter(([k]) => s.prices[k])
       .map(([k, v]) => `<div class="popup-price-row"><span class="popup-fuel-name">${v.label}</span><span class="popup-fuel-price">${s.prices[k]?.toFixed(3)} €</span></div>`)
       .join('');
-
-    // Build navigation buttons
     const navButtons = buildNavButtonsHTML(s.lat, s.lng, s.Rótulo);
-
     marker.bindPopup(`
       <div class="popup-inner">
         <div class="popup-name">🦕 ${s.Rótulo || 'Gasolinera'}</div>
@@ -1630,18 +1403,13 @@ function renderMarkers() {
       </div>
       ${navButtons}
     `, { maxWidth: 280 });
-
     marker.on('click', () => selectStation(i, false));
     marker.addTo(markersLayer);
     s._marker = marker;
     bounds.push([s.lat, s.lng]);
   });
-
-  if (bounds.length && !userPos) {
-    mapInstance.fitBounds(bounds, { padding: [40, 40] });
-  } else if (bounds.length && userPos) {
-    mapInstance.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
-  }
+  if (bounds.length && !userPos) mapInstance.fitBounds(bounds, { padding: [40, 40] });
+  else if (bounds.length && userPos) mapInstance.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
 }
 
 function selectStation(i, scrollToCard = true) {
@@ -1679,18 +1447,12 @@ function setSortMode(mode, btn) {
 
 function showLoading(msg = 'Buscando gasolineras…') {
   document.getElementById('list-container').innerHTML = `
-    <div class="state-panel">
-      <div class="spinner"></div>
-      <div class="state-title" style="font-size:15px;margin-top:4px">${msg}</div>
-    </div>`;
+    <div class="state-panel"><div class="spinner"></div><div class="state-title" style="font-size:15px;margin-top:4px">${msg}</div></div>`;
 }
 
 function showError(msg) {
   document.getElementById('list-container').innerHTML = `
-    <div class="state-panel">
-      <div class="state-icon-wrap">🦖</div>
-      <div class="error-card">⚠️ ${msg}</div>
-    </div>`;
+    <div class="state-panel"><div class="state-icon-wrap">🦖</div><div class="error-card">⚠️ ${msg}</div></div>`;
 }
 
 initMap();
