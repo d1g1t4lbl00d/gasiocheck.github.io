@@ -105,6 +105,7 @@ header::after { content: ''; position: absolute; inset: 0; background: linear-gr
 @keyframes heartbeat { 0%,80%,100% { transform:scale(1); } 88% { transform:scale(1.25); } 94% { transform:scale(0.92); } }
  
 /* ─── APP LAYOUT ───────────────────────────────────────────── */
+/* FIX: z-index explicito para que quede por encima del body::before */
 .app-layout { position: fixed; top: var(--header-h); left: 0; right: 0; bottom: var(--tab-h); display: flex; overflow: hidden; z-index: 1; }
  
 /* ─── SIDEBAR ───────────────────────────────────────────────── */
@@ -233,12 +234,17 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
 .fuel-pill-tag { font-size: 9.5px; font-weight: 700; color: var(--text-4); background: var(--surface-4); padding: 1px 5px; border-radius: 4px; }
  
 /* ─── MAP ────────────────────────────────────────────────────── */
-#map-container { flex: 1; height: 100%; overflow: hidden; position: relative; }
+/* FIX: display:block explícito para que Leaflet calcule dimensiones correctamente */
+#map-container { flex: 1; height: 100%; overflow: hidden; position: relative; display: block; }
 #map { width: 100%; height: 100%; }
-.leaflet-popup-content-wrapper { background: var(--surface) !important; border-radius: 18px !important; box-shadow: var(--shadow-xl) !important; border: 1px solid var(--border) !important; font-family: var(--font-body) !important; padding: 0 !important; overflow: hidden !important; }
-.leaflet-popup-content { margin: 0 !important; width: auto !important; }
+
+/* FIX: Leaflet popup - quitar overflow:hidden que ocultaba el botón de cierre */
+.leaflet-popup-content-wrapper { background: var(--surface) !important; border-radius: 18px !important; box-shadow: var(--shadow-xl) !important; border: 1px solid var(--border) !important; font-family: var(--font-body) !important; padding: 0 !important; }
+.leaflet-popup-content { margin: 0 !important; width: auto !important; min-width: 240px; }
 .leaflet-popup-tip { background: var(--surface) !important; }
-.popup-header { padding: 14px 16px 12px; background: linear-gradient(to bottom right, rgba(255,107,43,0.06), transparent); border-bottom: 1px solid var(--border-2); }
+/* FIX: Asegurar que el botón de cierre de Leaflet sea visible */
+.leaflet-popup-close-button { top: 8px !important; right: 10px !important; font-size: 20px !important; color: var(--text-3) !important; z-index: 10 !important; }
+.popup-header { padding: 14px 36px 12px 16px; background: linear-gradient(to bottom right, rgba(255,107,43,0.06), transparent); border-bottom: 1px solid var(--border-2); }
 .popup-brand { font-family: var(--font-display); font-weight: 800; font-size: 15px; color: var(--fire); letter-spacing: -0.3px; }
 .popup-addr { font-size: 11px; color: var(--text-4); font-weight: 500; margin-top: 2px; line-height: 1.4; }
 .popup-prices { padding: 10px 14px; display: flex; flex-direction: column; gap: 5px; }
@@ -325,6 +331,7 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
 .field-row .field-group { flex: 1; }
  
 /* ─── PROFILE PANEL ──────────────────────────────────────── */
+/* FIX: z-index mayor que el mapa (z-index:50) en mobile */
 .profile-panel { width: 340px; flex-shrink: 0; height: 100%; background: var(--surface); border-left: 1px solid var(--border); display: none; flex-direction: column; overflow: hidden; }
 .profile-panel.open { display: flex; }
 .profile-header { padding: 20px 18px 16px; border-bottom: 1px solid var(--border-2); background: linear-gradient(135deg, rgba(255,107,43,0.05) 0%, transparent 60%); flex-shrink: 0; position: relative; }
@@ -346,7 +353,7 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
 .profile-close-btn { position: absolute; top: 12px; right: 12px; background: var(--surface-3); border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; color: var(--text-3); transition: all .15s; }
 .profile-close-btn:hover { background: var(--surface-4); }
 
-/* ─── LOGOUT BUTTON (visible, red) ──────────────────── */
+/* ─── LOGOUT BUTTON ──────────────────── */
 .btn-logout {
   margin: 0 12px 14px;
   width: calc(100% - 24px);
@@ -426,6 +433,7 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
   :root { --header-h: 58px; --tab-h: 62px; }
   .app-layout { flex-direction: column; }
   .sidebar { width: 100%; }
+  /* FIX: mapa oculto por defecto en mobile pero con display:block cuando activo */
   #map-container { position: fixed; top: var(--header-h); left: 0; right: 0; bottom: var(--tab-h); display: none; z-index: 50; }
   #map-container.active { display: block; }
   .sidebar.map-active { display: none; }
@@ -444,7 +452,8 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
   .live-text { display: none; }
   .support-btn span:last-child { display: none; }
   .nav-btn { font-size: 10px; padding: 7px 4px; }
-  .profile-panel { width: 100% !important; border-left: none !important; border-top: 1px solid var(--border); position: fixed; top: var(--header-h); left: 0; right: 0; bottom: var(--tab-h); z-index: 60; }
+  /* FIX: profile-panel z-index superior al mapa en mobile */
+  .profile-panel { width: 100% !important; border-left: none !important; border-top: 1px solid var(--border); position: fixed; top: var(--header-h); left: 0; right: 0; bottom: var(--tab-h); z-index: 70; }
   .card-action-btns { gap: 4px; }
   .card-action-row  { gap: 3px; }
   .btn-refuel-card, .btn-alert-card { font-size: 10px; padding: 4px 8px; }
@@ -838,6 +847,14 @@ function parseNum(val) {
   return parseFloat(String(val).replace(',', '.'));
 }
 
+// ════════════════════════════════════════════════════════════
+//  FIX: getIdeess — extrae ID de estación de forma robusta
+//  La API del MINETUR usa 'IDEESS' pero puede venir con espacios
+// ════════════════════════════════════════════════════════════
+function getIdeess(s) {
+  return s['IDEESS'] || s['IDEESS '] || s.IDEESS || (s.Dirección + '|' + s.Municipio + '|' + s.Rótulo);
+}
+
 let currentUser  = null;
 let favorites    = new Set();
 let profileTab   = 'historial';
@@ -897,11 +914,24 @@ document.addEventListener('click', e => {
 
 // ════════════════════════════════════════════════════════════
 //  MOBILE TABS
+//  FIX: resetear tab activo si perfil sin usuario
 // ════════════════════════════════════════════════════════════
 let currentTab = 'lista';
 function isMobile() { return window.innerWidth <= 768; }
 
 function switchTab(tab) {
+  // FIX: Si intenta ir a perfil sin usuario, abrir auth y volver a lista
+  if (tab === 'perfil' && !currentUser) {
+    openAuthModal();
+    // Resetear visualmente al tab lista
+    ['lista','mapa','perfil'].forEach(t => {
+      const btn = document.getElementById('tab-'+t);
+      if (btn) btn.classList.toggle('active', t === 'lista');
+    });
+    currentTab = 'lista';
+    return;
+  }
+
   currentTab = tab;
   ['lista','mapa','perfil'].forEach(t => {
     const btn = document.getElementById('tab-'+t);
@@ -919,9 +949,11 @@ function switchTab(tab) {
     sidebar.classList.add('map-active');
     mapEl.classList.add('active');
     if (isMobile()) profileEl.classList.remove('open');
-    requestAnimationFrame(() => requestAnimationFrame(() => mapInstance && mapInstance.invalidateSize()));
+    // FIX: doble requestAnimationFrame + timeout para que Leaflet mida correctamente
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      setTimeout(() => mapInstance && mapInstance.invalidateSize(), 50);
+    }));
   } else if (tab === 'perfil') {
-    if (!currentUser) { openAuthModal(); return; }
     sidebar.classList.remove('map-active');
     mapEl.classList.remove('active');
     profileEl.classList.add('open');
@@ -1002,6 +1034,7 @@ function buildNavHTML(lat, lng, name) {
 
 // ════════════════════════════════════════════════════════════
 //  MAP
+//  FIX: invalidateSize tras init para garantizar dimensiones
 // ════════════════════════════════════════════════════════════
 function initMap() {
   mapInstance = L.map('map', { zoomControl: true }).setView([40.416, -3.703], 6);
@@ -1009,6 +1042,8 @@ function initMap() {
     attribution: '© OpenStreetMap', maxZoom: 19
   }).addTo(mapInstance);
   markersLayer = L.layerGroup().addTo(mapInstance);
+  // FIX: forzar recalculo de tamaño tras render inicial
+  setTimeout(() => mapInstance.invalidateSize(), 200);
 }
 
 function makeIcon(color) {
@@ -1057,7 +1092,9 @@ async function buscarPorMunicipio() {
     const data = await res.json();
     if (!data.ListaEESSPrecio) throw new Error('Sin datos');
     processStations(data.ListaEESSPrecio);
-    if (isMobile()) { if (searchOpen) toggleSearch(); switchTab('lista'); }
+    // FIX: colapsar búsqueda en desktop también tras obtener resultados
+    if (searchOpen) toggleSearch();
+    if (isMobile()) switchTab('lista');
   } catch { showError('No hay datos para este municipio. ¡Prueba con otro!'); }
 }
 
@@ -1085,7 +1122,8 @@ function usarMiUbicacion() {
           return !isNaN(lat) && !isNaN(lng) && haversine(userPos.lat, userPos.lng, lat, lng) <= 15;
         });
         processStations(nearby);
-        if (isMobile()) { if (searchOpen) toggleSearch(); switchTab('lista'); }
+        if (searchOpen) toggleSearch();
+        if (isMobile()) switchTab('lista');
       } catch { showError('No se pudieron cargar gasolineras cercanas. Prueba por municipio.'); }
     },
     function(err) {
@@ -1186,7 +1224,8 @@ function renderList() {
       .filter(([k]) => k!==activeFuel && s.prices[k])
       .map(([k,v]) => `<div class="fuel-pill"><span class="fuel-pill-tag">${v.short}</span>${s.prices[k]?.toFixed(3)} €</div>`)
       .join('');
-    const ideess  = s.IDEESS || s['IDEESS'] || (s.Dirección + s.Municipio);
+    // FIX: usar getIdeess() robusto
+    const ideess  = getIdeess(s);
     const isFav   = favorites.has(ideess);
     const distStr = s.dist!==null ? `<span class="station-dist">⊙ ${s.dist.toFixed(1)} km</span><span class="meta-dot">●</span>` : '';
 
@@ -1227,10 +1266,11 @@ function renderList() {
       ${otherPrices ? `<div class="card-footer">${otherPrices}</div>` : ''}
     `;
 
+    // FIX: touch handling mejorado — evitar que scroll active el click
     let touchStartY = 0, touchMoved = false;
     card.addEventListener('touchstart', e => { touchStartY = e.touches[0].clientY; touchMoved = false; }, { passive: true });
-    card.addEventListener('touchmove',  e => { if (Math.abs(e.touches[0].clientY - touchStartY) > 6) touchMoved = true; }, { passive: true });
-    card.addEventListener('touchend',   e => { if (!touchMoved) selectStation(i); });
+    card.addEventListener('touchmove',  e => { if (Math.abs(e.touches[0].clientY - touchStartY) > 8) touchMoved = true; }, { passive: true });
+    card.addEventListener('touchend',   e => { if (!touchMoved) { e.preventDefault(); selectStation(i); } });
     card.addEventListener('click', () => { if (!isMobile()) selectStation(i); });
 
     frag.appendChild(card);
@@ -1273,6 +1313,7 @@ function renderMarkers() {
       <div class="popup-prices">${rows}</div>
       ${buildNavHTML(s.lat, s.lng, s.Rótulo)}
     `, { maxWidth: 280 });
+    // FIX: en mobile, el click en marker no llama switchTab si ya estamos en mapa
     marker.on('click', () => selectStation(i, false));
     marker.addTo(markersLayer);
     s._marker = marker;
@@ -1284,6 +1325,7 @@ function renderMarkers() {
   }
 }
 
+// FIX: selectStation — en mobile solo cambia al mapa si no estamos ya en él
 function selectStation(i, scrollToCard=true) {
   if (selectedCard) selectedCard.classList.remove('selected');
   const card = document.getElementById(`card-${i}`);
@@ -1294,12 +1336,14 @@ function selectStation(i, scrollToCard=true) {
   }
   const s = filteredStations[i];
   if (!s||isNaN(s.lat)||isNaN(s.lng)) return;
-  if (isMobile()) switchTab('mapa');
+  // Solo cambiar al mapa en mobile si no estamos ya en él
+  if (isMobile() && currentTab !== 'mapa') switchTab('mapa');
+  const delay = (isMobile() && currentTab !== 'mapa') ? 150 : 40;
   setTimeout(() => {
     mapInstance.invalidateSize();
     mapInstance.setView([s.lat, s.lng], 15, { animate:true });
     if (s._marker) s._marker.openPopup();
-  }, isMobile()?120:40);
+  }, delay);
 }
 
 // ════════════════════════════════════════════════════════════
@@ -1338,7 +1382,9 @@ function showError(msg) {
 }
 
 // ════════════════════════════════════════════════════════════
-//  AUTH — FIX: cierra modal correctamente y maneja sesión activa
+//  AUTH
+//  FIX: closeAuthModal limpia campos y resetea estado
+//  FIX: onAuthStateChange cierra la modal automáticamente tras login
 // ════════════════════════════════════════════════════════════
 let authTab = 'login';
 
@@ -1358,7 +1404,6 @@ function openAuthModal() {
 function closeAuthModal() {
   document.getElementById('auth-modal').classList.remove('open');
   clearAuthMsg();
-  // Limpiar campos
   document.getElementById('auth-email').value    = '';
   document.getElementById('auth-password').value = '';
   document.getElementById('auth-name').value     = '';
@@ -1387,8 +1432,7 @@ async function doAuth() {
     if (authTab === 'login') {
       const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
       if (error) throw error;
-      // FIX: cerrar modal explícitamente tras login exitoso
-      closeAuthModal();
+      // onAuthStateChange se encarga de cerrar la modal
     } else {
       const redirectTo = window.location.origin + window.location.pathname;
       const { data, error } = await sb.auth.signUp({
@@ -1405,8 +1449,6 @@ async function doAuth() {
         btn.textContent = 'Crear cuenta';
         return;
       }
-      // Si no requiere confirmación, cerrar modal
-      closeAuthModal();
     }
   } catch (err) {
     showAuthMsg(translateAuthError(err.message));
@@ -1448,6 +1490,14 @@ function openProfilePanel() {
 }
 function closeProfilePanel() {
   document.getElementById('profile-panel').classList.remove('open');
+  // FIX: en mobile resetear el tab a lista
+  if (isMobile()) {
+    currentTab = 'lista';
+    ['lista','mapa','perfil'].forEach(t => {
+      const btn = document.getElementById('tab-'+t);
+      if (btn) btn.classList.toggle('active', t === 'lista');
+    });
+  }
 }
 
 function updateAuthButton() {
@@ -1535,7 +1585,8 @@ async function renderHistorial(scroll) {
       durationHTML = `<div class="duration-badge">⏱ ${days} día${days!==1?'s':''} de autonomía${kmStr} · Vacío: ${fmtDate(r.emptied_at)}</div>`;
     } else {
       const safeId   = r.id;
-      const safeName = (r.station_name || '').replace(/'/g, "\\'").replace(/"/g, '\\"');
+      // FIX: escapar correctamente el nombre para uso en atributo onclick
+      const safeName = (r.station_name || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
       durationHTML = `<button class="btn-empty-tank" onclick="openTankEmptyModal('${safeId}','${safeName}',${r.km_at_refuel||0},'${r.refueled_at}')">🪫 ¿Se vació el depósito?</button>`;
     }
 
@@ -1624,6 +1675,7 @@ async function renderAlertas(scroll) {
 
 // ════════════════════════════════════════════════════════════
 //  FAVORITES
+//  FIX: usar getIdeess() consistentemente
 // ════════════════════════════════════════════════════════════
 async function loadFavorites() {
   if (!currentUser) return;
@@ -1634,7 +1686,7 @@ async function loadFavorites() {
 async function toggleFavorite(i, btn) {
   if (!currentUser) { openAuthModal(); return; }
   const s      = filteredStations[i];
-  const ideess = s.IDEESS || s['IDEESS'] || (s.Dirección + s.Municipio);
+  const ideess = getIdeess(s);
 
   if (favorites.has(ideess)) {
     await sb.from('favorites').delete().eq('user_id', currentUser.id).eq('ideess', ideess);
@@ -1663,9 +1715,6 @@ async function deleteFavorite(ideess) {
 
 // ════════════════════════════════════════════════════════════
 //  REFUEL MODAL
-//  FIX: inputs cambiados a type="text" con inputmode para evitar
-//       problemas con coma/punto en distintos teclados/locales.
-//       parseNum() normaliza ambos separadores decimales.
 // ════════════════════════════════════════════════════════════
 function openRefuelModal(i) {
   if (!currentUser) { openAuthModal(); return; }
@@ -1717,7 +1766,7 @@ async function saveRefuel() {
   if (!currentUser || !refuelTarget) return;
   const price  = parseNum(document.getElementById('refuel-price').value);
   const liters = parseNum(document.getElementById('refuel-liters').value);
-  const km     = parseNum(document.getElementById('refuel-km').value) || null;
+  const km     = parseNum(document.getElementById('refuel-km').value);
   const fuel   = document.getElementById('refuel-fuel').value;
   const msgEl  = document.getElementById('refuel-msg');
 
@@ -1726,7 +1775,7 @@ async function saveRefuel() {
     msgEl.textContent='Introduce precio y litros válidos (usa punto o coma como decimal).';
     return;
   }
-  const ideess = refuelTarget.IDEESS || (refuelTarget.Dirección + refuelTarget.Municipio);
+  const ideess = getIdeess(refuelTarget);
   const { error } = await sb.from('refuel_logs').insert({
     user_id: currentUser.id, ideess,
     station_name: refuelTarget.Rótulo || 'Gasolinera',
@@ -1890,7 +1939,7 @@ async function saveAlert() {
   if (isNaN(target) || target <= 0) {
     msgEl.className='auth-msg error'; msgEl.textContent='Introduce un precio válido (ej. 1.400).'; return;
   }
-  const ideess = alertTarget.IDEESS || (alertTarget.Dirección + alertTarget.Municipio);
+  const ideess = getIdeess(alertTarget);
   const { error } = await sb.from('price_alerts').upsert({
     user_id: currentUser.id, ideess,
     station_name: alertTarget.Rótulo || 'Gasolinera',
@@ -1909,9 +1958,14 @@ async function deleteAlert(id) {
 
 // ════════════════════════════════════════════════════════════
 //  AUTH STATE LISTENER
+//  FIX: cerrar modal de auth automáticamente cuando la sesión se inicia
 // ════════════════════════════════════════════════════════════
 sb.auth.onAuthStateChange(async (event, session) => {
   currentUser = session?.user || null;
+  // FIX: cerrar modal de auth si hay sesión activa (login exitoso)
+  if (currentUser && document.getElementById('auth-modal').classList.contains('open')) {
+    closeAuthModal();
+  }
   updateAuthButton();
   if (currentUser) {
     await loadFavorites();
@@ -1929,10 +1983,15 @@ sb.auth.onAuthStateChange(async (event, session) => {
   });
 });
 
-// Enter en formulario de login
+// Enter en formulario de login/registro
 document.getElementById('auth-password').addEventListener('keydown', e => { if (e.key==='Enter') doAuth(); });
 document.getElementById('auth-email').addEventListener('keydown',    e => { if (e.key==='Enter') doAuth(); });
+document.getElementById('auth-name').addEventListener('keydown',     e => { if (e.key==='Enter') doAuth(); });
 document.getElementById('qr-station').addEventListener('keydown',    e => { if (e.key==='Enter') document.getElementById('qr-price').focus(); });
+// FIX: Enter en campos de precio/litros avanza al siguiente
+document.getElementById('refuel-price').addEventListener('keydown',  e => { if (e.key==='Enter') document.getElementById('refuel-liters').focus(); });
+document.getElementById('refuel-liters').addEventListener('keydown', e => { if (e.key==='Enter') document.getElementById('refuel-km').focus(); });
+document.getElementById('qr-price').addEventListener('keydown',      e => { if (e.key==='Enter') document.getElementById('qr-liters').focus(); });
 
 // ════════════════════════════════════════════════════════════
 //  INIT
@@ -1940,7 +1999,8 @@ document.getElementById('qr-station').addEventListener('keydown',    e => { if (
 initMap();
 loadProvincias();
 if (isMobile()) toggleSearch();
-checkVerificationCallback();
+// FIX: checkVerificationCallback después de que onAuthStateChange haya tenido oportunidad de resolver
+setTimeout(checkVerificationCallback, 100);
 </script>
 </body>
 </html>
