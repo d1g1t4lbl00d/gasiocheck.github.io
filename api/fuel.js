@@ -1,96 +1,130 @@
-// api/fuel.js — Vercel Serverless Function
-// Proxy para la API del MINETUR (evita CORS en el navegador)
-// Uso: /api/fuel?path=EstacionesTerrestres/FiltroMunicipio/2892
-//      /api/fuel?path=Listados/Provincias/
-//      /api/fuel?path=EstacionesTerrestres/FiltroProvincia/28
+// api/fuel.js — Proxy MINETUR + caché Supabase
+// Flujo: 1) intenta MINETUR  2) si falla → sirve Supabase  3) si no hay caché → error
+//
+// Endpoints admitidos:
+//   /api/fuel?path=Listados/Provincias/
+//   /api/fuel?path=Listados/MunicipiosPorProvincia/28
+//   /api/fuel?path=EstacionesTerrestres/FiltroMunicipio/3518
+//   /api/fuel?path=EstacionesTerrestres/FiltroProvincia/28
 
-const BASE = 'https://sedeaplicaciones.minetur.gob.es/ServiciosRESTCarburantes/PreciosCarburantes';
-const TIMEOUT_MS = 22000;
-const MAX_INTENTOS = 2;
+const MINETUR   = 'https://sedeaplicaciones.minetur.gob.es/ServiciosRESTCarburantes/PreciosCarburantes';
+const SB_URL    = 'https://gwycdrnwkzmoxbxcqxih.supabase.co';
+const SB_KEY    = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd3eWNkcm53a3ptb3hieGNxeGloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwMzgyNDEsImV4cCI6MjA5NDYxNDI0MX0.fTm-TesEgil6NjaiiCspZdjMCX6PxAclFhlPs6PNngc';
+const TIMEOUT   = 22000; // ms antes de abortar llamada a MINETUR
 
-async function fetchMinetur(url) {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
+// ── Helpers Supabase (REST nativo, sin npm) ────────────────────────────────
+
+async function cacheRead(key) {
   try {
-    const response = await fetch(url, {
-      signal: controller.signal,
+    const r = await fetch(
+      `${SB_URL}/rest/v1/minetur_cache?cache_key=eq.${encodeURIComponent(key)}&select=payload,updated_at&limit=1`,
+      { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` } }
+    );
+    if (!r.ok) return null;
+    const rows = await r.json();
+    return Array.isArray(rows) && rows.length ? rows[0] : null;
+  } catch { return null; }
+}
+
+function cacheWrite(key, payload) {
+  // Fire-and-forget: no bloqueamos la respuesta esperando la escritura
+  fetch(`${SB_URL}/rest/v1/minetur_cache`, {
+    method: 'POST',
+    headers: {
+      apikey: SB_KEY,
+      Authorization: `Bearer ${SB_KEY}`,
+      'Content-Type': 'application/json',
+      Prefer: 'resolution=merge-duplicates',
+    },
+    body: JSON.stringify({ cache_key: key, payload, updated_at: new Date().toISOString() }),
+  }).catch(() => {});
+}
+
+// ── Llamada a MINETUR con retry ────────────────────────────────────────────
+
+async function fetchMinetur(url, intento = 1) {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), TIMEOUT);
+  try {
+    const r = await fetch(url, {
+      signal: ctrl.signal,
       headers: {
-        'Accept': 'application/json',
+        Accept: 'application/json',
         'User-Agent': 'Mozilla/5.0 (compatible; IberoFuel/1.0)',
         'Cache-Control': 'no-cache',
       },
     });
-    clearTimeout(timeoutId);
-    return response;
+    clearTimeout(t);
+    return r;
   } catch (err) {
-    clearTimeout(timeoutId);
+    clearTimeout(t);
+    // Reintentar una vez si no fue timeout
+    if (intento < 2 && err.name !== 'AbortError') {
+      await new Promise(r => setTimeout(r, 1500));
+      return fetchMinetur(url, intento + 1);
+    }
     throw err;
   }
 }
+
+// ── Handler principal ──────────────────────────────────────────────────────
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
+  if (req.method === 'OPTIONS') return res.status(200).end();
 
   const { path } = req.query;
+  if (!path)                          return res.status(400).json({ error: 'Falta ?path=' });
+  if (!/^[\w\-\/().]+$/.test(path))  return res.status(400).json({ error: 'Ruta no permitida' });
 
-  if (!path) {
-    return res.status(400).json({ error: 'Falta el parámetro ?path=' });
-  }
+  const url = `${MINETUR}/${path}`;
+  let mineturDown = false;
 
-  if (!/^[\w\-\/().]+$/.test(path)) {
-    return res.status(400).json({ error: 'Ruta no permitida: ' + path });
-  }
+  // ── 1. Intentar MINETUR ──────────────────────────────────
+  try {
+    const r = await fetchMinetur(url);
 
-  const url = `${BASE}/${path}`;
-  let lastErr = null;
-
-  for (let intento = 1; intento <= MAX_INTENTOS; intento++) {
-    try {
-      const response = await fetchMinetur(url);
-
-      if (!response.ok) {
-        // Si es 503/502 y quedan intentos, esperar 1.5s y reintentar
-        if ((response.status === 503 || response.status === 502) && intento < MAX_INTENTOS) {
-          await new Promise(r => setTimeout(r, 1500));
-          continue;
-        }
-        return res.status(response.status).json({
-          error: `La API del MINETUR no está disponible (${response.status}). El servidor del Ministerio está temporalmente caído.`,
-        });
-      }
-
-      const text = await response.text();
+    if (r.ok) {
+      const text = await r.text();
       let data;
-      try {
-        data = JSON.parse(text);
-      } catch {
-        console.error('Respuesta no JSON de MINETUR:', text.substring(0, 200));
-        return res.status(502).json({ error: 'Respuesta no válida (no es JSON) de la API MINETUR' });
+      try { data = JSON.parse(text); } catch {
+        return res.status(502).json({ error: 'MINETUR devolvió respuesta no JSON' });
       }
 
+      cacheWrite(path, data);                                  // guardar en caché
       res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=60');
       return res.status(200).json(data);
+    }
 
-    } catch (err) {
-      lastErr = err;
-      if (err.name === 'AbortError') break; // timeout, no reintentar
-      if (intento < MAX_INTENTOS) {
-        await new Promise(r => setTimeout(r, 1500));
-      }
+    // Solo caemos al caché si es error de servidor (50x)
+    if (r.status >= 500) {
+      mineturDown = true;
+    } else {
+      return res.status(r.status).json({ error: `MINETUR respondió con ${r.status}` });
+    }
+
+  } catch (err) {
+    // Timeout u otro error de red → intentar caché
+    mineturDown = true;
+    console.error('MINETUR error:', err.message);
+  }
+
+  // ── 2. MINETUR caído → servir desde Supabase ────────────
+  if (mineturDown) {
+    const cached = await cacheRead(path);
+    if (cached) {
+      res.setHeader('Cache-Control', 'no-store');
+      res.setHeader('X-Cache', 'stale');
+      res.setHeader('X-Cache-Date', cached.updated_at);
+      return res.status(200).json(cached.payload);
     }
   }
 
-  const isTimeout = lastErr?.name === 'AbortError';
-  console.error('Error proxy MINETUR:', lastErr?.message);
-  return res.status(502).json({
-    error: isTimeout
-      ? 'La API del MINETUR tardó demasiado en responder. Inténtalo de nuevo.'
-      : 'No se pudo conectar con la API del MINETUR: ' + (lastErr?.message || 'error desconocido'),
+  // ── 3. Sin datos en ningún lado ─────────────────────────
+  return res.status(503).json({
+    error: 'La API del Ministerio no está disponible y aún no hay datos guardados para esta búsqueda. Inténtalo más tarde o busca por municipio.',
+    cached: false,
   });
 }
