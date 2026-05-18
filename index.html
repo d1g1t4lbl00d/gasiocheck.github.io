@@ -967,7 +967,7 @@ function toggleSearch() {
 // ════════════════════════════════════════════════════════════
 //  CONSTANTES
 // ════════════════════════════════════════════════════════════
-let allStations = [], filteredStations = [];
+let allStations = [], filteredStations = [], provinciasData = [];
 let activeFuel = 'gasolina95', sortMode = 'precio';
 let mapInstance = null, markersLayer = null;
 let selectedCard = null, userPos = null;
@@ -1055,8 +1055,9 @@ async function loadProvincias() {
     const sel  = document.getElementById('sel-prov');
     const list = Array.isArray(data) ? data : (data.Provincias || data.ListaProvincias || []);
     list.forEach(p => {
-      const opt = new Option(p.Provincia, p.IDPovincia || p.IDProvincia);
-      sel.appendChild(opt);
+      const id = p.IDPovincia || p.IDProvincia;
+      provinciasData.push({ id, name: p.Provincia });
+      sel.appendChild(new Option(p.Provincia, id));
     });
   } catch(e) {
     showError('No se pudieron cargar las provincias. ' + e.message);
@@ -1109,10 +1110,12 @@ function usarMiUbicacion() {
       btn.innerHTML = '<span>◎</span> Ubicarme';
       userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
       mapInstance.setView([userPos.lat, userPos.lng], 13);
-      showLoading('Buscando gasolineras cercanas…');
+      showLoading('Identificando tu provincia…');
       try {
-        // CORREGIDO: path vacío para el endpoint raíz de EstacionesTerrestres
-        const data = await fetchWithCORS(`${API_BASE}/EstacionesTerrestres/`);
+        const idProvincia = await getIdProvinciaDesdeCoords(userPos.lat, userPos.lng);
+        if (!idProvincia) throw new Error('No se pudo identificar tu provincia. Prueba buscando por municipio.');
+        showLoading('Buscando gasolineras en tu provincia…');
+        const data = await fetchWithCORS(`${API_BASE}/EstacionesTerrestres/FiltroProvincia/${idProvincia}`);
         if (!data || !data.ListaEESSPrecio) throw new Error('Sin datos de la API');
         const nearby = data.ListaEESSPrecio.filter(s => {
           const lat = parseFloat((s.Latitud || '').replace(',','.'));
@@ -1144,6 +1147,39 @@ function haversine(lat1,lng1,lat2,lng2) {
   const R=6371, dLat=(lat2-lat1)*Math.PI/180, dLng=(lng2-lng1)*Math.PI/180;
   const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
   return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+function normProv(s) {
+  return (s || '').toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/\b(provincia|comunidad|comunitat|region|regiao|autonoma|autonomia)\b/g, '')
+    .replace(/\bde\b|\bdel\b|\bla\b|\bles\b|\blos\b|\blas\b/g, '')
+    .replace(/\s+/g, ' ').trim();
+}
+
+async function getIdProvinciaDesdeCoords(lat, lng) {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), 6000);
+  try {
+    const r = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=es`,
+      { headers: { 'User-Agent': 'IberoFuel/1.0' }, signal: ctrl.signal }
+    );
+    clearTimeout(t);
+    const d = await r.json();
+    const addr = d.address || {};
+    const candidatos = [addr.province, addr.state_district, addr.state, addr.county].filter(Boolean);
+    for (const c of candidatos) {
+      const nc = normProv(c);
+      const found = provinciasData.find(p => {
+        const np = normProv(p.name);
+        return np === nc || nc.includes(np) || np.includes(nc);
+      });
+      if (found) return found.id;
+    }
+  } catch { /* timeout o error de red */ }
+  clearTimeout(t);
+  return null;
 }
 
 // ════════════════════════════════════════════════════════════

@@ -33,7 +33,7 @@ export default async function handler(req, res) {
   // CORREGIDO: AbortSignal.timeout() no está disponible en Node 16 (Vercel default)
   // Usamos un AbortController manual compatible con todas las versiones de Node
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 15000);
+  const timeoutId = setTimeout(() => controller.abort(), 25000);
 
   try {
     const response = await fetch(url, {
