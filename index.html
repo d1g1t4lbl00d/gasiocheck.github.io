@@ -1208,7 +1208,7 @@ function usarMiUbicacion() {
         const idProvincia = await getIdProvinciaDesdeCoords(userPos.lat, userPos.lng);
         if (!idProvincia) throw new Error('No se pudo identificar tu provincia. Prueba buscando por municipio.');
         showLoading('Buscando gasolineras en tu provincia…');
-        const data = await fetchWithCORS(`${API_BASE}/EstacionesTerrestres/FiltroProvincia/${idProvincia}`);
+        const data = await fetchWithCORS(`${API_BASE}/EstacionesTerrestresFiltros/FiltroProvincia/${idProvincia}`);
         if (!data || !data.ListaEESSPrecio) throw new Error('Sin datos de la API');
         const nearby = data.ListaEESSPrecio.filter(s => {
           const lat = parseFloat((s.Latitud || '').replace(',','.'));
