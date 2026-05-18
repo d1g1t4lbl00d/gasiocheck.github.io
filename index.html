@@ -828,36 +828,70 @@ const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
 // ════════════════════════════════════════════════════════════
-//  PROXY — llama a /api/fuel en Vercel
+//  PROXY — llama a /api/fuel en Vercel, con fallback al navegador
 // ════════════════════════════════════════════════════════════
 const API_BASE = 'https://sedeaplicaciones.minetur.gob.es/ServiciosRESTCarburantes/PreciosCarburantes';
 
+// Proxies CORS públicos probados desde el navegador (IPs distintas a Vercel/AWS)
+const CLIENT_CORS_PROXIES = [
+  u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+  u => `https://corsproxy.io/?url=${encodeURIComponent(u)}`,
+  u => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
+  u => `https://thingproxy.freeboard.io/fetch/${u}`,
+];
+
+async function tryUrl(url, timeoutMs = 15000) {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), timeoutMs);
+  try {
+    const r = await fetch(url, { signal: ctrl.signal, headers: { Accept: 'application/json' } });
+    clearTimeout(t);
+    if (!r.ok) return null;
+    const text = await r.text();
+    try { return JSON.parse(text); } catch { return null; }
+  } catch { clearTimeout(t); return null; }
+}
+
 async function fetchWithCORS(fullUrl) {
   const path = fullUrl.replace(API_BASE, '').replace(/^\//, '');
-  const proxyUrl = `/api/fuel?path=${encodeURIComponent(path)}`;
 
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 25000);
-
+  // ── 1. Proxy Vercel (escribe en caché Supabase si funciona) ──────────────
   try {
-    const res = await fetch(proxyUrl, { signal: controller.signal });
-    clearTimeout(timeout);
-    if (!res.ok) {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 25000);
+    const res = await fetch(`/api/fuel?path=${encodeURIComponent(path)}`, { signal: ctrl.signal });
+    clearTimeout(t);
+
+    if (res.ok) {
+      if (res.headers.get('X-Cache') === 'stale') {
+        showCacheBanner(res.headers.get('X-Cache-Date'));
+      } else {
+        hideCacheBanner();
+      }
+      return await res.json();
+    }
+    // Si no es 503/502, es un error real → lanzar
+    if (res.status !== 503 && res.status !== 502) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || `Error ${res.status} del proxy`);
+      throw new Error(err.error || `Error ${res.status}`);
     }
-    // Detectar si los datos vienen del caché de Supabase
-    if (res.headers.get('X-Cache') === 'stale') {
-      showCacheBanner(res.headers.get('X-Cache-Date'));
-    } else {
-      hideCacheBanner();
-    }
-    return await res.json();
+    // 503/502 → continuar con fallbacks del navegador
   } catch (err) {
-    clearTimeout(timeout);
     if (err.name === 'AbortError') throw new Error('Tiempo de espera agotado. Comprueba tu conexión.');
-    throw err;
+    // Error de red → continuar con fallbacks
+    if (!err.message.startsWith('Error ')) { /* continuar */ } else throw err;
   }
+
+  // ── 2. Proxies CORS desde el navegador (IPs distintas a Vercel) ──────────
+  for (const mkProxy of CLIENT_CORS_PROXIES) {
+    const data = await tryUrl(mkProxy(fullUrl), 14000);
+    if (data) {
+      hideCacheBanner();
+      return data;
+    }
+  }
+
+  throw new Error('La API del Ministerio no está disponible en este momento. Inténtalo en unos minutos.');
 }
 
 function showCacheBanner(dateStr) {
