@@ -1,16 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="8" fill="#FF6B1A"/>
-  <!-- Body -->
-  <ellipse cx="16" cy="20" rx="8" ry="6" fill="white"/>
-  <!-- Neck -->
-  <ellipse cx="16" cy="13" rx="4" ry="5" fill="white"/>
-  <!-- Head -->
-  <ellipse cx="18" cy="8" rx="5" ry="4" fill="#FFE0CC"/>
-  <!-- Eye -->
-  <circle cx="20" cy="7" r="1.5" fill="#1A0A00"/>
-  <!-- Tail -->
-  <path d="M8 22 Q2 24 2 28" stroke="white" stroke-width="3" fill="none" stroke-linecap="round"/>
-  <!-- Legs -->
-  <path d="M12 26 Q11 29 10 31" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-  <path d="M20 26 Q21 29 22 31" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <rect width="32" height="32" rx="8" fill="#FF6B1A"></rect>
+  
+  <ellipse cx="16" cy="20" rx="8" ry="6" fill="white"></ellipse>
+  
+  <ellipse cx="16" cy="13" rx="4" ry="5" fill="white"></ellipse>
+  
+  <ellipse cx="18" cy="8" rx="5" ry="4" fill="#FFE0CC"></ellipse>
+  
+  <circle cx="20" cy="7" r="1.5" fill="#1A0A00"></circle>
+  
+  <path d="M8 22 Q2 24 2 28" stroke="white" stroke-width="3" fill="none" stroke-linecap="round"></path>
+  
+  <path d="M12 26 Q11 29 10 31" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round"></path>
+  <path d="M20 26 Q21 29 22 31" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round"></path>
 </svg>
