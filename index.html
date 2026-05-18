@@ -798,6 +798,22 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
  
 <script>
 // ════════════════════════════════════════════════════════════
+//  LIMPIEZA DE CACHÉ ANTIGUA — evita que datos viejos en
+//  localStorage bloqueen el arranque en navegador normal
+// ════════════════════════════════════════════════════════════
+(function() {
+  const VER = 'v5';
+  if (localStorage.getItem('ibu_ver') !== VER) {
+    // Preservar SOLO el token de auth del proyecto actual
+    const sbKey = Object.keys(localStorage).find(k => k.startsWith('sb-gwycdrnwkzmoxbxcqxih'));
+    const sbVal = sbKey ? localStorage.getItem(sbKey) : null;
+    try { localStorage.clear(); } catch(e) {}
+    if (sbKey && sbVal) localStorage.setItem(sbKey, sbVal);
+    localStorage.setItem('ibu_ver', VER);
+  }
+})();
+
+// ════════════════════════════════════════════════════════════
 //  PROVINCIAS FALLBACK (cargadas si la API del MINETUR está caída)
 // ════════════════════════════════════════════════════════════
 const PROVINCIAS_FALLBACK = [
@@ -1169,12 +1185,25 @@ function poblarProvincias(list) {
 }
 
 async function loadProvincias() {
-  // Intenta cargar desde caché localStorage primero (datos de sesiones anteriores)
   const cached = localStorage.getItem('iberofuel_provincias');
+
   if (cached) {
-    try { poblarProvincias(JSON.parse(cached)); } catch { /* ignorar caché corrupta */ }
+    // Con caché: mostrar inmediatamente y refrescar en segundo plano sin bloquear
+    try { poblarProvincias(JSON.parse(cached)); } catch { /* caché corrupta */ }
+    fetchWithCORS(`${API_BASE}/Listados/Provincias/`)
+      .then(data => {
+        const list = Array.isArray(data) ? data : (data.Provincias || data.ListaProvincias || []);
+        if (list.length) {
+          localStorage.setItem('iberofuel_provincias', JSON.stringify(list));
+          poblarProvincias(list);
+          hideApiOfflineBanner();
+        }
+      })
+      .catch(() => { /* silencioso — ya tenemos provincias del caché */ });
+    return;
   }
 
+  // Sin caché: cargar con fallback hardcodeado si la API falla
   try {
     const data = await fetchWithCORS(`${API_BASE}/Listados/Provincias/`);
     const list = Array.isArray(data) ? data : (data.Provincias || data.ListaProvincias || []);
@@ -1184,12 +1213,8 @@ async function loadProvincias() {
       hideApiOfflineBanner();
     }
   } catch {
-    if (!cached) {
-      poblarProvincias(PROVINCIAS_FALLBACK);
-      showApiOfflineBanner();
-    } else {
-      showApiOfflineBanner();
-    }
+    poblarProvincias(PROVINCIAS_FALLBACK);
+    showApiOfflineBanner();
   }
 }
 
@@ -2235,20 +2260,23 @@ async function deleteAlert(id) {
 //  AUTH STATE LISTENER
 // ════════════════════════════════════════════════════════════
 sb.auth.onAuthStateChange(async (event, session) => {
-  currentUser = session?.user || null;
-  // CORREGIDO: cerrar modal solo si está abierto y hay sesión
-  if (currentUser && event === 'SIGNED_IN') {
-    const authModal = document.getElementById('auth-modal');
-    if (authModal && authModal.classList.contains('open')) closeAuthModal();
-  }
-  updateAuthButton();
-  if (currentUser) {
-    await loadFavorites();
-    if (allStations.length) renderList();
-  } else {
-    favorites.clear();
-    favDataMap.clear();
-    if (allStations.length) renderList();
+  try {
+    currentUser = session?.user || null;
+    if (currentUser && event === 'SIGNED_IN') {
+      const authModal = document.getElementById('auth-modal');
+      if (authModal && authModal.classList.contains('open')) closeAuthModal();
+    }
+    updateAuthButton();
+    if (currentUser) {
+      await loadFavorites();
+      if (allStations.length) renderList();
+    } else {
+      favorites.clear();
+      favDataMap.clear();
+      if (allStations.length) renderList();
+    }
+  } catch(err) {
+    console.error('Auth state error:', err);
   }
 });
 
@@ -2272,10 +2300,16 @@ document.getElementById('qr-price').addEventListener('keydown',      e => { if (
 // ════════════════════════════════════════════════════════════
 //  INIT
 // ════════════════════════════════════════════════════════════
-initMap();
-loadProvincias();
-if (isMobile()) toggleSearch();
-setTimeout(checkVerificationCallback, 200);
+try {
+  initMap();
+  loadProvincias();
+  if (isMobile()) toggleSearch();
+  setTimeout(checkVerificationCallback, 200);
+} catch(err) {
+  console.error('Init error:', err);
+  // Si el init falla, al menos mostramos provincias
+  try { poblarProvincias(PROVINCIAS_FALLBACK); showApiOfflineBanner(); } catch(_) {}
+}
 </script>
 </body>
 </html>
