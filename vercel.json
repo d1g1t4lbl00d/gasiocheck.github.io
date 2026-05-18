@@ -2,6 +2,9 @@
   "functions": {
     "api/fuel.js": {
       "maxDuration": 30
+    },
+    "api/xls-refresh.js": {
+      "maxDuration": 60
     }
   },
   "headers": [
