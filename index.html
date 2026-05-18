@@ -74,7 +74,6 @@ body::before {
   pointer-events: none; z-index: 0;
 }
  
-/* ─── HEADER ──────────────────────────────────────────────── */
 header {
   position: fixed; inset: 0 0 auto 0; height: var(--header-h); z-index: 1000;
   background: var(--glass); backdrop-filter: blur(24px) saturate(180%);
@@ -104,13 +103,10 @@ header::after { content: ''; position: absolute; inset: 0; background: linear-gr
 .support-btn-icon { font-size: 13px; animation: heartbeat 3s ease-in-out infinite; }
 @keyframes heartbeat { 0%,80%,100% { transform:scale(1); } 88% { transform:scale(1.25); } 94% { transform:scale(0.92); } }
  
-/* ─── APP LAYOUT ───────────────────────────────────────────── */
 .app-layout { position: fixed; top: var(--header-h); left: 0; right: 0; bottom: var(--tab-h); display: flex; overflow: hidden; z-index: 1; }
  
-/* ─── SIDEBAR ───────────────────────────────────────────────── */
 .sidebar { width: 400px; flex-shrink: 0; display: flex; flex-direction: column; height: 100%; background: transparent; border-right: 1px solid var(--border); overflow: hidden; }
  
-/* ─── SEARCH PANEL ──────────────────────────────────────────── */
 .search-panel { flex-shrink: 0; padding: 11px 13px 0; background: var(--glass); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-2); }
 .search-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); box-shadow: var(--shadow-sm); overflow: hidden; margin-bottom: 11px; }
 .search-card-header { padding: 11px 14px 10px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-2); background: linear-gradient(to right, rgba(255,107,43,0.03), transparent); }
@@ -135,7 +131,6 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn-search:hover { transform: translateY(-2px); box-shadow: var(--shadow-fire-lg); filter: brightness(1.04); }
 .btn-search:active { transform: translateY(0); }
  
-/* ─── FUEL CHIPS ───────────────────────────────────────────── */
 .fuel-section { flex-shrink: 0; padding: 9px 13px 10px; background: var(--glass); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-2); }
 .fuel-label { font-size: 10px; font-weight: 700; color: var(--text-4); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 7px; }
 .fuel-chips { display: flex; gap: 6px; flex-wrap: wrap; }
@@ -145,7 +140,6 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
 .fuel-chip.active .fuel-chip-dot { background: rgba(255,255,255,0.7); }
 .fuel-chip:hover:not(.active) { border-color: var(--border-fire); color: var(--fire); background: var(--amber-pale); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
  
-/* ─── STATS BAR ─────────────────────────────────────────────── */
 .stats-bar { flex-shrink: 0; padding: 8px 10px; display: none; gap: 5px; background: var(--glass); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-2); }
 .stats-bar.visible { display: flex; }
 .stat-item { flex: 1; text-align: center; padding: 9px 6px; border-radius: var(--r-md); background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow-xs); }
@@ -156,7 +150,6 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
 .stat-item:last-child  .stat-value { color: var(--danger); }
 .stat-label { font-size: 9px; font-weight: 600; color: var(--text-4); text-transform: uppercase; letter-spacing: 0.7px; margin-top: 3px; }
  
-/* ─── SORT ROW ──────────────────────────────────────────────── */
 .sort-row { flex-shrink: 0; padding: 7px 13px; display: none; align-items: center; gap: 10px; background: var(--glass); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-2); }
 .sort-row.visible { display: flex; }
 .sort-label { font-size: 10px; font-weight: 700; color: var(--text-4); text-transform: uppercase; letter-spacing: 0.8px; white-space: nowrap; }
@@ -165,7 +158,6 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
 .sort-btn.active { border-color: var(--fire); color: var(--fire); background: var(--amber-pale); font-weight: 700; box-shadow: 0 2px 8px var(--fire-glow); }
 .sort-btn:hover:not(.active) { border-color: var(--border-fire); color: var(--fire); transform: translateY(-1px); }
  
-/* ─── STATIONS SCROLL ──────────────────────────────────────── */
 .stations-scroll-wrap { flex: 1; min-height: 0; overflow: hidden; position: relative; }
 .stations-scroll {
   height: 100%;
@@ -184,7 +176,6 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
 .stations-scroll::-webkit-scrollbar-thumb { background: #D4C9CF; border-radius: 99px; }
 .stations-scroll::-webkit-scrollbar-thumb:hover { background: #B0A5AD; }
  
-/* ─── STATE PANELS ──────────────────────────────────────────── */
 .state-panel { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 48px 28px; text-align: center; }
 .state-icon-box { width: 88px; height: 88px; background: var(--surface); border: 1px solid var(--border); border-radius: 24px; display: flex; align-items: center; justify-content: center; font-size: 44px; box-shadow: var(--shadow-md); animation: float 4s ease-in-out infinite; }
 @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
@@ -194,7 +185,6 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .error-toast { background: var(--danger-bg); border: 1.5px solid rgba(239,68,68,0.15); color: var(--danger); padding: 14px 18px; border-radius: var(--r-lg); font-size: 13px; font-weight: 600; line-height: 1.5; text-align: center; }
  
-/* ─── STATION CARDS ─────────────────────────────────────────── */
 .station-card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -209,11 +199,6 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
   background-image: linear-gradient(160deg, #fff 0%, #faf8f5 100%);
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
-  border-radius: 20px;
-}
-.station-card > .card-inner-clip {
-  border-radius: 20px;
-  overflow: hidden;
 }
 @keyframes card-reveal { from { opacity: 0; transform: translateY(12px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
 .station-card:nth-child(2) { animation-delay:.05s; } .station-card:nth-child(3) { animation-delay:.10s; } .station-card:nth-child(4) { animation-delay:.15s; } .station-card:nth-child(5) { animation-delay:.20s; } .station-card:nth-child(6) { animation-delay:.25s; } .station-card:nth-child(7) { animation-delay:.28s; } .station-card:nth-child(8) { animation-delay:.30s; }
@@ -244,14 +229,7 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
 .badge-pill { font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: var(--r-full); letter-spacing: 0.1px; white-space: nowrap; }
 .badge-winner { background: var(--success-bg); color: var(--success); }
 .badge-saving  { background: var(--surface-3); color: var(--text-4); }
-.fav-btn { background: none; border: none; cursor: pointer; font-size: 15px; color: var(--text-5); transition: all .2s cubic-bezier(0.34,1.56,0.64,1); padding: 3px; line-height: 1;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-  position: relative;
-  z-index: 10;
-  min-width: 32px; min-height: 32px;
-  display: flex; align-items: center; justify-content: center;
-}
+.fav-btn { background: none; border: none; cursor: pointer; font-size: 15px; color: var(--text-5); transition: all .2s cubic-bezier(0.34,1.56,0.64,1); padding: 3px; line-height: 1; touch-action: manipulation; -webkit-tap-highlight-color: transparent; position: relative; z-index: 10; min-width: 32px; min-height: 32px; display: flex; align-items: center; justify-content: center; }
 .fav-btn:hover { color: var(--danger); transform: scale(1.3); }
 .fav-btn.saved { color: #F59E0B; }
 .card-action-btns { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
@@ -260,20 +238,10 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
 .fuel-pill { font-size: 11px; font-weight: 600; padding: 4px 10px; background: var(--surface-3); border: 1px solid var(--border); border-radius: var(--r-full); color: var(--text-3); display: flex; align-items: center; gap: 4px; transition: all .15s; }
 .fuel-pill:hover { background: var(--amber-pale); border-color: var(--border-fire); color: var(--fire); }
 .fuel-pill-tag { font-size: 9.5px; font-weight: 700; color: var(--text-4); background: var(--surface-4); padding: 1px 5px; border-radius: 4px; }
-
-.btn-refuel-card, .btn-alert-card {
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-  position: relative;
-  z-index: 10;
-  cursor: pointer;
-  min-height: 32px;
-}
+.btn-refuel-card, .btn-alert-card { touch-action: manipulation; -webkit-tap-highlight-color: transparent; position: relative; z-index: 10; cursor: pointer; min-height: 32px; }
  
-/* ─── MAP ────────────────────────────────────────────────────── */
 #map-container { flex: 1; height: 100%; overflow: hidden; position: relative; display: block; }
 #map { width: 100%; height: 100%; }
-
 .leaflet-popup-content-wrapper { background: var(--surface) !important; border-radius: 18px !important; box-shadow: var(--shadow-xl) !important; border: 1px solid var(--border) !important; font-family: var(--font-body) !important; padding: 0 !important; }
 .leaflet-popup-content { margin: 0 !important; width: auto !important; min-width: 240px; }
 .leaflet-popup-tip { background: var(--surface) !important; }
@@ -297,7 +265,6 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
 .nav-btn.apple { background: var(--surface-3); border-color: var(--border); color: var(--text-2); }
 .nav-btn.apple:hover { background: #1C1C1E; border-color: #1C1C1E; color: white; }
  
-/* ─── FLOATING SUPPORT ──────────────────────────────────────── */
 .donate-float { position: fixed; bottom: calc(var(--tab-h) + 20px); right: 20px; z-index: 500; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
 .donate-tooltip { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-xl); padding: 16px 18px; box-shadow: var(--shadow-xl); max-width: 210px; opacity: 0; transform: translateY(8px) scale(.94); pointer-events: none; transition: all .25s cubic-bezier(0.34,1.56,0.64,1); transform-origin: bottom right; }
 .donate-tooltip.open { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
@@ -310,16 +277,13 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
 .donate-pill.active { border-color: var(--fire); color: var(--fire); background: var(--amber-pale); }
 .donate-pill-icon { font-size: 16px; animation: heartbeat 3s ease-in-out infinite; }
  
-/* ─── TAB BAR ──────────────────────────────────────────────── */
 .tab-bar { display: none; }
  
-/* ─── AUTH BUTTON ─────────────────────────────────────────── */
 .auth-btn { display: flex; align-items: center; gap: 7px; background: var(--surface); border: 1px solid var(--border); color: var(--text-2); font-family: var(--font-body); font-size: 12px; font-weight: 600; padding: 8px 14px; border-radius: var(--r-full); cursor: pointer; transition: all .2s cubic-bezier(0.34,1.56,0.64,1); box-shadow: var(--shadow-xs); white-space: nowrap; }
 .auth-btn:hover { border-color: var(--border-fire); color: var(--fire); box-shadow: var(--shadow-sm); transform: translateY(-1px); }
 .auth-btn.logged-in { background: var(--amber-pale); border-color: rgba(255,170,59,0.3); color: var(--text-1); }
 .auth-avatar { width: 22px; height: 22px; border-radius: 50%; background: linear-gradient(135deg, var(--fire), var(--amber)); color: white; font-size: 10px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
  
-/* ─── UPSELL BANNER ──────────────────────────────────────── */
 .upsell-banner { display: none; align-items: center; gap: 10px; padding: 10px 14px; background: linear-gradient(90deg, rgba(255,107,43,0.08) 0%, rgba(255,170,59,0.06) 100%); border-bottom: 1px solid rgba(255,107,43,0.15); flex-shrink: 0; }
 .upsell-banner.visible { display: flex; }
 .upsell-text { flex: 1; font-size: 12px; font-weight: 500; color: var(--text-2); line-height: 1.4; }
@@ -327,7 +291,6 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
 .upsell-cta { background: var(--fire); color: white; border: none; font-family: var(--font-body); font-size: 11px; font-weight: 700; padding: 6px 13px; border-radius: var(--r-full); cursor: pointer; white-space: nowrap; transition: all .18s; box-shadow: var(--shadow-fire); flex-shrink: 0; touch-action: manipulation; }
 .upsell-cta:hover { background: var(--fire-deep); transform: translateY(-1px); }
  
-/* ─── MODALS ─────────────────────────────────────────────── */
 .modal-backdrop { position: fixed; inset: 0; background: rgba(24,22,26,0.45); backdrop-filter: blur(6px); z-index: 3000; display: flex; align-items: center; justify-content: center; padding: 20px; opacity: 0; pointer-events: none; transition: opacity .22s ease; }
 .modal-backdrop.open { opacity: 1; pointer-events: auto; }
 .modal { background: var(--surface); border-radius: 24px; box-shadow: var(--shadow-xl); width: 100%; max-width: 400px; overflow: hidden; transform: translateY(16px) scale(0.97); transition: transform .28s cubic-bezier(0.34,1.56,0.64,1); max-height: 90vh; overflow-y: auto; }
@@ -352,7 +315,6 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
 .auth-msg.error   { display: block; background: var(--danger-bg); color: var(--danger); }
 .auth-msg.success { display: block; background: var(--success-bg); color: var(--success); }
  
-/* ─── REFUEL MODAL ──────────────────────────────────────────── */
 .refuel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .refuel-station-info { background: var(--amber-pale); border: 1px solid rgba(255,170,59,0.25); border-radius: var(--r-md); padding: 11px 14px; }
 .refuel-station-name { font-family: var(--font-display); font-size: 14px; font-weight: 800; color: var(--text-1); }
@@ -364,7 +326,6 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
 .field-row { display: flex; gap: 8px; }
 .field-row .field-group { flex: 1; }
  
-/* ─── PROFILE PANEL ──────────────────────────────────────── */
 .profile-panel { width: 340px; flex-shrink: 0; height: 100%; background: var(--surface); border-left: 1px solid var(--border); display: none; flex-direction: column; overflow: hidden; }
 .profile-panel.open { display: flex; }
 .profile-header { padding: 20px 18px 16px; border-bottom: 1px solid var(--border-2); background: linear-gradient(135deg, rgba(255,107,43,0.05) 0%, transparent 60%); flex-shrink: 0; position: relative; }
@@ -385,30 +346,8 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
 .profile-scroll::-webkit-scrollbar-thumb { background: #D4C9CF; border-radius: 4px; }
 .profile-close-btn { position: absolute; top: 12px; right: 12px; background: var(--surface-3); border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; color: var(--text-3); transition: all .15s; touch-action: manipulation; }
 .profile-close-btn:hover { background: var(--surface-4); }
-
-/* ─── LOGOUT BUTTON ──────────────────── */
-.btn-logout {
-  margin: 0 12px 14px;
-  width: calc(100% - 24px);
-  background: var(--danger-bg);
-  border: 1.5px solid rgba(239,68,68,0.25);
-  color: var(--danger);
-  font-family: var(--font-body);
-  font-size: 13px;
-  font-weight: 700;
-  padding: 11px;
-  border-radius: var(--r-md);
-  cursor: pointer;
-  transition: all .18s;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  touch-action: manipulation;
-}
+.btn-logout { margin: 0 12px 14px; width: calc(100% - 24px); background: var(--danger-bg); border: 1.5px solid rgba(239,68,68,0.25); color: var(--danger); font-family: var(--font-body); font-size: 13px; font-weight: 700; padding: 11px; border-radius: var(--r-md); cursor: pointer; transition: all .18s; flex-shrink: 0; display: flex; align-items: center; justify-content: center; gap: 7px; touch-action: manipulation; }
 .btn-logout:hover { background: var(--danger); color: white; border-color: var(--danger); box-shadow: 0 4px 16px rgba(239,68,68,0.25); }
-
 .history-item { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r-md); padding: 11px 12px; margin-bottom: 7px; transition: box-shadow .18s; }
 .history-item:hover { box-shadow: var(--shadow-sm); }
 .hi-top  { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
@@ -429,15 +368,7 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
 .alert-delete { background: none; border: none; cursor: pointer; font-size: 13px; color: var(--text-5); padding: 2px; transition: color .15s; touch-action: manipulation; min-width: 28px; min-height: 28px; display: flex; align-items: center; justify-content: center; }
 .alert-delete:hover { color: var(--danger); }
  
-/* ─── NEW FEATURES CSS ───────────────────────────────── */
-.verify-overlay {
-  position: fixed; inset: 0;
-  background: linear-gradient(160deg, rgba(255,249,244,0.98) 0%, rgba(255,245,232,0.98) 100%);
-  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-  z-index: 9999; display: flex; flex-direction: column; align-items: center;
-  justify-content: center; gap: 16px; padding: 40px; text-align: center;
-  animation: verifyIn .4s cubic-bezier(0.34,1.56,0.64,1);
-}
+.verify-overlay { position: fixed; inset: 0; background: linear-gradient(160deg, rgba(255,249,244,0.98) 0%, rgba(255,245,232,0.98) 100%); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 40px; text-align: center; animation: verifyIn .4s cubic-bezier(0.34,1.56,0.64,1); }
 @keyframes verifyIn { from { opacity:0; transform:scale(0.96); } to { opacity:1; transform:scale(1); } }
 .verify-icon { font-size: 72px; line-height: 1; animation: verifyBounce .6s .2s cubic-bezier(0.34,1.56,0.64,1) both; }
 @keyframes verifyBounce { from { transform: scale(0); opacity:0; } to { transform: scale(1); opacity:1; } }
@@ -462,7 +393,6 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
 .autonomy-label { font-size: 10px; font-weight: 700; color: var(--info); text-transform: uppercase; letter-spacing: 0.5px; }
 .autonomy-val { font-family: var(--font-display); font-size: 20px; font-weight: 900; color: var(--info); }
  
-/* ─── MOBILE ─────────────────────────────────────────── */
 @media (max-width: 768px) {
   :root { --header-h: 58px; --tab-h: 62px; }
   .app-layout { flex-direction: column; }
@@ -875,33 +805,26 @@ const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
 // ════════════════════════════════════════════════════════════
-//  FETCH — usa el proxy propio de Vercel (/api/fuel)
-//  El archivo api/fuel.js en la raíz del repo actúa de
-//  intermediario server-side: sin CORS, sin proxies externos.
-//  Estructura de URL: /api/fuel?path=EstacionesTerrestres/...
+//  PROXY — llama a /api/fuel en Vercel
 // ════════════════════════════════════════════════════════════
 const API_BASE = 'https://sedeaplicaciones.minetur.gob.es/ServiciosRESTCarburantes/PreciosCarburantes';
 
 async function fetchWithCORS(fullUrl) {
-  // Extraer el path relativo a API_BASE
-  const path = fullUrl.replace(API_BASE + '/', '').replace(/^\//, '');
-
+  // Extrae el path relativo quitando el BASE y slashes iniciales
+  const path = fullUrl.replace(API_BASE, '').replace(/^\//, '');
   const proxyUrl = `/api/fuel?path=${encodeURIComponent(path)}`;
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 20000);
+  const timeout = setTimeout(() => controller.abort(), 25000);
 
   try {
     const res = await fetch(proxyUrl, { signal: controller.signal });
     clearTimeout(timeout);
-
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || `Error ${res.status}`);
+      throw new Error(err.error || `Error ${res.status} del proxy`);
     }
-
     return await res.json();
-
   } catch (err) {
     clearTimeout(timeout);
     if (err.name === 'AbortError') throw new Error('Tiempo de espera agotado. Comprueba tu conexión.');
@@ -910,26 +833,46 @@ async function fetchWithCORS(fullUrl) {
 }
 
 // ════════════════════════════════════════════════════════════
-//  parseFloat robusto — acepta coma y punto como decimal
+//  HELPERS
 // ════════════════════════════════════════════════════════════
 function parseNum(val) {
   if (val === null || val === undefined || val === '') return NaN;
   return parseFloat(String(val).replace(',', '.'));
 }
 
-// ════════════════════════════════════════════════════════════
-//  getIdeess — extrae ID de estación de forma robusta
-// ════════════════════════════════════════════════════════════
+// Extrae ID estación de forma robusta
 function getIdeess(s) {
-  return s['IDEESS'] || s['IDEESS '] || s.IDEESS || (s.Dirección + '|' + s.Municipio + '|' + s.Rótulo);
+  return String(s['IDEESS'] || s['IDEESS '] || (s.Dirección + '|' + s.Municipio + '|' + s.Rótulo));
 }
 
+// Escapa HTML para evitar XSS en atributos inline
+function escHtml(str) {
+  return String(str || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/'/g,'&#39;');
+}
+
+function fmtDate(iso) {
+  return new Date(iso).toLocaleDateString('es-ES', { day:'2-digit', month:'short', year:'numeric' });
+}
+function fmtDateTime(iso) {
+  return new Date(iso).toLocaleDateString('es-ES', {
+    weekday:'long', day:'2-digit', month:'long', year:'numeric',
+    hour:'2-digit', minute:'2-digit'
+  });
+}
+function nowIso() { return new Date().toISOString(); }
+
+// ════════════════════════════════════════════════════════════
+//  ESTADO
+// ════════════════════════════════════════════════════════════
 let currentUser  = null;
 let favorites    = new Set();
 let profileTab   = 'historial';
 let refuelTarget = null;
 let alertTarget  = null;
 let tankEmptyTarget = null;
+
+// CORREGIDO: mapa de favoritos por id para openRefuelModalFromFav sin JSON en onclick
+const favDataMap = new Map();
 
 // ════════════════════════════════════════════════════════════
 //  VERIFICACIÓN EMAIL
@@ -948,20 +891,6 @@ function checkVerificationCallback() {
 function dismissVerifyOverlay() {
   document.getElementById('verify-overlay').style.display = 'none';
 }
-
-// ════════════════════════════════════════════════════════════
-//  HELPERS
-// ════════════════════════════════════════════════════════════
-function fmtDate(iso) {
-  return new Date(iso).toLocaleDateString('es-ES', { day:'2-digit', month:'short', year:'numeric' });
-}
-function fmtDateTime(iso) {
-  return new Date(iso).toLocaleDateString('es-ES', {
-    weekday:'long', day:'2-digit', month:'long', year:'numeric',
-    hour:'2-digit', minute:'2-digit'
-  });
-}
-function nowIso() { return new Date().toISOString(); }
 
 // ════════════════════════════════════════════════════════════
 //  DONATE
@@ -997,7 +926,6 @@ function switchTab(tab) {
     currentTab = 'lista';
     return;
   }
-
   currentTab = tab;
   ['lista','mapa','perfil'].forEach(t => {
     const btn = document.getElementById('tab-'+t);
@@ -1037,7 +965,7 @@ function toggleSearch() {
 }
 
 // ════════════════════════════════════════════════════════════
-//  STATE / CONSTANTS
+//  CONSTANTES
 // ════════════════════════════════════════════════════════════
 let allStations = [], filteredStations = [];
 let activeFuel = 'gasolina95', sortMode = 'precio';
@@ -1097,7 +1025,7 @@ function buildNavHTML(lat, lng, name) {
 }
 
 // ════════════════════════════════════════════════════════════
-//  MAP
+//  MAPA
 // ════════════════════════════════════════════════════════════
 function initMap() {
   mapInstance = L.map('map', { zoomControl: true }).setView([40.416, -3.703], 6);
@@ -1119,16 +1047,19 @@ function makeIcon(color) {
 }
 
 // ════════════════════════════════════════════════════════════
-//  API — usa fetchWithCORS (proxy /api/fuel en Vercel)
+//  API — proxy /api/fuel
 // ════════════════════════════════════════════════════════════
 async function loadProvincias() {
   try {
     const data = await fetchWithCORS(`${API_BASE}/Listados/Provincias/`);
     const sel  = document.getElementById('sel-prov');
     const list = Array.isArray(data) ? data : (data.Provincias || data.ListaProvincias || []);
-    list.forEach(p => sel.appendChild(new Option(p.Provincia, p.IDPovincia || p.IDProvincia)));
+    list.forEach(p => {
+      const opt = new Option(p.Provincia, p.IDPovincia || p.IDProvincia);
+      sel.appendChild(opt);
+    });
   } catch(e) {
-    showError('No se pudieron cargar las provincias. Comprueba tu conexión.');
+    showError('No se pudieron cargar las provincias. ' + e.message);
   }
 }
 
@@ -1145,7 +1076,8 @@ async function onProvinciaChange() {
     list.forEach(m => selMun.appendChild(new Option(m.Municipio, m.IDMunicipio)));
     selMun.disabled = false;
   } catch(e) {
-    showError('No se pudieron cargar los municipios.');
+    showError('No se pudieron cargar los municipios. ' + e.message);
+    selMun.innerHTML = '<option value="">Error — intenta de nuevo</option>';
   }
 }
 
@@ -1155,12 +1087,12 @@ async function buscarPorMunicipio() {
   showLoading('Buscando gasolineras…');
   try {
     const data = await fetchWithCORS(`${API_BASE}/EstacionesTerrestres/FiltroMunicipio/${idMun}`);
-    if (!data.ListaEESSPrecio) throw new Error('Sin datos');
+    if (!data || !data.ListaEESSPrecio) throw new Error('La API no devolvió datos de estaciones');
     processStations(data.ListaEESSPrecio);
     if (searchOpen) toggleSearch();
     if (isMobile()) switchTab('lista');
   } catch(e) {
-    showError('No hay datos para este municipio. ¡Prueba con otro! ' + (e.message || ''));
+    showError('No hay datos para este municipio. ' + e.message);
   }
 }
 
@@ -1179,26 +1111,28 @@ function usarMiUbicacion() {
       mapInstance.setView([userPos.lat, userPos.lng], 13);
       showLoading('Buscando gasolineras cercanas…');
       try {
+        // CORREGIDO: path vacío para el endpoint raíz de EstacionesTerrestres
         const data = await fetchWithCORS(`${API_BASE}/EstacionesTerrestres/`);
-        if (!data.ListaEESSPrecio) throw new Error('Sin datos');
+        if (!data || !data.ListaEESSPrecio) throw new Error('Sin datos de la API');
         const nearby = data.ListaEESSPrecio.filter(s => {
-          const lat = parseFloat(s.Latitud.replace(',','.'));
-          const lng = parseFloat((s['Longitud (WGS84)']||s.Longitud||'').replace(',','.'));
+          const lat = parseFloat((s.Latitud || '').replace(',','.'));
+          const lng = parseFloat((s['Longitud (WGS84)'] || s.Longitud || '').replace(',','.'));
           return !isNaN(lat) && !isNaN(lng) && haversine(userPos.lat, userPos.lng, lat, lng) <= 15;
         });
+        if (!nearby.length) throw new Error('No hay gasolineras en un radio de 15 km');
         processStations(nearby);
         if (searchOpen) toggleSearch();
         if (isMobile()) switchTab('lista');
       } catch(e) {
-        showError('No se pudieron cargar gasolineras cercanas. Prueba por municipio. ' + (e.message || ''));
+        showError('No se pudieron cargar gasolineras cercanas. Prueba por municipio. ' + e.message);
       }
     },
     function(err) {
       btn.disabled = false;
       btn.innerHTML = '<span>◎</span> Ubicarme';
       let msg = 'No se pudo obtener tu ubicación. Activa la geolocalización 📍';
-      if (err.code === 1) msg = 'Permiso denegado. Ve a Ajustes y permite el acceso.';
-      if (err.code === 2) msg = 'No se pudo determinar la posición. Comprueba tu señal GPS.';
+      if (err.code === 1) msg = 'Permiso denegado. Ve a Ajustes y permite el acceso a la ubicación.';
+      if (err.code === 2) msg = 'No se pudo determinar tu posición. Comprueba la señal GPS.';
       if (err.code === 3) msg = 'Tiempo de espera agotado. Asegúrate de tener GPS activo.';
       showError(msg);
     },
@@ -1213,17 +1147,18 @@ function haversine(lat1,lng1,lat2,lng2) {
 }
 
 // ════════════════════════════════════════════════════════════
-//  PROCESS & RENDER
+//  PROCESAR Y RENDERIZAR
 // ════════════════════════════════════════════════════════════
 function processStations(raw) {
   allStations = raw.map(s => {
-    const lat  = parseFloat(s.Latitud?.replace(',','.'));
-    const lng  = parseFloat((s['Longitud (WGS84)']||s.Longitud||'').replace(',','.'));
-    const dist = (userPos&&!isNaN(lat)&&!isNaN(lng)) ? haversine(userPos.lat,userPos.lng,lat,lng) : null;
+    const lat  = parseFloat((s.Latitud || '').replace(',','.'));
+    const lng  = parseFloat((s['Longitud (WGS84)'] || s.Longitud || '').replace(',','.'));
+    const dist = (userPos && !isNaN(lat) && !isNaN(lng))
+      ? haversine(userPos.lat, userPos.lng, lat, lng) : null;
     const prices = {};
     Object.entries(FUEL_MAP).forEach(([k,v]) => {
       const val = s[v.key];
-      prices[k] = val&&val!=='' ? parseFloat(val.replace(',','.')) : null;
+      prices[k] = (val && val !== '') ? parseFloat(val.replace(',','.')) : null;
     });
     return { ...s, lat, lng, dist, prices };
   });
@@ -1239,8 +1174,8 @@ function renderAll() {
   filteredStations = allStations
     .filter(s => s.prices[activeFuel] !== null)
     .sort((a,b) => {
-      if (sortMode==='precio')    return (a.prices[activeFuel]||99)-(b.prices[activeFuel]||99);
-      if (sortMode==='distancia') return (a.dist??999)-(b.dist??999);
+      if (sortMode === 'precio')    return (a.prices[activeFuel] || 99) - (b.prices[activeFuel] || 99);
+      if (sortMode === 'distancia') return (a.dist ?? 999) - (b.dist ?? 999);
       return 0;
     });
   updateStats();
@@ -1249,7 +1184,7 @@ function renderAll() {
 }
 
 function updateStats() {
-  const prices = filteredStations.map(s=>s.prices[activeFuel]).filter(Boolean);
+  const prices = filteredStations.map(s => s.prices[activeFuel]).filter(Boolean);
   document.getElementById('stat-total').textContent = filteredStations.length;
   document.getElementById('stat-min').textContent   = prices.length ? Math.min(...prices).toFixed(3) : '—';
   document.getElementById('stat-avg').textContent   = prices.length ? (prices.reduce((a,b)=>a+b,0)/prices.length).toFixed(3) : '—';
@@ -1258,9 +1193,9 @@ function updateStats() {
 
 function getPriceClass(price, min, max) {
   if (!price) return 'default';
-  const mid = (min+max)/2;
-  if (price <= min+(mid-min)*0.4) return 'cheap';
-  if (price >= max-(max-mid)*0.4) return 'expensive';
+  const mid = (min + max) / 2;
+  if (price <= min + (mid - min) * 0.4) return 'cheap';
+  if (price >= max - (max - mid) * 0.4) return 'expensive';
   return 'avg';
 }
 
@@ -1274,33 +1209,37 @@ function renderList() {
     </div>`;
     return;
   }
-  const prices = filteredStations.map(s=>s.prices[activeFuel]).filter(Boolean);
+  const prices = filteredStations.map(s => s.prices[activeFuel]).filter(Boolean);
   const minP = Math.min(...prices), maxP = Math.max(...prices);
   const frag = document.createDocumentFragment();
 
   filteredStations.forEach((s, i) => {
-    const price   = s.prices[activeFuel];
-    const cls     = getPriceClass(price, minP, maxP);
-    const saving  = (price-minP).toFixed(3);
-    const isMin   = price===minP;
-    const topBadge = sortMode==='distancia' ? '📍 Más cercana' : '🏆 Más económica';
+    const price    = s.prices[activeFuel];
+    const cls      = getPriceClass(price, minP, maxP);
+    const saving   = (price - minP).toFixed(3);
+    const isMin    = price === minP;
+    const topBadge = sortMode === 'distancia' ? '📍 Más cercana' : '🏆 Más económica';
     const savingBadge = isMin
       ? '<div class="badge-pill badge-winner">🏆 La más barata</div>'
       : `<div class="badge-pill badge-saving">+ ${saving} €/L</div>`;
-    const otherPrices = Object.entries(FUEL_MAP)
-      .filter(([k]) => k!==activeFuel && s.prices[k])
-      .map(([k,v]) => `<div class="fuel-pill"><span class="fuel-pill-tag">${v.short}</span>${s.prices[k]?.toFixed(3)} €</div>`)
-      .join('');
-    const ideess  = getIdeess(s);
-    const isFav   = favorites.has(ideess);
-    const distStr = s.dist!==null ? `<span class="station-dist">⊙ ${s.dist.toFixed(1)} km</span><span class="meta-dot">●</span>` : '';
 
+    const otherPrices = Object.entries(FUEL_MAP)
+      .filter(([k]) => k !== activeFuel && s.prices[k])
+      .map(([k,v]) => `<div class="fuel-pill"><span class="fuel-pill-tag">${escHtml(v.short)}</span>${s.prices[k]?.toFixed(3)} €</div>`)
+      .join('');
+
+    const ideess = getIdeess(s);
+    const isFav  = favorites.has(ideess);
+    const distStr = s.dist !== null
+      ? `<span class="station-dist">⊙ ${s.dist.toFixed(1)} km</span><span class="meta-dot">●</span>` : '';
+
+    // CORREGIDO: sin JSON en onclick, usamos data-index
     const loggedBtns = currentUser
       ? `<div class="card-action-btns">
            <div class="card-action-row">
-             <button class="btn-refuel-card" onclick="event.stopPropagation();openRefuelModal(${i})">⛽ Repostar</button>
-             <button class="btn-alert-card"  onclick="event.stopPropagation();openAlertModal(${i})">🔔</button>
-             <button class="fav-btn ${isFav?'saved':''}" onclick="event.stopPropagation();toggleFavorite(${i},this)">${isFav?'★':'☆'}</button>
+             <button class="btn-refuel-card" data-idx="${i}" onclick="event.stopPropagation();openRefuelModal(parseInt(this.dataset.idx))">⛽ Repostar</button>
+             <button class="btn-alert-card"  data-idx="${i}" onclick="event.stopPropagation();openAlertModal(parseInt(this.dataset.idx))">🔔</button>
+             <button class="fav-btn ${isFav?'saved':''}" data-idx="${i}" onclick="event.stopPropagation();toggleFavorite(parseInt(this.dataset.idx),this)">${isFav?'★':'☆'}</button>
            </div>
          </div>`
       : `<button class="fav-btn" onclick="event.stopPropagation();openAuthModal()" title="Inicia sesión para guardar favoritas">☆</button>`;
@@ -1309,17 +1248,18 @@ function renderList() {
     const card = document.createElement('div');
     card.className = 'station-card' + (isFirst ? ' has-winner-band' : '');
     card.id = `card-${i}`;
-    card.style.animationDelay = `${Math.min(i*0.04,0.32)}s`;
-    card.setAttribute('onclick', `selectStation(${i})`);
+    card.style.animationDelay = `${Math.min(i * 0.04, 0.32)}s`;
+    card.setAttribute('data-idx', i);
+    card.setAttribute('onclick', `selectStation(parseInt(this.dataset.idx))`);
 
     card.innerHTML = `
       ${isFirst ? `<div class="winner-band">${topBadge}</div>` : ''}
       <div class="card-body">
         <div class="brand-logo">${getBrandLogo(s.Rótulo)}</div>
         <div class="card-info">
-          <div class="station-name">${s.Rótulo||'Gasolinera'}</div>
-          <div class="station-meta">${distStr}<span class="station-city">${s.Municipio||''}</span></div>
-          <div class="station-address">📍 ${s.Dirección||''}</div>
+          <div class="station-name">${escHtml(s.Rótulo || 'Gasolinera')}</div>
+          <div class="station-meta">${distStr}<span class="station-city">${escHtml(s.Municipio || '')}</span></div>
+          <div class="station-address">📍 ${escHtml(s.Dirección || '')}</div>
         </div>
         <div class="card-right">
           <div class="price-${cls}">
@@ -1334,7 +1274,6 @@ function renderList() {
       </div>
       ${otherPrices ? `<div class="card-footer">${otherPrices}</div>` : ''}
     `;
-
     frag.appendChild(card);
   });
 
@@ -1355,12 +1294,12 @@ function renderMarkers() {
     }).addTo(markersLayer).bindPopup('📍 Estás aquí');
   }
 
-  const prices = filteredStations.map(s=>s.prices[activeFuel]).filter(Boolean);
+  const prices = filteredStations.map(s => s.prices[activeFuel]).filter(Boolean);
   const minP = Math.min(...prices), maxP = Math.max(...prices);
   const bounds = [];
 
   filteredStations.forEach((s, i) => {
-    if (isNaN(s.lat)||isNaN(s.lng)) return;
+    if (isNaN(s.lat) || isNaN(s.lng)) return;
     const cls    = getPriceClass(s.prices[activeFuel], minP, maxP);
     const marker = L.marker([s.lat, s.lng], { icon: makeIcon(cls) });
     const rows   = Object.entries(FUEL_MAP)
@@ -1369,8 +1308,8 @@ function renderMarkers() {
       .join('');
     marker.bindPopup(`
       <div class="popup-header">
-        <div class="popup-brand">⛽ ${s.Rótulo||'Gasolinera'}</div>
-        <div class="popup-addr">📍 ${s.Dirección||''} · ${s.Municipio||''}</div>
+        <div class="popup-brand">⛽ ${escHtml(s.Rótulo || 'Gasolinera')}</div>
+        <div class="popup-addr">📍 ${escHtml(s.Dirección || '')} · ${escHtml(s.Municipio || '')}</div>
       </div>
       <div class="popup-prices">${rows}</div>
       ${buildNavHTML(s.lat, s.lng, s.Rótulo)}
@@ -1382,7 +1321,7 @@ function renderMarkers() {
   });
 
   if (bounds.length) {
-    mapInstance.fitBounds(bounds, { padding:[40,40], maxZoom: userPos?14:18 });
+    mapInstance.fitBounds(bounds, { padding:[40,40], maxZoom: userPos ? 14 : 18 });
   }
 }
 
@@ -1395,21 +1334,21 @@ function selectStation(i, scrollToCard=true) {
     if (scrollToCard) card.scrollIntoView({ behavior:'smooth', block:'nearest' });
   }
   const s = filteredStations[i];
-  if (!s||isNaN(s.lat)||isNaN(s.lng)) return;
+  if (!s || isNaN(s.lat) || isNaN(s.lng)) return;
   if (isMobile() && currentTab !== 'mapa') switchTab('mapa');
   const delay = (isMobile() && currentTab !== 'mapa') ? 150 : 40;
   setTimeout(() => {
     mapInstance.invalidateSize();
-    mapInstance.setView([s.lat, s.lng], 15, { animate:true });
+    mapInstance.setView([s.lat, s.lng], 15, { animate: true });
     if (s._marker) s._marker.openPopup();
   }, delay);
 }
 
 // ════════════════════════════════════════════════════════════
-//  FILTERS / SORT
+//  FILTROS / ORDEN
 // ════════════════════════════════════════════════════════════
 function toggleFuel(el) {
-  document.querySelectorAll('.fuel-chip').forEach(c=>c.classList.remove('active'));
+  document.querySelectorAll('.fuel-chip').forEach(c => c.classList.remove('active'));
   el.classList.add('active');
   activeFuel = el.dataset.fuel;
   if (allStations.length) renderAll();
@@ -1417,7 +1356,7 @@ function toggleFuel(el) {
 
 function setSortMode(mode, btn) {
   sortMode = mode;
-  document.querySelectorAll('.sort-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   if (allStations.length) renderAll();
 }
@@ -1425,7 +1364,7 @@ function setSortMode(mode, btn) {
 // ════════════════════════════════════════════════════════════
 //  LOADING / ERROR
 // ════════════════════════════════════════════════════════════
-function showLoading(msg='Buscando gasolineras…') {
+function showLoading(msg = 'Buscando gasolineras…') {
   document.getElementById('stations-scroll').innerHTML = `
     <div class="state-panel">
       <div class="spinner"></div>
@@ -1436,7 +1375,7 @@ function showError(msg) {
   document.getElementById('stations-scroll').innerHTML = `
     <div class="state-panel">
       <div class="state-icon-box">⚠️</div>
-      <div class="error-toast">${msg}</div>
+      <div class="error-toast">${escHtml(msg)}</div>
     </div>`;
 }
 
@@ -1447,10 +1386,10 @@ let authTab = 'login';
 
 function switchAuthTab(tab) {
   authTab = tab;
-  document.getElementById('tab-login').classList.toggle('active', tab==='login');
-  document.getElementById('tab-register').classList.toggle('active', tab==='register');
-  document.getElementById('auth-name-field').style.display = tab==='register' ? 'flex' : 'none';
-  document.getElementById('auth-submit-btn').textContent = tab==='login' ? 'Entrar' : 'Crear cuenta';
+  document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+  document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+  document.getElementById('auth-name-field').style.display = tab === 'register' ? 'flex' : 'none';
+  document.getElementById('auth-submit-btn').textContent = tab === 'login' ? 'Entrar' : 'Crear cuenta';
   clearAuthMsg();
 }
 
@@ -1469,7 +1408,7 @@ function clearAuthMsg() {
   const el = document.getElementById('auth-msg');
   el.className = 'auth-msg'; el.textContent = '';
 }
-function showAuthMsg(msg, type='error') {
+function showAuthMsg(msg, type = 'error') {
   const el = document.getElementById('auth-msg');
   el.className = `auth-msg ${type}`; el.textContent = msg;
 }
@@ -1482,12 +1421,12 @@ async function doAuth() {
 
   if (!email || !pass) { showAuthMsg('Completa todos los campos.'); return; }
   btn.disabled = true;
-  btn.textContent = authTab==='login' ? 'Entrando…' : 'Creando cuenta…';
+  btn.textContent = authTab === 'login' ? 'Entrando…' : 'Creando cuenta…';
   clearAuthMsg();
 
   try {
     if (authTab === 'login') {
-      const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+      const { error } = await sb.auth.signInWithPassword({ email, password: pass });
       if (error) throw error;
     } else {
       const redirectTo = window.location.origin + window.location.pathname;
@@ -1510,15 +1449,17 @@ async function doAuth() {
     showAuthMsg(translateAuthError(err.message));
   } finally {
     btn.disabled = false;
-    btn.textContent = authTab==='login' ? 'Entrar' : 'Crear cuenta';
+    btn.textContent = authTab === 'login' ? 'Entrar' : 'Crear cuenta';
   }
 }
 
 function translateAuthError(msg) {
+  if (!msg) return 'Error desconocido.';
   if (msg.includes('Invalid login'))           return 'Email o contraseña incorrectos.';
   if (msg.includes('User already registered')) return 'Este email ya está registrado. Inicia sesión.';
   if (msg.includes('Password should be'))      return 'La contraseña debe tener al menos 6 caracteres.';
   if (msg.includes('Invalid email'))           return 'El formato del email no es válido.';
+  if (msg.includes('Email not confirmed'))     return 'Confirma tu email primero (revisa tu bandeja).';
   return msg;
 }
 
@@ -1538,7 +1479,7 @@ function handleAuthBtn() {
 }
 
 // ════════════════════════════════════════════════════════════
-//  PROFILE PANEL
+//  PERFIL
 // ════════════════════════════════════════════════════════════
 function openProfilePanel() {
   document.getElementById('profile-panel').classList.add('open');
@@ -1557,14 +1498,19 @@ function closeProfilePanel() {
 
 function updateAuthButton() {
   const btn = document.getElementById('auth-btn');
+  if (!btn) return; // CORREGIDO: guardia por si el DOM aún no está listo
   if (currentUser) {
-    const initial = (currentUser.user_metadata?.display_name || currentUser.email || '?')[0].toUpperCase();
+    const displayName = currentUser.user_metadata?.display_name || currentUser.email || '?';
+    const initial     = displayName[0].toUpperCase();
     btn.classList.add('logged-in');
-    btn.innerHTML = `<div class="auth-avatar">${initial}</div><span class="auth-btn-text">${currentUser.user_metadata?.display_name || 'Mi perfil'}</span>`;
+    btn.innerHTML = `<div class="auth-avatar">${initial}</div><span class="auth-btn-text">${escHtml(displayName)}</span>`;
     document.getElementById('upsell-banner').classList.remove('visible');
-    document.getElementById('profile-avatar-lg').textContent = initial;
-    document.getElementById('profile-name').textContent  = currentUser.user_metadata?.display_name || currentUser.email.split('@')[0];
-    document.getElementById('profile-email').textContent = currentUser.email;
+    const avatarEl = document.getElementById('profile-avatar-lg');
+    if (avatarEl) avatarEl.textContent = initial;
+    const nameEl  = document.getElementById('profile-name');
+    const emailEl = document.getElementById('profile-email');
+    if (nameEl)  nameEl.textContent  = displayName;
+    if (emailEl) emailEl.textContent = currentUser.email;
   } else {
     btn.classList.remove('logged-in');
     btn.innerHTML = `<span>👤</span><span class="auth-btn-text">Acceder</span>`;
@@ -1575,7 +1521,7 @@ function updateAuthButton() {
 
 function switchProfileTab(tab, btn) {
   profileTab = tab;
-  document.querySelectorAll('.ptab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.ptab').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
   loadProfileData();
 }
@@ -1583,13 +1529,13 @@ function switchProfileTab(tab, btn) {
 async function loadProfileData() {
   if (!currentUser) return;
   const scroll = document.getElementById('profile-scroll');
-  scroll.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-4)"><div class="spinner" style="margin:0 auto"></div></div>';
+  scroll.innerHTML = '<div style="text-align:center;padding:24px;"><div class="spinner" style="margin:0 auto"></div></div>';
   try {
-    if (profileTab === 'historial')      await renderHistorial(scroll);
-    else if (profileTab === 'favoritas') await renderFavoritas(scroll);
-    else if (profileTab === 'alertas')   await renderAlertas(scroll);
+    if      (profileTab === 'historial')  await renderHistorial(scroll);
+    else if (profileTab === 'favoritas')  await renderFavoritas(scroll);
+    else if (profileTab === 'alertas')    await renderAlertas(scroll);
   } catch(err) {
-    scroll.innerHTML = `<div class="empty-state"><div class="empty-state-icon">⚠️</div>Error al cargar datos.<br><span style="font-size:11px;color:var(--danger)">${err.message}</span></div>`;
+    scroll.innerHTML = `<div class="empty-state"><div class="empty-state-icon">⚠️</div>Error al cargar datos.<br><span style="font-size:11px;color:var(--danger)">${escHtml(err.message)}</span></div>`;
   }
 }
 
@@ -1601,9 +1547,10 @@ async function renderHistorial(scroll) {
     .from('refuel_logs')
     .select('*')
     .eq('user_id', currentUser.id)
-    .order('refueled_at', { ascending: false });
+    .order('refueled_at', { ascending: false })
+    .limit(100);
 
-  if (error) throw new Error(error.message);
+  if (error) throw new Error('Supabase: ' + error.message);
 
   const addBtn = `<button class="ptab-add-btn" onclick="openQuickRefuelModal()">＋ Añadir repostaje</button>`;
 
@@ -1629,31 +1576,39 @@ async function renderHistorial(scroll) {
     const liters    = r.liters            ? r.liters.toFixed(1) + 'L'            : '—';
     const price     = r.price_per_liter   ? r.price_per_liter.toFixed(3) + '€/L' : '—';
     const fuelLabel = FUEL_MAP[r.fuel_type]?.label || r.fuel_type || '—';
+    // CORREGIDO: no usar JSON en onclick, usar data attributes
+    const safeId    = escHtml(r.id);
+    const safeName  = escHtml(r.station_name || 'Gasolinera');
+    const kmRef     = r.km_at_refuel || 0;
+    const safeDate  = escHtml(r.refueled_at);
 
     let durationHTML = '';
     if (r.emptied_at) {
-      const days  = Math.max(0, Math.round((new Date(r.emptied_at) - new Date(r.refueled_at)) / 86400000));
+      const days = Math.max(0, Math.round((new Date(r.emptied_at) - new Date(r.refueled_at)) / 86400000));
       let kmStr = '';
       if (r.km_at_refuel && r.km_when_empty && r.km_when_empty > r.km_at_refuel) {
         kmStr = ` · 📏 ${Math.round(r.km_when_empty - r.km_at_refuel)} km`;
       }
       durationHTML = `<div class="duration-badge">⏱ ${days} día${days!==1?'s':''} de autonomía${kmStr} · Vacío: ${fmtDate(r.emptied_at)}</div>`;
     } else {
-      const safeId   = r.id;
-      const safeName = (r.station_name || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-      durationHTML = `<button class="btn-empty-tank" onclick="openTankEmptyModal('${safeId}','${safeName}',${r.km_at_refuel||0},'${r.refueled_at}')">🪫 ¿Se vació el depósito?</button>`;
+      durationHTML = `<button class="btn-empty-tank"
+        data-id="${safeId}"
+        data-name="${safeName}"
+        data-km="${kmRef}"
+        data-date="${safeDate}"
+        onclick="openTankEmptyModalFromBtn(this)">🪫 ¿Se vació el depósito?</button>`;
     }
 
     return `<div class="history-item">
       <div class="hi-top">
         <div style="flex:1;min-width:0;">
-          <div class="hi-name">${r.station_name || 'Gasolinera'}</div>
+          <div class="hi-name">${safeName}</div>
           <div class="hi-meta">${fuelLabel} · ${liters} · ${price} · ${dateStr}</div>
           ${durationHTML}
         </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;">
           <div class="hi-price">${total}</div>
-          <button class="hi-delete" title="Borrar" onclick="deleteRefuel('${r.id}')">🗑</button>
+          <button class="hi-delete" data-id="${safeId}" onclick="deleteRefuel(this.dataset.id)">🗑</button>
         </div>
       </div>
     </div>`;
@@ -1670,9 +1625,10 @@ async function renderFavoritas(scroll) {
     .from('favorites')
     .select('*')
     .eq('user_id', currentUser.id)
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .limit(100);
 
-  if (error) throw new Error(error.message);
+  if (error) throw new Error('Supabase: ' + error.message);
 
   document.getElementById('pstat-favoritas').textContent = data?.length || 0;
 
@@ -1680,16 +1636,21 @@ async function renderFavoritas(scroll) {
     scroll.innerHTML = `<div class="empty-state"><div class="empty-state-icon">⭐</div>Aún no has guardado favoritas.<br><span style="font-size:12px;margin-top:8px;display:block">Pulsa ☆ en cualquier gasolinera de la lista.</span></div>`;
     return;
   }
+
+  // CORREGIDO: guardar datos en un mapa JS en lugar de JSON en onclick
+  favDataMap.clear();
+  data.forEach(f => favDataMap.set(f.ideess, f));
+
   scroll.innerHTML = data.map(f => `
     <div class="history-item">
       <div class="hi-top">
         <div>
-          <div class="hi-name">⭐ ${f.station_name}</div>
-          <div class="hi-meta">📍 ${f.station_address || ''} ${f.municipio ? '· ' + f.municipio : ''}</div>
+          <div class="hi-name">⭐ ${escHtml(f.station_name)}</div>
+          <div class="hi-meta">📍 ${escHtml(f.station_address || '')}${f.municipio ? ' · ' + escHtml(f.municipio) : ''}</div>
         </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
-          <button class="btn-refuel-card" onclick="openRefuelModalFromFav(${JSON.stringify(f).replace(/"/g,'&quot;')})">⛽ Repostar</button>
-          <button class="hi-delete" onclick="deleteFavorite('${f.ideess}')">🗑</button>
+          <button class="btn-refuel-card" data-ideess="${escHtml(f.ideess)}" onclick="openRefuelModalFromFavKey(this.dataset.ideess)">⛽ Repostar</button>
+          <button class="hi-delete" data-ideess="${escHtml(f.ideess)}" onclick="deleteFavorite(this.dataset.ideess)">🗑</button>
         </div>
       </div>
     </div>`).join('');
@@ -1704,9 +1665,10 @@ async function renderAlertas(scroll) {
     .select('*')
     .eq('user_id', currentUser.id)
     .eq('is_active', true)
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .limit(100);
 
-  if (error) throw new Error(error.message);
+  if (error) throw new Error('Supabase: ' + error.message);
 
   if (!data || !data.length) {
     scroll.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🔔</div>No tienes alertas activas.<br><span style="font-size:12px;margin-top:8px;display:block">Pulsa 🔔 en cualquier gasolinera de la lista.</span></div>`;
@@ -1716,24 +1678,28 @@ async function renderAlertas(scroll) {
     const fuelLabel = FUEL_MAP[a.fuel_type]?.label || a.fuel_type;
     return `<div class="alert-item">
       <div class="alert-item-info">
-        <div class="alert-item-name">🔔 ${a.station_name}</div>
+        <div class="alert-item-name">🔔 ${escHtml(a.station_name)}</div>
         <div class="alert-item-detail">${fuelLabel} — Avisar si baja de</div>
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
         <div class="alert-item-price">${a.target_price.toFixed(3)} €/L</div>
-        <button class="alert-delete" onclick="deleteAlert('${a.id}')">🗑</button>
+        <button class="alert-delete" data-id="${escHtml(a.id)}" onclick="deleteAlert(this.dataset.id)">🗑</button>
       </div>
     </div>`;
   }).join('');
 }
 
 // ════════════════════════════════════════════════════════════
-//  FAVORITES
+//  FAVORITOS
 // ════════════════════════════════════════════════════════════
 async function loadFavorites() {
   if (!currentUser) return;
-  const { data } = await sb.from('favorites').select('ideess').eq('user_id', currentUser.id);
-  favorites = new Set((data||[]).map(f => f.ideess));
+  const { data, error } = await sb
+    .from('favorites')
+    .select('ideess')
+    .eq('user_id', currentUser.id);
+  if (error) { console.error('Error cargando favoritos:', error.message); return; }
+  favorites = new Set((data || []).map(f => f.ideess));
 }
 
 async function toggleFavorite(i, btn) {
@@ -1742,18 +1708,21 @@ async function toggleFavorite(i, btn) {
   const ideess = getIdeess(s);
 
   if (favorites.has(ideess)) {
-    await sb.from('favorites').delete().eq('user_id', currentUser.id).eq('ideess', ideess);
+    const { error } = await sb.from('favorites').delete()
+      .eq('user_id', currentUser.id).eq('ideess', ideess);
+    if (error) { console.error(error); return; }
     favorites.delete(ideess);
     btn.textContent = '☆'; btn.classList.remove('saved');
   } else {
-    await sb.from('favorites').upsert({
+    const { error } = await sb.from('favorites').upsert({
       user_id: currentUser.id, ideess,
-      station_name: s.Rótulo || 'Gasolinera',
+      station_name:    s.Rótulo    || 'Gasolinera',
       station_address: s.Dirección || '',
-      municipio: s.Municipio || '',
-      lat: s.lat, lng: s.lng,
+      municipio:       s.Municipio || '',
+      lat: s.lat || null, lng: s.lng || null,
       fuel_type: activeFuel
     }, { onConflict: 'user_id,ideess' });
+    if (error) { console.error(error); return; }
     favorites.add(ideess);
     btn.textContent = '★'; btn.classList.add('saved');
   }
@@ -1774,7 +1743,7 @@ function openRefuelModal(i) {
   refuelTarget = filteredStations[i];
   document.getElementById('refuel-date-display').textContent = fmtDateTime(new Date());
   document.getElementById('refuel-station-name').textContent = refuelTarget.Rótulo || 'Gasolinera';
-  document.getElementById('refuel-station-addr').textContent = `📍 ${refuelTarget.Dirección||''} · ${refuelTarget.Municipio||''}`;
+  document.getElementById('refuel-station-addr').textContent = `📍 ${refuelTarget.Dirección || ''} · ${refuelTarget.Municipio || ''}`;
   const price = refuelTarget.prices[activeFuel];
   document.getElementById('refuel-price').value  = price ? price.toFixed(3) : '';
   document.getElementById('refuel-fuel').value   = activeFuel;
@@ -1786,11 +1755,22 @@ function openRefuelModal(i) {
   document.getElementById('refuel-modal').classList.add('open');
 }
 
-function openRefuelModalFromFav(fav) {
-  refuelTarget = { Rótulo: fav.station_name, Dirección: fav.station_address, Municipio: fav.municipio, lat: fav.lat, lng: fav.lng, IDEESS: fav.ideess, prices: {} };
+// CORREGIDO: toma el ideess como clave y busca en el mapa de datos
+function openRefuelModalFromFavKey(ideess) {
+  const fav = favDataMap.get(ideess);
+  if (!fav) return;
+  refuelTarget = {
+    Rótulo:    fav.station_name,
+    Dirección: fav.station_address,
+    Municipio: fav.municipio,
+    lat:       fav.lat,
+    lng:       fav.lng,
+    IDEESS:    fav.ideess,
+    prices:    {}
+  };
   document.getElementById('refuel-date-display').textContent = fmtDateTime(new Date());
   document.getElementById('refuel-station-name').textContent = fav.station_name;
-  document.getElementById('refuel-station-addr').textContent = `📍 ${fav.station_address||''} · ${fav.municipio||''}`;
+  document.getElementById('refuel-station-addr').textContent = `📍 ${fav.station_address || ''} · ${fav.municipio || ''}`;
   document.getElementById('refuel-price').value  = '';
   document.getElementById('refuel-fuel').value   = fav.fuel_type || 'gasolina95';
   document.getElementById('refuel-liters').value = '';
@@ -1806,9 +1786,9 @@ function closeRefuelModal() { document.getElementById('refuel-modal').classList.
 function updateRefuelPreview() {
   const price  = parseNum(document.getElementById('refuel-price').value);
   const liters = parseNum(document.getElementById('refuel-liters').value);
-  const preview= document.getElementById('refuel-preview');
+  const preview = document.getElementById('refuel-preview');
   if (!isNaN(price) && !isNaN(liters) && price > 0 && liters > 0) {
-    document.getElementById('refuel-total-val').textContent = (price*liters).toFixed(2) + ' €';
+    document.getElementById('refuel-total-val').textContent = (price * liters).toFixed(2) + ' €';
     preview.classList.add('visible');
   } else {
     preview.classList.remove('visible');
@@ -1824,24 +1804,33 @@ async function saveRefuel() {
   const msgEl  = document.getElementById('refuel-msg');
 
   if (isNaN(price) || isNaN(liters) || price <= 0 || liters <= 0) {
-    msgEl.className='auth-msg error';
-    msgEl.textContent='Introduce precio y litros válidos (usa punto o coma como decimal).';
+    msgEl.className = 'auth-msg error';
+    msgEl.textContent = 'Introduce precio y litros válidos (usa punto o coma como decimal).';
     return;
   }
   const ideess = getIdeess(refuelTarget);
   const { error } = await sb.from('refuel_logs').insert({
-    user_id: currentUser.id, ideess,
-    station_name: refuelTarget.Rótulo || 'Gasolinera',
+    user_id:         currentUser.id,
+    ideess,
+    station_name:    refuelTarget.Rótulo    || 'Gasolinera',
     station_address: refuelTarget.Dirección || '',
-    municipio: refuelTarget.Municipio || '',
-    lat: refuelTarget.lat || null, lng: refuelTarget.lng || null,
-    fuel_type: fuel, price_per_liter: price,
-    liters, total_cost: price*liters,
-    km_at_refuel: isNaN(km) ? null : km,
-    refueled_at: nowIso()
+    municipio:       refuelTarget.Municipio || '',
+    lat:             refuelTarget.lat || null,
+    lng:             refuelTarget.lng || null,
+    fuel_type:       fuel,
+    price_per_liter: price,
+    liters,
+    total_cost:      price * liters,
+    km_at_refuel:    isNaN(km) ? null : km,
+    refueled_at:     nowIso()
   });
-  if (error) { msgEl.className='auth-msg error'; msgEl.textContent='Error al guardar: '+error.message; return; }
-  msgEl.className='auth-msg success'; msgEl.textContent='✅ Repostaje guardado.';
+  if (error) {
+    msgEl.className = 'auth-msg error';
+    msgEl.textContent = 'Error al guardar: ' + error.message;
+    return;
+  }
+  msgEl.className = 'auth-msg success';
+  msgEl.textContent = '✅ Repostaje guardado.';
   setTimeout(() => {
     closeRefuelModal();
     if (document.getElementById('profile-panel').classList.contains('open')) loadProfileData();
@@ -1849,7 +1838,7 @@ async function saveRefuel() {
 }
 
 async function deleteRefuel(id) {
-  await sb.from('refuel_logs').delete().eq('id', id);
+  await sb.from('refuel_logs').delete().eq('id', id).eq('user_id', currentUser.id);
   loadProfileData();
 }
 
@@ -1870,15 +1859,14 @@ function openQuickRefuelModal() {
   document.getElementById('quick-refuel-modal').classList.add('open');
   setTimeout(() => document.getElementById('qr-station').focus(), 100);
 }
-
 function closeQuickRefuelModal() { document.getElementById('quick-refuel-modal').classList.remove('open'); }
 
 function updateQRPreview() {
   const price  = parseNum(document.getElementById('qr-price').value);
   const liters = parseNum(document.getElementById('qr-liters').value);
-  const preview= document.getElementById('qr-preview');
+  const preview = document.getElementById('qr-preview');
   if (!isNaN(price) && !isNaN(liters) && price > 0 && liters > 0) {
-    document.getElementById('qr-total-val').textContent = (price*liters).toFixed(2) + ' €';
+    document.getElementById('qr-total-val').textContent = (price * liters).toFixed(2) + ' €';
     preview.classList.add('visible');
   } else {
     preview.classList.remove('visible');
@@ -1895,34 +1883,47 @@ async function saveQuickRefuel() {
   const msgEl   = document.getElementById('qr-msg');
 
   if (!station) {
-    msgEl.className='auth-msg error'; msgEl.textContent='Introduce el nombre de la gasolinera.'; return;
+    msgEl.className = 'auth-msg error'; msgEl.textContent = 'Introduce el nombre de la gasolinera.'; return;
   }
   if (isNaN(price) || isNaN(liters) || price <= 0 || liters <= 0) {
-    msgEl.className='auth-msg error'; msgEl.textContent='Introduce precio y litros válidos.'; return;
+    msgEl.className = 'auth-msg error'; msgEl.textContent = 'Introduce precio y litros válidos.'; return;
   }
 
   const { error } = await sb.from('refuel_logs').insert({
-    user_id: currentUser.id,
-    ideess: 'manual_' + Date.now(),
-    station_name: station,
+    user_id:         currentUser.id,
+    ideess:          'manual_' + Date.now(),
+    station_name:    station,
     station_address: '', municipio: '',
     lat: null, lng: null,
-    fuel_type: fuel, price_per_liter: price,
-    liters, total_cost: price * liters,
-    km_at_refuel: isNaN(km) ? null : km,
-    refueled_at: nowIso()
+    fuel_type:       fuel,
+    price_per_liter: price,
+    liters,
+    total_cost:      price * liters,
+    km_at_refuel:    isNaN(km) ? null : km,
+    refueled_at:     nowIso()
   });
 
-  if (error) { msgEl.className='auth-msg error'; msgEl.textContent='Error: '+error.message; return; }
-  msgEl.className='auth-msg success'; msgEl.textContent='✅ Repostaje guardado.';
+  if (error) {
+    msgEl.className = 'auth-msg error'; msgEl.textContent = 'Error: ' + error.message; return;
+  }
+  msgEl.className = 'auth-msg success'; msgEl.textContent = '✅ Repostaje guardado.';
   setTimeout(() => { closeQuickRefuelModal(); loadProfileData(); }, 800);
 }
 
 // ════════════════════════════════════════════════════════════
 //  TANK EMPTY MODAL
 // ════════════════════════════════════════════════════════════
+// CORREGIDO: recibe datos desde dataset del botón en lugar de argumentos con escapes
+function openTankEmptyModalFromBtn(btn) {
+  const id   = btn.dataset.id;
+  const name = btn.dataset.name;
+  const km   = parseFloat(btn.dataset.km) || null;
+  const date = btn.dataset.date;
+  openTankEmptyModal(id, name, km, date);
+}
+
 function openTankEmptyModal(refuelId, stationName, kmAtRefuel, refueledAt) {
-  tankEmptyTarget = { id: refuelId, kmAtRefuel: parseFloat(kmAtRefuel)||null, refueledAt };
+  tankEmptyTarget = { id: refuelId, kmAtRefuel: kmAtRefuel || null, refueledAt };
   const refDate   = new Date(refueledAt);
   const now       = new Date();
   const daysSince = Math.max(0, Math.round((now - refDate) / 86400000));
@@ -1939,7 +1940,7 @@ function openTankEmptyModal(refuelId, stationName, kmAtRefuel, refueledAt) {
 
 function updateTEPreview() {
   if (!tankEmptyTarget) return;
-  const km = parseNum(document.getElementById('te-km').value);
+  const km      = parseNum(document.getElementById('te-km').value);
   const preview = document.getElementById('te-preview');
   if (!isNaN(km) && tankEmptyTarget.kmAtRefuel && km > tankEmptyTarget.kmAtRefuel) {
     document.getElementById('te-km-val').textContent = `${Math.round(km - tankEmptyTarget.kmAtRefuel)} km recorridos`;
@@ -1948,7 +1949,6 @@ function updateTEPreview() {
     preview.classList.remove('visible');
   }
 }
-
 function closeTankEmptyModal() { document.getElementById('tank-empty-modal').classList.remove('open'); }
 
 async function saveTankEmpty() {
@@ -1963,9 +1963,9 @@ async function saveTankEmpty() {
     .eq('user_id', currentUser.id);
 
   if (error) {
-    msgEl.className='auth-msg error'; msgEl.textContent='Error: '+error.message; return;
+    msgEl.className = 'auth-msg error'; msgEl.textContent = 'Error: ' + error.message; return;
   }
-  msgEl.className='auth-msg success'; msgEl.textContent='🪫 Depósito marcado como vacío.';
+  msgEl.className = 'auth-msg success'; msgEl.textContent = '🪫 Depósito marcado como vacío.';
   setTimeout(() => { closeTankEmptyModal(); loadProfileData(); }, 800);
 }
 
@@ -1990,22 +1990,27 @@ async function saveAlert() {
   const target = parseNum(document.getElementById('alert-price').value);
   const msgEl  = document.getElementById('alert-msg');
   if (isNaN(target) || target <= 0) {
-    msgEl.className='auth-msg error'; msgEl.textContent='Introduce un precio válido (ej. 1.400).'; return;
+    msgEl.className = 'auth-msg error'; msgEl.textContent = 'Introduce un precio válido (ej. 1.400).'; return;
   }
   const ideess = getIdeess(alertTarget);
   const { error } = await sb.from('price_alerts').upsert({
-    user_id: currentUser.id, ideess,
-    station_name: alertTarget.Rótulo || 'Gasolinera',
+    user_id:         currentUser.id,
+    ideess,
+    station_name:    alertTarget.Rótulo    || 'Gasolinera',
     station_address: alertTarget.Dirección || '',
-    fuel_type: fuel, target_price: target, is_active: true
+    fuel_type:       fuel,
+    target_price:    target,
+    is_active:       true
   }, { onConflict: 'user_id,ideess,fuel_type' });
-  if (error) { msgEl.className='auth-msg error'; msgEl.textContent='Error: '+error.message; return; }
-  msgEl.className='auth-msg success'; msgEl.textContent='✅ Alerta activada.';
+  if (error) {
+    msgEl.className = 'auth-msg error'; msgEl.textContent = 'Error: ' + error.message; return;
+  }
+  msgEl.className = 'auth-msg success'; msgEl.textContent = '✅ Alerta activada.';
   setTimeout(closeAlertModal, 1400);
 }
 
 async function deleteAlert(id) {
-  await sb.from('price_alerts').delete().eq('id', id);
+  await sb.from('price_alerts').delete().eq('id', id).eq('user_id', currentUser.id);
   loadProfileData();
 }
 
@@ -2014,8 +2019,10 @@ async function deleteAlert(id) {
 // ════════════════════════════════════════════════════════════
 sb.auth.onAuthStateChange(async (event, session) => {
   currentUser = session?.user || null;
-  if (currentUser && document.getElementById('auth-modal').classList.contains('open')) {
-    closeAuthModal();
+  // CORREGIDO: cerrar modal solo si está abierto y hay sesión
+  if (currentUser && event === 'SIGNED_IN') {
+    const authModal = document.getElementById('auth-modal');
+    if (authModal && authModal.classList.contains('open')) closeAuthModal();
   }
   updateAuthButton();
   if (currentUser) {
@@ -2023,25 +2030,27 @@ sb.auth.onAuthStateChange(async (event, session) => {
     if (allStations.length) renderList();
   } else {
     favorites.clear();
+    favDataMap.clear();
     if (allStations.length) renderList();
   }
 });
 
-// Cerrar modales al hacer clic fuera
+// Cerrar modales al clicar fuera
 ['auth-modal','refuel-modal','quick-refuel-modal','tank-empty-modal','alert-modal'].forEach(id => {
-  document.getElementById(id).addEventListener('click', e => {
-    if (e.target === e.currentTarget) document.getElementById(id).classList.remove('open');
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('click', e => {
+    if (e.target === e.currentTarget) el.classList.remove('open');
   });
 });
 
 // Enter en formularios
-document.getElementById('auth-password').addEventListener('keydown', e => { if (e.key==='Enter') doAuth(); });
-document.getElementById('auth-email').addEventListener('keydown',    e => { if (e.key==='Enter') doAuth(); });
-document.getElementById('auth-name').addEventListener('keydown',     e => { if (e.key==='Enter') doAuth(); });
-document.getElementById('qr-station').addEventListener('keydown',    e => { if (e.key==='Enter') document.getElementById('qr-price').focus(); });
-document.getElementById('refuel-price').addEventListener('keydown',  e => { if (e.key==='Enter') document.getElementById('refuel-liters').focus(); });
-document.getElementById('refuel-liters').addEventListener('keydown', e => { if (e.key==='Enter') document.getElementById('refuel-km').focus(); });
-document.getElementById('qr-price').addEventListener('keydown',      e => { if (e.key==='Enter') document.getElementById('qr-liters').focus(); });
+document.getElementById('auth-password').addEventListener('keydown', e => { if (e.key === 'Enter') doAuth(); });
+document.getElementById('auth-email').addEventListener('keydown',    e => { if (e.key === 'Enter') doAuth(); });
+document.getElementById('auth-name').addEventListener('keydown',     e => { if (e.key === 'Enter') doAuth(); });
+document.getElementById('qr-station').addEventListener('keydown',    e => { if (e.key === 'Enter') document.getElementById('qr-price').focus(); });
+document.getElementById('refuel-price').addEventListener('keydown',  e => { if (e.key === 'Enter') document.getElementById('refuel-liters').focus(); });
+document.getElementById('refuel-liters').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('refuel-km').focus(); });
+document.getElementById('qr-price').addEventListener('keydown',      e => { if (e.key === 'Enter') document.getElementById('qr-liters').focus(); });
 
 // ════════════════════════════════════════════════════════════
 //  INIT
@@ -2049,7 +2058,7 @@ document.getElementById('qr-price').addEventListener('keydown',      e => { if (
 initMap();
 loadProvincias();
 if (isMobile()) toggleSearch();
-setTimeout(checkVerificationCallback, 100);
+setTimeout(checkVerificationCallback, 200);
 </script>
 </body>
 </html>
