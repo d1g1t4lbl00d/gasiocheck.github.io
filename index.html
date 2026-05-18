@@ -1038,8 +1038,10 @@ function switchTab(tab) {
     sidebar.classList.remove('map-active');
     mapEl.classList.remove('active');
     profileEl.classList.add('open');
+    setDonateVisible(false);
     loadProfileData();
   }
+  if (tab !== 'perfil') setDonateVisible(true);
 }
 
 // ════════════════════════════════════════════════════════════
@@ -1630,7 +1632,8 @@ function translateAuthError(msg) {
 }
 
 async function doLogout() {
-  await sb.auth.signOut();
+  try { await sb.auth.signOut(); } catch (_) {}
+  currentUser = null;
   closeProfilePanel();
 }
 
@@ -1647,12 +1650,19 @@ function handleAuthBtn() {
 // ════════════════════════════════════════════════════════════
 //  PERFIL
 // ════════════════════════════════════════════════════════════
+function setDonateVisible(v) {
+  const el = document.getElementById('donate-float');
+  if (el) el.style.display = v ? '' : 'none';
+}
+
 function openProfilePanel() {
   document.getElementById('profile-panel').classList.add('open');
+  setDonateVisible(false);
   loadProfileData();
 }
 function closeProfilePanel() {
   document.getElementById('profile-panel').classList.remove('open');
+  setDonateVisible(true);
   if (isMobile()) {
     currentTab = 'lista';
     ['lista','mapa','perfil'].forEach(t => {
