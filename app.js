@@ -324,15 +324,13 @@ function usarMiUbicacion() {
     return;
   }
   const btn = document.getElementById('locate-btn');
-  btn.disabled = true;
-  btn.innerHTML = '<span>⏳</span> Localizando…';
+  btn.disabled = true; btn.classList.add('searching'); document.getElementById('locate-text').textContent = 'Buscando…';
   Pepe.say('Buscando dónde estás… un momentito 📍', 'thinking');
   showLoading('Detectando tu posición…');
 
   navigator.geolocation.getCurrentPosition(
     async function(pos) {
-      btn.disabled = false;
-      btn.innerHTML = '<span class="loc-dot"></span> Ubicarme';
+      btn.disabled = false; btn.classList.remove('searching'); document.getElementById('locate-text').textContent = 'Descubrir';
       userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
       if (mapInstance) mapInstance.setView([userPos.lat, userPos.lng], 13);
       showLoading('Identificando tu provincia…');
@@ -350,15 +348,13 @@ function usarMiUbicacion() {
         });
         if (!nearby.length) throw new Error('No hay gasolineras en un radio de 15 km');
         processStations(nearby);
-        if (searchOpen) toggleSearch();
         if (isMobile()) switchTab('lista');
       } catch(e) {
         showError(e.message);
       }
     },
     function(err) {
-      btn.disabled = false;
-      btn.innerHTML = '<span class="loc-dot"></span> Ubicarme';
+      btn.disabled = false; btn.classList.remove('searching'); document.getElementById('locate-text').textContent = 'Descubrir';
       let msg = 'No pude obtener tu ubicación. Activa la geolocalización 📍';
       if (err.code === 1) msg = 'Permiso denegado. Activa el acceso a la ubicación.';
       if (err.code === 2) msg = 'Sin señal GPS. Inténtalo de nuevo.';
@@ -788,6 +784,8 @@ async function doLogout() {
   favDataMap.clear();
   closeProfilePanel();
   updateAuthButton();
+  if (allStations.length) renderList();
+  if (isMobile()) switchTab('lista');
   Pepe.say('¡Hasta luego! Vuelve pronto 👋', 'happy');
 }
 function handleAuthBtn() {
@@ -1210,6 +1208,24 @@ document.addEventListener('click', e => {
 });
 
 async function boot() {
+  // Spawn floating stars in intro
+  const introStars = document.getElementById('intro-stars');
+  if (introStars) {
+    const starSymbols = ['✦','✧','⋆','∘','·','✦'];
+    for (let i = 0; i < 18; i++) {
+      const s = document.createElement('span');
+      s.className = 'intro-star';
+      s.textContent = starSymbols[i % starSymbols.length];
+      s.style.cssText = `left:${Math.random()*100}%;top:${20+Math.random()*70}%;animation-delay:${Math.random()*2.5}s;animation-duration:${2+Math.random()*2}s;font-size:${10+Math.random()*12}px;`;
+      introStars.appendChild(s);
+    }
+  }
+  // Remove overlay from DOM after animation completes
+  setTimeout(() => {
+    const overlay = document.getElementById('intro-overlay');
+    if (overlay) { overlay.classList.add('gone'); }
+  }, 3800);
+
   // Greet first — never let other errors block Pepe
   setTimeout(() => {
     try { Pepe.greet(); } catch(e) { console.error('Pepe.greet failed:', e); }
