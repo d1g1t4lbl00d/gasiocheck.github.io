@@ -166,13 +166,6 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
 .sort-btn:hover:not(.active) { border-color: var(--border-fire); color: var(--fire); transform: translateY(-1px); }
  
 /* ─── STATIONS SCROLL ──────────────────────────────────────── */
-/*
-  FIX CRÍTICO SCROLL MÓVIL:
-  - overflow-y: scroll con -webkit-overflow-scrolling: touch
-  - touch-action: pan-y (solo scroll vertical, permite tap en hijos)
-  - NO usar overscroll-behavior (puede bloquear en algunos iOS)
-  - El contenedor padre no debe interceptar eventos touch
-*/
 .stations-scroll-wrap { flex: 1; min-height: 0; overflow: hidden; position: relative; }
 .stations-scroll {
   height: 100%;
@@ -184,7 +177,6 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
   padding: 12px 8px 16px 12px;
   scrollbar-width: thin;
   scrollbar-color: #D4C9CF transparent;
-  /* Importante: position relative para que los hijos con position absolute funcionen */
   position: relative;
 }
 .stations-scroll::-webkit-scrollbar { width: 6px; }
@@ -203,12 +195,6 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
 .error-toast { background: var(--danger-bg); border: 1.5px solid rgba(239,68,68,0.15); color: var(--danger); padding: 14px 18px; border-radius: var(--r-lg); font-size: 13px; font-weight: 600; line-height: 1.5; text-align: center; }
  
 /* ─── STATION CARDS ─────────────────────────────────────────── */
-/*
-  FIX CRÍTICO TOUCH EN CARDS:
-  - NO usar touch-action: none (bloquea scroll)
-  - Los botones internos deben tener touch-action: manipulation y posición z elevada
-  - Usar cursor: pointer en todos los elementos clickables
-*/
 .station-card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -218,16 +204,13 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
   transition: transform .24s cubic-bezier(0.34,1.56,0.64,1), box-shadow .24s ease, border-color .18s ease;
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
   position: relative;
-  overflow: visible; /* FIX: visible para que botones no queden cortados */
+  overflow: visible;
   animation: card-reveal .35s cubic-bezier(0.34,1.56,0.64,1) both;
   background-image: linear-gradient(160deg, #fff 0%, #faf8f5 100%);
-  /* FIX: touch-action manipulation permite tap inmediato sin delay 300ms */
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
-  /* FIX: clip-path solo en el fondo, no en los botones */
   border-radius: 20px;
 }
-/* Inner wrapper para el clip visual sin afectar botones */
 .station-card > .card-inner-clip {
   border-radius: 20px;
   overflow: hidden;
@@ -262,12 +245,10 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
 .badge-winner { background: var(--success-bg); color: var(--success); }
 .badge-saving  { background: var(--surface-3); color: var(--text-4); }
 .fav-btn { background: none; border: none; cursor: pointer; font-size: 15px; color: var(--text-5); transition: all .2s cubic-bezier(0.34,1.56,0.64,1); padding: 3px; line-height: 1;
-  /* FIX: touch-action manipulation para respuesta inmediata en móvil */
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   position: relative;
   z-index: 10;
-  /* FIX: área de toque más grande en móvil */
   min-width: 32px; min-height: 32px;
   display: flex; align-items: center; justify-content: center;
 }
@@ -280,7 +261,6 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
 .fuel-pill:hover { background: var(--amber-pale); border-color: var(--border-fire); color: var(--fire); }
 .fuel-pill-tag { font-size: 9.5px; font-weight: 700; color: var(--text-4); background: var(--surface-4); padding: 1px 5px; border-radius: 4px; }
 
-/* FIX: Botones de acción en cards - área de toque garantizada */
 .btn-refuel-card, .btn-alert-card {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
@@ -481,16 +461,6 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
 .autonomy-preview.visible { display: block; }
 .autonomy-label { font-size: 10px; font-weight: 700; color: var(--info); text-transform: uppercase; letter-spacing: 0.5px; }
 .autonomy-val { font-family: var(--font-display); font-size: 20px; font-weight: 900; color: var(--info); }
-
-/* ─── CORS NOTICE ────────────────────────────────────────── */
-.cors-notice {
-  background: var(--info-bg); border: 1px solid var(--info-border);
-  border-radius: var(--r-md); padding: 12px 14px;
-  font-size: 12px; color: var(--info); font-weight: 500;
-  line-height: 1.6; text-align: center;
-  display: none;
-}
-.cors-notice.visible { display: block; }
  
 /* ─── MOBILE ─────────────────────────────────────────── */
 @media (max-width: 768px) {
@@ -502,7 +472,6 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
   .sidebar.map-active { display: none; }
   .search-panel { padding: 9px 10px 0; }
   .selects-row  { grid-template-columns: 1fr; gap: 7px; }
-  /* FIX CRÍTICO SCROLL MÓVIL: padding inferior mayor para evitar que el tab-bar tape contenido */
   .stations-scroll { padding: 8px 6px 80px 8px; }
   .donate-float { bottom: calc(var(--tab-h) + 70px) !important; right: 14px !important; }
   .tab-bar { display: flex; position: fixed; bottom: 0; left: 0; right: 0; height: var(--tab-h); background: var(--glass); backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); border-top: 1px solid var(--border); z-index: 200; padding-bottom: env(safe-area-inset-bottom, 0); }
@@ -519,11 +488,8 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
   .profile-panel { width: 100% !important; border-left: none !important; border-top: 1px solid var(--border); position: fixed; top: var(--header-h); left: 0; right: 0; bottom: var(--tab-h); z-index: 70; overflow-y: auto; -webkit-overflow-scrolling: touch; }
   .card-action-btns { gap: 4px; }
   .card-action-row  { gap: 3px; }
-  /* FIX MÓVIL: botones más grandes para facilitar el toque */
   .btn-refuel-card, .btn-alert-card { font-size: 10px; padding: 6px 10px; min-height: 32px; }
-  /* FIX: card-right en móvil con más espacio para botones */
   .card-right { gap: 4px; }
-  /* FIX: station cards no tienen hover en móvil (evita estados pegados) */
   .station-card:hover { transform: none; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border-color: var(--border); }
   .station-card.selected:hover { box-shadow: 0 0 0 3px var(--fire-glow), 0 8px 28px rgba(255,107,43,0.12); border-color: var(--fire); }
 }
@@ -909,48 +875,37 @@ const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
 // ════════════════════════════════════════════════════════════
-//  FIX CORS: La API del MINETUR bloquea peticiones desde
-//  dominios externos. Usamos un proxy CORS público como
-//  fallback, con la URL directa como primer intento.
-//
-//  Orden de intentos:
-//  1. URL directa (funciona en local y si el servidor lo permite)
-//  2. allorigins.win (proxy CORS)
-//  3. corsproxy.io
+//  FETCH — usa el proxy propio de Vercel (/api/fuel)
+//  El archivo api/fuel.js en la raíz del repo actúa de
+//  intermediario server-side: sin CORS, sin proxies externos.
+//  Estructura de URL: /api/fuel?path=EstacionesTerrestres/...
 // ════════════════════════════════════════════════════════════
 const API_BASE = 'https://sedeaplicaciones.minetur.gob.es/ServiciosRESTCarburantes/PreciosCarburantes';
 
-// Lista de proxies CORS a intentar en orden
-const CORS_PROXIES = [
-  url => url, // Intento directo primero
-  url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-  url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
-];
+async function fetchWithCORS(fullUrl) {
+  // Extraer el path relativo a API_BASE
+  const path = fullUrl.replace(API_BASE + '/', '').replace(/^\//, '');
 
-// Índice del proxy que funcionó (para no repetir intentos)
-let workingProxyIdx = 0;
+  const proxyUrl = `/api/fuel?path=${encodeURIComponent(path)}`;
 
-async function fetchWithCORS(url) {
-  // Intentar desde el proxy que funcionó la última vez
-  for (let i = workingProxyIdx; i < CORS_PROXIES.length; i++) {
-    try {
-      const proxyUrl = CORS_PROXIES[i](url);
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 12000);
-      const res = await fetch(proxyUrl, {
-        signal: controller.signal,
-        headers: i === 0 ? {} : { 'X-Requested-With': 'XMLHttpRequest' }
-      });
-      clearTimeout(timeout);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const text = await res.text();
-      const data = JSON.parse(text);
-      workingProxyIdx = i; // Recordar qué proxy funcionó
-      return data;
-    } catch (err) {
-      console.warn(`CORS proxy ${i} falló:`, err.message);
-      if (i === CORS_PROXIES.length - 1) throw new Error('No se pudo conectar con la API. Comprueba tu conexión.');
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 20000);
+
+  try {
+    const res = await fetch(proxyUrl, { signal: controller.signal });
+    clearTimeout(timeout);
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Error ${res.status}`);
     }
+
+    return await res.json();
+
+  } catch (err) {
+    clearTimeout(timeout);
+    if (err.name === 'AbortError') throw new Error('Tiempo de espera agotado. Comprueba tu conexión.');
+    throw err;
   }
 }
 
@@ -1164,7 +1119,7 @@ function makeIcon(color) {
 }
 
 // ════════════════════════════════════════════════════════════
-//  API — usa fetchWithCORS para funcionar en producción
+//  API — usa fetchWithCORS (proxy /api/fuel en Vercel)
 // ════════════════════════════════════════════════════════════
 async function loadProvincias() {
   try {
@@ -1309,15 +1264,6 @@ function getPriceClass(price, min, max) {
   return 'avg';
 }
 
-// ════════════════════════════════════════════════════════════
-//  RENDER LIST
-//  FIX CRÍTICO TOUCH MÓVIL:
-//  - NO usar touchstart/touchmove/touchend en las cards
-//  - Usar onclick nativo del navegador (funciona bien en móvil)
-//  - Los botones internos tienen onclick con stopPropagation
-//  - touch-action: manipulation en todos los elementos clickables
-//  - pointer-events correctos para no bloquear scroll
-// ════════════════════════════════════════════════════════════
 function renderList() {
   const scroll = document.getElementById('stations-scroll');
   if (!filteredStations.length) {
@@ -1349,8 +1295,6 @@ function renderList() {
     const isFav   = favorites.has(ideess);
     const distStr = s.dist!==null ? `<span class="station-dist">⊙ ${s.dist.toFixed(1)} km</span><span class="meta-dot">●</span>` : '';
 
-    // FIX: botones con onclick directo, sin touch handlers manuales
-    // data-idx en la card para el click handler global
     const loggedBtns = currentUser
       ? `<div class="card-action-btns">
            <div class="card-action-row">
@@ -1366,7 +1310,6 @@ function renderList() {
     card.className = 'station-card' + (isFirst ? ' has-winner-band' : '');
     card.id = `card-${i}`;
     card.style.animationDelay = `${Math.min(i*0.04,0.32)}s`;
-    // FIX: onclick directo sin touch handlers — más fiable en móvil
     card.setAttribute('onclick', `selectStation(${i})`);
 
     card.innerHTML = `
