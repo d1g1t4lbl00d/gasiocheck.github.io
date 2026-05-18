@@ -1,0 +1,26 @@
+name: Refresh Fuel Cache
+
+on:
+  schedule:
+    # Cada día a las 08:00 UTC (10:00 hora española en verano)
+    - cron: '0 8 * * *'
+  workflow_dispatch: # Permite dispararlo manualmente desde GitHub
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests "xlrd==1.2.0"
+
+      - name: Refresh fuel cache
+        run: python scripts/refresh_cache.py
