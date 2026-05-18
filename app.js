@@ -411,8 +411,8 @@ function processStations(raw) {
       ? haversine(userPos.lat, userPos.lng, lat, lng) : null;
     const prices = {};
     Object.entries(FUEL_MAP).forEach(([k,v]) => {
-      const val = s[v.key];
-      prices[k] = (val && val !== '') ? parseFloat(val.replace(',','.')) : null;
+      const val = s[v.key] ?? s[v.key.replace('Gasoleo', 'Gasóleo')];
+      prices[k] = (val && val !== '') ? parseFloat(String(val).replace(',','.')) : null;
     });
     return { ...s, lat, lng, dist, prices };
   });
@@ -482,11 +482,22 @@ function renderList() {
     const price = s.prices[activeFuel];
     const cls   = getPriceClass(price, minP, maxP);
     const saving = (price - minP).toFixed(3);
-    const isMin = price === minP;
     const topBadge = sortMode === 'distancia' ? '📍 Más cercana' : '🏆 La elegida de Pepe';
-    const savingBadge = isMin
-      ? '<div class="badge-pill badge-winner">⭐ La más barata</div>'
-      : `<div class="badge-pill badge-saving">+ ${saving} €/L</div>`;
+    let savingBadge;
+    if (sortMode === 'distancia') {
+      const minDist = filteredStations[0]?.dist ?? null;
+      if (i === 0) {
+        savingBadge = '<div class="badge-pill badge-winner">📍 La más cercana</div>';
+      } else if (s.dist !== null && minDist !== null) {
+        savingBadge = `<div class="badge-pill badge-saving">+ ${(s.dist - minDist).toFixed(1)} km</div>`;
+      } else {
+        savingBadge = '';
+      }
+    } else {
+      savingBadge = i === 0
+        ? '<div class="badge-pill badge-winner">⭐ La más barata</div>'
+        : `<div class="badge-pill badge-saving">+ ${saving} €/L</div>`;
+    }
 
     const otherPrices = Object.entries(FUEL_MAP)
       .filter(([k]) => k !== activeFuel && s.prices[k])
