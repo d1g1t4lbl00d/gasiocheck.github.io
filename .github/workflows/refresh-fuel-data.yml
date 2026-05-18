@@ -6,6 +6,9 @@ on:
     - cron: '0 8 * * *'
   workflow_dispatch: # Permite dispararlo manualmente desde GitHub
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   refresh:
     runs-on: ubuntu-latest
