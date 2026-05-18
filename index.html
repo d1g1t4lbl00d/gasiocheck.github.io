@@ -105,7 +105,6 @@ header::after { content: ''; position: absolute; inset: 0; background: linear-gr
 @keyframes heartbeat { 0%,80%,100% { transform:scale(1); } 88% { transform:scale(1.25); } 94% { transform:scale(0.92); } }
  
 /* ─── APP LAYOUT ───────────────────────────────────────────── */
-/* FIX: z-index explicito para que quede por encima del body::before */
 .app-layout { position: fixed; top: var(--header-h); left: 0; right: 0; bottom: var(--tab-h); display: flex; overflow: hidden; z-index: 1; }
  
 /* ─── SIDEBAR ───────────────────────────────────────────────── */
@@ -140,7 +139,7 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
 .fuel-section { flex-shrink: 0; padding: 9px 13px 10px; background: var(--glass); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-2); }
 .fuel-label { font-size: 10px; font-weight: 700; color: var(--text-4); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 7px; }
 .fuel-chips { display: flex; gap: 6px; flex-wrap: wrap; }
-.fuel-chip { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 7px 13px; border-radius: var(--r-full); border: 1.5px solid var(--border); background: var(--surface); color: var(--text-3); cursor: pointer; transition: all .2s cubic-bezier(0.34,1.56,0.64,1); white-space: nowrap; box-shadow: var(--shadow-xs); }
+.fuel-chip { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 7px 13px; border-radius: var(--r-full); border: 1.5px solid var(--border); background: var(--surface); color: var(--text-3); cursor: pointer; transition: all .2s cubic-bezier(0.34,1.56,0.64,1); white-space: nowrap; box-shadow: var(--shadow-xs); -webkit-tap-highlight-color: transparent; }
 .fuel-chip-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-5); transition: all .2s; flex-shrink: 0; }
 .fuel-chip.active { background: linear-gradient(135deg, var(--fire), var(--fire-light)); color: white; border-color: var(--fire); box-shadow: var(--shadow-fire); transform: translateY(-1px); }
 .fuel-chip.active .fuel-chip-dot { background: rgba(255,255,255,0.7); }
@@ -162,19 +161,31 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
 .sort-row.visible { display: flex; }
 .sort-label { font-size: 10px; font-weight: 700; color: var(--text-4); text-transform: uppercase; letter-spacing: 0.8px; white-space: nowrap; }
 .sort-btns { display: flex; gap: 4px; }
-.sort-btn { font-family: var(--font-body); font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: var(--r-full); border: 1.5px solid var(--border); background: var(--surface); color: var(--text-3); cursor: pointer; transition: all .2s cubic-bezier(0.34,1.56,0.64,1); box-shadow: var(--shadow-xs); }
+.sort-btn { font-family: var(--font-body); font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: var(--r-full); border: 1.5px solid var(--border); background: var(--surface); color: var(--text-3); cursor: pointer; transition: all .2s cubic-bezier(0.34,1.56,0.64,1); box-shadow: var(--shadow-xs); -webkit-tap-highlight-color: transparent; }
 .sort-btn.active { border-color: var(--fire); color: var(--fire); background: var(--amber-pale); font-weight: 700; box-shadow: 0 2px 8px var(--fire-glow); }
 .sort-btn:hover:not(.active) { border-color: var(--border-fire); color: var(--fire); transform: translateY(-1px); }
  
 /* ─── STATIONS SCROLL ──────────────────────────────────────── */
+/*
+  FIX CRÍTICO SCROLL MÓVIL:
+  - overflow-y: scroll con -webkit-overflow-scrolling: touch
+  - touch-action: pan-y (solo scroll vertical, permite tap en hijos)
+  - NO usar overscroll-behavior (puede bloquear en algunos iOS)
+  - El contenedor padre no debe interceptar eventos touch
+*/
 .stations-scroll-wrap { flex: 1; min-height: 0; overflow: hidden; position: relative; }
 .stations-scroll {
-  height: 100%; overflow-y: auto; overflow-x: hidden;
+  height: 100%;
+  overflow-y: scroll;
+  overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
-  overscroll-behavior-y: contain;
   touch-action: pan-y;
+  overscroll-behavior-y: contain;
   padding: 12px 8px 16px 12px;
-  scrollbar-width: thin; scrollbar-color: #D4C9CF transparent;
+  scrollbar-width: thin;
+  scrollbar-color: #D4C9CF transparent;
+  /* Importante: position relative para que los hijos con position absolute funcionen */
+  position: relative;
 }
 .stations-scroll::-webkit-scrollbar { width: 6px; }
 .stations-scroll::-webkit-scrollbar-track { background: transparent; margin: 6px 0; }
@@ -192,17 +203,44 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
 .error-toast { background: var(--danger-bg); border: 1.5px solid rgba(239,68,68,0.15); color: var(--danger); padding: 14px 18px; border-radius: var(--r-lg); font-size: 13px; font-weight: 600; line-height: 1.5; text-align: center; }
  
 /* ─── STATION CARDS ─────────────────────────────────────────── */
-.station-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; margin-bottom: 10px; cursor: pointer; transition: transform .24s cubic-bezier(0.34,1.56,0.64,1), box-shadow .24s ease, border-color .18s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.05); position: relative; overflow: hidden; animation: card-reveal .35s cubic-bezier(0.34,1.56,0.64,1) both; background-image: linear-gradient(160deg, #fff 0%, #faf8f5 100%); }
+/*
+  FIX CRÍTICO TOUCH EN CARDS:
+  - NO usar touch-action: none (bloquea scroll)
+  - Los botones internos deben tener touch-action: manipulation y posición z elevada
+  - Usar cursor: pointer en todos los elementos clickables
+*/
+.station-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: transform .24s cubic-bezier(0.34,1.56,0.64,1), box-shadow .24s ease, border-color .18s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  position: relative;
+  overflow: visible; /* FIX: visible para que botones no queden cortados */
+  animation: card-reveal .35s cubic-bezier(0.34,1.56,0.64,1) both;
+  background-image: linear-gradient(160deg, #fff 0%, #faf8f5 100%);
+  /* FIX: touch-action manipulation permite tap inmediato sin delay 300ms */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  /* FIX: clip-path solo en el fondo, no en los botones */
+  border-radius: 20px;
+}
+/* Inner wrapper para el clip visual sin afectar botones */
+.station-card > .card-inner-clip {
+  border-radius: 20px;
+  overflow: hidden;
+}
 @keyframes card-reveal { from { opacity: 0; transform: translateY(12px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
 .station-card:nth-child(2) { animation-delay:.05s; } .station-card:nth-child(3) { animation-delay:.10s; } .station-card:nth-child(4) { animation-delay:.15s; } .station-card:nth-child(5) { animation-delay:.20s; } .station-card:nth-child(6) { animation-delay:.25s; } .station-card:nth-child(7) { animation-delay:.28s; } .station-card:nth-child(8) { animation-delay:.30s; }
 .station-card:last-child { margin-bottom: 0; }
 .station-card:hover { box-shadow: 0 8px 28px rgba(0,0,0,0.09), 0 3px 8px rgba(0,0,0,0.05); transform: translateY(-3px) scale(1.005); border-color: rgba(255,107,43,0.20); }
 .station-card:active { transform: translateY(-1px) scale(0.998); transition-duration: .12s; }
 .station-card.selected { border-color: var(--fire); box-shadow: 0 0 0 3px var(--fire-glow), 0 8px 28px rgba(255,107,43,0.12); background-image: linear-gradient(160deg, #fff9f6 0%, #fff5ef 100%); }
-.winner-band { display: none; background: linear-gradient(90deg, var(--fire) 0%, var(--amber) 100%); color: white; font-size: 10.5px; font-weight: 700; padding: 6px 16px; align-items: center; gap: 5px; letter-spacing: 0.3px; }
-.station-card:first-child .winner-band { display: flex; }
+.winner-band { background: linear-gradient(90deg, var(--fire) 0%, var(--amber) 100%); color: white; font-size: 10.5px; font-weight: 700; padding: 6px 16px; display: flex; align-items: center; gap: 5px; letter-spacing: 0.3px; border-radius: 20px 20px 0 0; }
 .card-body { padding: 16px 16px 12px; display: flex; align-items: flex-start; gap: 13px; }
-.station-card:first-child .card-body { padding-top: 38px; }
+.has-winner-band .card-body { padding-top: 10px; }
 .brand-logo { width: 52px; height: 52px; border-radius: 14px; background: var(--surface-2); display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; overflow: hidden; border: 1px solid var(--border-2); padding: 4px; transition: transform .22s cubic-bezier(0.34,1.56,0.64,1); box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
 .station-card:hover .brand-logo { transform: scale(1.06) rotate(-1deg); }
 .card-info { flex: 1; min-width: 0; padding-top: 1px; }
@@ -223,7 +261,16 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
 .badge-pill { font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: var(--r-full); letter-spacing: 0.1px; white-space: nowrap; }
 .badge-winner { background: var(--success-bg); color: var(--success); }
 .badge-saving  { background: var(--surface-3); color: var(--text-4); }
-.fav-btn { background: none; border: none; cursor: pointer; font-size: 15px; color: var(--text-5); transition: all .2s cubic-bezier(0.34,1.56,0.64,1); padding: 3px; line-height: 1; }
+.fav-btn { background: none; border: none; cursor: pointer; font-size: 15px; color: var(--text-5); transition: all .2s cubic-bezier(0.34,1.56,0.64,1); padding: 3px; line-height: 1;
+  /* FIX: touch-action manipulation para respuesta inmediata en móvil */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+  z-index: 10;
+  /* FIX: área de toque más grande en móvil */
+  min-width: 32px; min-height: 32px;
+  display: flex; align-items: center; justify-content: center;
+}
 .fav-btn:hover { color: var(--danger); transform: scale(1.3); }
 .fav-btn.saved { color: #F59E0B; }
 .card-action-btns { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
@@ -232,19 +279,26 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
 .fuel-pill { font-size: 11px; font-weight: 600; padding: 4px 10px; background: var(--surface-3); border: 1px solid var(--border); border-radius: var(--r-full); color: var(--text-3); display: flex; align-items: center; gap: 4px; transition: all .15s; }
 .fuel-pill:hover { background: var(--amber-pale); border-color: var(--border-fire); color: var(--fire); }
 .fuel-pill-tag { font-size: 9.5px; font-weight: 700; color: var(--text-4); background: var(--surface-4); padding: 1px 5px; border-radius: 4px; }
+
+/* FIX: Botones de acción en cards - área de toque garantizada */
+.btn-refuel-card, .btn-alert-card {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+  z-index: 10;
+  cursor: pointer;
+  min-height: 32px;
+}
  
 /* ─── MAP ────────────────────────────────────────────────────── */
-/* FIX: display:block explícito para que Leaflet calcule dimensiones correctamente */
 #map-container { flex: 1; height: 100%; overflow: hidden; position: relative; display: block; }
 #map { width: 100%; height: 100%; }
 
-/* FIX: Leaflet popup - quitar overflow:hidden que ocultaba el botón de cierre */
 .leaflet-popup-content-wrapper { background: var(--surface) !important; border-radius: 18px !important; box-shadow: var(--shadow-xl) !important; border: 1px solid var(--border) !important; font-family: var(--font-body) !important; padding: 0 !important; }
 .leaflet-popup-content { margin: 0 !important; width: auto !important; min-width: 240px; }
 .leaflet-popup-tip { background: var(--surface) !important; }
-/* FIX: Asegurar que el botón de cierre de Leaflet sea visible */
 .leaflet-popup-close-button { top: 8px !important; right: 10px !important; font-size: 20px !important; color: var(--text-3) !important; z-index: 10 !important; }
-.popup-header { padding: 14px 36px 12px 16px; background: linear-gradient(to bottom right, rgba(255,107,43,0.06), transparent); border-bottom: 1px solid var(--border-2); }
+.popup-header { padding: 14px 36px 12px 16px; background: linear-gradient(to bottom right, rgba(255,107,43,0.06), transparent); border-bottom: 1px solid var(--border-2); border-radius: 18px 18px 0 0; }
 .popup-brand { font-family: var(--font-display); font-weight: 800; font-size: 15px; color: var(--fire); letter-spacing: -0.3px; }
 .popup-addr { font-size: 11px; color: var(--text-4); font-weight: 500; margin-top: 2px; line-height: 1.4; }
 .popup-prices { padding: 10px 14px; display: flex; flex-direction: column; gap: 5px; }
@@ -290,7 +344,7 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
 .upsell-banner.visible { display: flex; }
 .upsell-text { flex: 1; font-size: 12px; font-weight: 500; color: var(--text-2); line-height: 1.4; }
 .upsell-text strong { color: var(--fire); font-weight: 700; }
-.upsell-cta { background: var(--fire); color: white; border: none; font-family: var(--font-body); font-size: 11px; font-weight: 700; padding: 6px 13px; border-radius: var(--r-full); cursor: pointer; white-space: nowrap; transition: all .18s; box-shadow: var(--shadow-fire); flex-shrink: 0; }
+.upsell-cta { background: var(--fire); color: white; border: none; font-family: var(--font-body); font-size: 11px; font-weight: 700; padding: 6px 13px; border-radius: var(--r-full); cursor: pointer; white-space: nowrap; transition: all .18s; box-shadow: var(--shadow-fire); flex-shrink: 0; touch-action: manipulation; }
 .upsell-cta:hover { background: var(--fire-deep); transform: translateY(-1px); }
  
 /* ─── MODALS ─────────────────────────────────────────────── */
@@ -301,17 +355,17 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
 .modal-header { padding: 24px 24px 0; display: flex; justify-content: space-between; align-items: flex-start; position: sticky; top: 0; background: var(--surface); z-index: 1; padding-bottom: 12px; border-bottom: 1px solid var(--border-2); }
 .modal-title { font-family: var(--font-display); font-size: 22px; font-weight: 800; color: var(--text-1); letter-spacing: -0.5px; line-height: 1.2; }
 .modal-sub { font-size: 13px; color: var(--text-3); margin-top: 4px; font-weight: 400; }
-.modal-close { background: var(--surface-3); border: none; cursor: pointer; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; color: var(--text-3); transition: all .15s; flex-shrink: 0; margin-left: 12px; margin-top: 2px; }
+.modal-close { background: var(--surface-3); border: none; cursor: pointer; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; color: var(--text-3); transition: all .15s; flex-shrink: 0; margin-left: 12px; margin-top: 2px; touch-action: manipulation; }
 .modal-close:hover { background: var(--surface-4); color: var(--text-1); }
 .modal-body { padding: 16px 24px 24px; display: flex; flex-direction: column; gap: 12px; }
 .modal-tabs { display: flex; background: var(--surface-3); border-radius: 10px; padding: 3px; gap: 2px; margin-bottom: 4px; }
-.modal-tab { flex: 1; padding: 8px; border-radius: 8px; border: none; background: transparent; color: var(--text-3); font-family: var(--font-body); font-size: 13px; font-weight: 600; cursor: pointer; transition: all .18s; }
+.modal-tab { flex: 1; padding: 8px; border-radius: 8px; border: none; background: transparent; color: var(--text-3); font-family: var(--font-body); font-size: 13px; font-weight: 600; cursor: pointer; transition: all .18s; touch-action: manipulation; }
 .modal-tab.active { background: var(--surface); color: var(--text-1); box-shadow: var(--shadow-xs); }
 .field-group { display: flex; flex-direction: column; gap: 5px; }
 .field-label { font-size: 12px; font-weight: 600; color: var(--text-3); }
 .field-input { width: 100%; background: var(--surface-3); border: 1.5px solid var(--border); color: var(--text-1); font-family: var(--font-body); font-size: 14px; font-weight: 500; padding: 11px 14px; border-radius: var(--r-md); outline: none; transition: all .18s; }
 .field-input:focus { border-color: var(--fire); background: white; box-shadow: 0 0 0 3px var(--fire-glow); }
-.btn-auth-submit { width: 100%; background: linear-gradient(135deg, var(--fire), var(--fire-light)); color: white; border: none; font-family: var(--font-display); font-size: 15px; font-weight: 700; padding: 13px; border-radius: var(--r-md); cursor: pointer; transition: all .2s cubic-bezier(0.34,1.56,0.64,1); box-shadow: var(--shadow-fire); margin-top: 4px; }
+.btn-auth-submit { width: 100%; background: linear-gradient(135deg, var(--fire), var(--fire-light)); color: white; border: none; font-family: var(--font-display); font-size: 15px; font-weight: 700; padding: 13px; border-radius: var(--r-md); cursor: pointer; transition: all .2s cubic-bezier(0.34,1.56,0.64,1); box-shadow: var(--shadow-fire); margin-top: 4px; touch-action: manipulation; }
 .btn-auth-submit:hover { transform: translateY(-2px); box-shadow: var(--shadow-fire-lg); }
 .btn-auth-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 .auth-msg { font-size: 12px; font-weight: 500; text-align: center; padding: 8px 12px; border-radius: var(--r-sm); display: none; }
@@ -331,7 +385,6 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
 .field-row .field-group { flex: 1; }
  
 /* ─── PROFILE PANEL ──────────────────────────────────────── */
-/* FIX: z-index mayor que el mapa (z-index:50) en mobile */
 .profile-panel { width: 340px; flex-shrink: 0; height: 100%; background: var(--surface); border-left: 1px solid var(--border); display: none; flex-direction: column; overflow: hidden; }
 .profile-panel.open { display: flex; }
 .profile-header { padding: 20px 18px 16px; border-bottom: 1px solid var(--border-2); background: linear-gradient(135deg, rgba(255,107,43,0.05) 0%, transparent 60%); flex-shrink: 0; position: relative; }
@@ -345,12 +398,12 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
 .pstat-val.green { color: var(--success); }
 .pstat-label { font-size: 9px; font-weight: 700; color: var(--text-4); text-transform: uppercase; letter-spacing: 0.6px; margin-top: 3px; }
 .profile-tabs { display: flex; border-bottom: 1px solid var(--border-2); flex-shrink: 0; }
-.ptab { flex: 1; padding: 11px 8px; background: none; border: none; font-family: var(--font-body); font-size: 12px; font-weight: 600; color: var(--text-4); cursor: pointer; border-bottom: 2px solid transparent; transition: all .18s; }
+.ptab { flex: 1; padding: 11px 8px; background: none; border: none; font-family: var(--font-body); font-size: 12px; font-weight: 600; color: var(--text-4); cursor: pointer; border-bottom: 2px solid transparent; transition: all .18s; touch-action: manipulation; }
 .ptab.active { color: var(--fire); border-bottom-color: var(--fire); }
-.profile-scroll { flex: 1; min-height: 0; overflow-y: auto; padding: 12px; scrollbar-width: thin; scrollbar-color: #D4C9CF transparent; }
+.profile-scroll { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 12px; scrollbar-width: thin; scrollbar-color: #D4C9CF transparent; }
 .profile-scroll::-webkit-scrollbar { width: 4px; }
 .profile-scroll::-webkit-scrollbar-thumb { background: #D4C9CF; border-radius: 4px; }
-.profile-close-btn { position: absolute; top: 12px; right: 12px; background: var(--surface-3); border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; color: var(--text-3); transition: all .15s; }
+.profile-close-btn { position: absolute; top: 12px; right: 12px; background: var(--surface-3); border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; color: var(--text-3); transition: all .15s; touch-action: manipulation; }
 .profile-close-btn:hover { background: var(--surface-4); }
 
 /* ─── LOGOUT BUTTON ──────────────────── */
@@ -372,6 +425,7 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
   align-items: center;
   justify-content: center;
   gap: 7px;
+  touch-action: manipulation;
 }
 .btn-logout:hover { background: var(--danger); color: white; border-color: var(--danger); box-shadow: 0 4px 16px rgba(239,68,68,0.25); }
 
@@ -381,9 +435,9 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
 .hi-name { font-family: var(--font-display); font-size: 13px; font-weight: 700; color: var(--text-1); }
 .hi-price{ font-family: var(--font-display); font-size: 15px; font-weight: 900; color: var(--fire); white-space: nowrap; }
 .hi-meta { font-size: 11px; color: var(--text-4); margin-top: 3px; line-height: 1.5; }
-.hi-delete { background: none; border: none; cursor: pointer; font-size: 13px; color: var(--text-5); padding: 2px; transition: color .15s; flex-shrink: 0; }
+.hi-delete { background: none; border: none; cursor: pointer; font-size: 13px; color: var(--text-5); padding: 2px; transition: color .15s; flex-shrink: 0; touch-action: manipulation; min-width: 28px; min-height: 28px; display: flex; align-items: center; justify-content: center; }
 .hi-delete:hover { color: var(--danger); }
-.btn-refuel-card { display: inline-flex; align-items: center; gap: 4px; background: var(--amber-pale); border: 1px solid rgba(255,170,59,0.3); color: var(--fire); font-family: var(--font-body); font-size: 11px; font-weight: 700; padding: 5px 10px; border-radius: var(--r-full); cursor: pointer; transition: all .18s; white-space: nowrap; }
+.btn-refuel-card { display: inline-flex; align-items: center; gap: 4px; background: var(--amber-pale); border: 1px solid rgba(255,170,59,0.3); color: var(--fire); font-family: var(--font-body); font-size: 11px; font-weight: 700; padding: 5px 10px; border-radius: var(--r-full); cursor: pointer; transition: all .18s; white-space: nowrap; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 .btn-refuel-card:hover { background: var(--fire); color: white; border-color: var(--fire); box-shadow: var(--shadow-fire); }
 .empty-state { text-align: center; padding: 24px 16px; color: var(--text-4); font-size: 13px; line-height: 1.6; }
 .empty-state-icon { font-size: 32px; margin-bottom: 8px; }
@@ -392,7 +446,7 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
 .alert-item-name { font-family: var(--font-display); font-size: 12px; font-weight: 700; color: var(--text-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .alert-item-detail { font-size: 11px; color: var(--text-4); margin-top: 2px; }
 .alert-item-price { font-family: var(--font-display); font-size: 15px; font-weight: 900; color: var(--info); white-space: nowrap; }
-.alert-delete { background: none; border: none; cursor: pointer; font-size: 13px; color: var(--text-5); padding: 2px; transition: color .15s; }
+.alert-delete { background: none; border: none; cursor: pointer; font-size: 13px; color: var(--text-5); padding: 2px; transition: color .15s; touch-action: manipulation; min-width: 28px; min-height: 28px; display: flex; align-items: center; justify-content: center; }
 .alert-delete:hover { color: var(--danger); }
  
 /* ─── NEW FEATURES CSS ───────────────────────────────── */
@@ -411,38 +465,48 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
 .verify-sub { font-size: 15px; color: var(--text-3); line-height: 1.7; max-width: 300px; }
 .verify-perks { display: flex; flex-direction: column; gap: 9px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 14px 18px; max-width: 300px; width: 100%; box-shadow: var(--shadow-sm); }
 .verify-perk { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text-2); text-align: left; }
-.verify-btn { background: linear-gradient(135deg, var(--fire), var(--fire-light)); color: white; border: none; padding: 14px 40px; border-radius: var(--r-full); font-family: var(--font-display); font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: var(--shadow-fire); transition: all .2s cubic-bezier(0.34,1.56,0.64,1); }
+.verify-btn { background: linear-gradient(135deg, var(--fire), var(--fire-light)); color: white; border: none; padding: 14px 40px; border-radius: var(--r-full); font-family: var(--font-display); font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: var(--shadow-fire); transition: all .2s cubic-bezier(0.34,1.56,0.64,1); touch-action: manipulation; }
 .verify-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-fire-lg); }
 .date-display { background: var(--success-bg); border: 1px solid rgba(34,197,94,0.2); border-radius: var(--r-md); padding: 10px 14px; display: flex; align-items: center; gap: 8px; }
 .date-display-text { flex: 1; font-size: 13px; font-weight: 600; color: var(--success); }
 .date-auto-badge { font-size: 10px; font-weight: 700; color: var(--success); background: rgba(34,197,94,0.15); padding: 3px 8px; border-radius: var(--r-full); white-space: nowrap; }
-.ptab-add-btn { display: flex; align-items: center; gap: 8px; background: linear-gradient(135deg, var(--fire), var(--fire-light)); color: white; border: none; border-radius: var(--r-md); padding: 12px 16px; font-family: var(--font-display); font-size: 13px; font-weight: 700; cursor: pointer; box-shadow: var(--shadow-fire); transition: all .2s cubic-bezier(0.34,1.56,0.64,1); width: 100%; justify-content: center; margin-bottom: 12px; }
+.ptab-add-btn { display: flex; align-items: center; gap: 8px; background: linear-gradient(135deg, var(--fire), var(--fire-light)); color: white; border: none; border-radius: var(--r-md); padding: 12px 16px; font-family: var(--font-display); font-size: 13px; font-weight: 700; cursor: pointer; box-shadow: var(--shadow-fire); transition: all .2s cubic-bezier(0.34,1.56,0.64,1); width: 100%; justify-content: center; margin-bottom: 12px; touch-action: manipulation; }
 .ptab-add-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-fire-lg); }
-.btn-empty-tank { display: inline-flex; align-items: center; gap: 5px; background: var(--surface-3); border: 1px solid var(--border); color: var(--text-3); font-family: var(--font-body); font-size: 11px; font-weight: 600; padding: 5px 11px; border-radius: var(--r-full); cursor: pointer; transition: all .18s; margin-top: 6px; white-space: nowrap; }
+.btn-empty-tank { display: inline-flex; align-items: center; gap: 5px; background: var(--surface-3); border: 1px solid var(--border); color: var(--text-3); font-family: var(--font-body); font-size: 11px; font-weight: 600; padding: 5px 11px; border-radius: var(--r-full); cursor: pointer; transition: all .18s; margin-top: 6px; white-space: nowrap; touch-action: manipulation; }
 .btn-empty-tank:hover { background: var(--danger-bg); border-color: rgba(239,68,68,0.2); color: var(--danger); }
 .duration-badge { display: inline-flex; align-items: center; gap: 5px; background: var(--info-bg); border: 1px solid var(--info-border); color: var(--info); font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: var(--r-full); margin-top: 5px; }
-.btn-alert-card { display: inline-flex; align-items: center; gap: 4px; background: var(--info-bg); border: 1px solid var(--info-border); color: var(--info); font-family: var(--font-body); font-size: 11px; font-weight: 700; padding: 5px 10px; border-radius: var(--r-full); cursor: pointer; transition: all .18s; white-space: nowrap; }
+.btn-alert-card { display: inline-flex; align-items: center; gap: 4px; background: var(--info-bg); border: 1px solid var(--info-border); color: var(--info); font-family: var(--font-body); font-size: 11px; font-weight: 700; padding: 5px 10px; border-radius: var(--r-full); cursor: pointer; transition: all .18s; white-space: nowrap; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 .btn-alert-card:hover { background: var(--info); color: white; border-color: var(--info); }
 .autonomy-preview { background: var(--info-bg); border: 1px solid var(--info-border); border-radius: var(--r-md); padding: 10px 14px; text-align: center; display: none; }
 .autonomy-preview.visible { display: block; }
 .autonomy-label { font-size: 10px; font-weight: 700; color: var(--info); text-transform: uppercase; letter-spacing: 0.5px; }
 .autonomy-val { font-family: var(--font-display); font-size: 20px; font-weight: 900; color: var(--info); }
+
+/* ─── CORS NOTICE ────────────────────────────────────────── */
+.cors-notice {
+  background: var(--info-bg); border: 1px solid var(--info-border);
+  border-radius: var(--r-md); padding: 12px 14px;
+  font-size: 12px; color: var(--info); font-weight: 500;
+  line-height: 1.6; text-align: center;
+  display: none;
+}
+.cors-notice.visible { display: block; }
  
 /* ─── MOBILE ─────────────────────────────────────────── */
 @media (max-width: 768px) {
   :root { --header-h: 58px; --tab-h: 62px; }
   .app-layout { flex-direction: column; }
   .sidebar { width: 100%; }
-  /* FIX: mapa oculto por defecto en mobile pero con display:block cuando activo */
   #map-container { position: fixed; top: var(--header-h); left: 0; right: 0; bottom: var(--tab-h); display: none; z-index: 50; }
   #map-container.active { display: block; }
   .sidebar.map-active { display: none; }
   .search-panel { padding: 9px 10px 0; }
   .selects-row  { grid-template-columns: 1fr; gap: 7px; }
-  .stations-scroll { padding: 8px 6px 16px 8px; }
+  /* FIX CRÍTICO SCROLL MÓVIL: padding inferior mayor para evitar que el tab-bar tape contenido */
+  .stations-scroll { padding: 8px 6px 80px 8px; }
   .donate-float { bottom: calc(var(--tab-h) + 70px) !important; right: 14px !important; }
   .tab-bar { display: flex; position: fixed; bottom: 0; left: 0; right: 0; height: var(--tab-h); background: var(--glass); backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); border-top: 1px solid var(--border); z-index: 200; padding-bottom: env(safe-area-inset-bottom, 0); }
-  .tab-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; background: none; border: none; cursor: pointer; color: var(--text-4); font-family: var(--font-body); font-size: 10px; font-weight: 700; letter-spacing: 0.2px; transition: color .18s; -webkit-tap-highlight-color: transparent; }
+  .tab-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; background: none; border: none; cursor: pointer; color: var(--text-4); font-family: var(--font-body); font-size: 10px; font-weight: 700; letter-spacing: 0.2px; transition: color .18s; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
   .tab-icon { font-size: 20px; line-height: 1; }
   .tab-btn.active { color: var(--fire); }
   header { padding: 0 16px; }
@@ -452,11 +516,16 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
   .live-text { display: none; }
   .support-btn span:last-child { display: none; }
   .nav-btn { font-size: 10px; padding: 7px 4px; }
-  /* FIX: profile-panel z-index superior al mapa en mobile */
-  .profile-panel { width: 100% !important; border-left: none !important; border-top: 1px solid var(--border); position: fixed; top: var(--header-h); left: 0; right: 0; bottom: var(--tab-h); z-index: 70; }
+  .profile-panel { width: 100% !important; border-left: none !important; border-top: 1px solid var(--border); position: fixed; top: var(--header-h); left: 0; right: 0; bottom: var(--tab-h); z-index: 70; overflow-y: auto; -webkit-overflow-scrolling: touch; }
   .card-action-btns { gap: 4px; }
   .card-action-row  { gap: 3px; }
-  .btn-refuel-card, .btn-alert-card { font-size: 10px; padding: 4px 8px; }
+  /* FIX MÓVIL: botones más grandes para facilitar el toque */
+  .btn-refuel-card, .btn-alert-card { font-size: 10px; padding: 6px 10px; min-height: 32px; }
+  /* FIX: card-right en móvil con más espacio para botones */
+  .card-right { gap: 4px; }
+  /* FIX: station cards no tienen hover en móvil (evita estados pegados) */
+  .station-card:hover { transform: none; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border-color: var(--border); }
+  .station-card.selected:hover { box-shadow: 0 0 0 3px var(--fire-glow), 0 8px 28px rgba(255,107,43,0.12); border-color: var(--fire); }
 }
 </style>
 </head>
@@ -840,7 +909,53 @@ const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
 // ════════════════════════════════════════════════════════════
-//  FIX: parseFloat robusto — acepta coma y punto como decimal
+//  FIX CORS: La API del MINETUR bloquea peticiones desde
+//  dominios externos. Usamos un proxy CORS público como
+//  fallback, con la URL directa como primer intento.
+//
+//  Orden de intentos:
+//  1. URL directa (funciona en local y si el servidor lo permite)
+//  2. allorigins.win (proxy CORS)
+//  3. corsproxy.io
+// ════════════════════════════════════════════════════════════
+const API_BASE = 'https://sedeaplicaciones.minetur.gob.es/ServiciosRESTCarburantes/PreciosCarburantes';
+
+// Lista de proxies CORS a intentar en orden
+const CORS_PROXIES = [
+  url => url, // Intento directo primero
+  url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+  url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+];
+
+// Índice del proxy que funcionó (para no repetir intentos)
+let workingProxyIdx = 0;
+
+async function fetchWithCORS(url) {
+  // Intentar desde el proxy que funcionó la última vez
+  for (let i = workingProxyIdx; i < CORS_PROXIES.length; i++) {
+    try {
+      const proxyUrl = CORS_PROXIES[i](url);
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 12000);
+      const res = await fetch(proxyUrl, {
+        signal: controller.signal,
+        headers: i === 0 ? {} : { 'X-Requested-With': 'XMLHttpRequest' }
+      });
+      clearTimeout(timeout);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const text = await res.text();
+      const data = JSON.parse(text);
+      workingProxyIdx = i; // Recordar qué proxy funcionó
+      return data;
+    } catch (err) {
+      console.warn(`CORS proxy ${i} falló:`, err.message);
+      if (i === CORS_PROXIES.length - 1) throw new Error('No se pudo conectar con la API. Comprueba tu conexión.');
+    }
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+//  parseFloat robusto — acepta coma y punto como decimal
 // ════════════════════════════════════════════════════════════
 function parseNum(val) {
   if (val === null || val === undefined || val === '') return NaN;
@@ -848,8 +963,7 @@ function parseNum(val) {
 }
 
 // ════════════════════════════════════════════════════════════
-//  FIX: getIdeess — extrae ID de estación de forma robusta
-//  La API del MINETUR usa 'IDEESS' pero puede venir con espacios
+//  getIdeess — extrae ID de estación de forma robusta
 // ════════════════════════════════════════════════════════════
 function getIdeess(s) {
   return s['IDEESS'] || s['IDEESS '] || s.IDEESS || (s.Dirección + '|' + s.Municipio + '|' + s.Rótulo);
@@ -914,16 +1028,13 @@ document.addEventListener('click', e => {
 
 // ════════════════════════════════════════════════════════════
 //  MOBILE TABS
-//  FIX: resetear tab activo si perfil sin usuario
 // ════════════════════════════════════════════════════════════
 let currentTab = 'lista';
 function isMobile() { return window.innerWidth <= 768; }
 
 function switchTab(tab) {
-  // FIX: Si intenta ir a perfil sin usuario, abrir auth y volver a lista
   if (tab === 'perfil' && !currentUser) {
     openAuthModal();
-    // Resetear visualmente al tab lista
     ['lista','mapa','perfil'].forEach(t => {
       const btn = document.getElementById('tab-'+t);
       if (btn) btn.classList.toggle('active', t === 'lista');
@@ -949,7 +1060,6 @@ function switchTab(tab) {
     sidebar.classList.add('map-active');
     mapEl.classList.add('active');
     if (isMobile()) profileEl.classList.remove('open');
-    // FIX: doble requestAnimationFrame + timeout para que Leaflet mida correctamente
     requestAnimationFrame(() => requestAnimationFrame(() => {
       setTimeout(() => mapInstance && mapInstance.invalidateSize(), 50);
     }));
@@ -974,7 +1084,6 @@ function toggleSearch() {
 // ════════════════════════════════════════════════════════════
 //  STATE / CONSTANTS
 // ════════════════════════════════════════════════════════════
-const API = 'https://sedeaplicaciones.minetur.gob.es/ServiciosRESTCarburantes/PreciosCarburantes';
 let allStations = [], filteredStations = [];
 let activeFuel = 'gasolina95', sortMode = 'precio';
 let mapInstance = null, markersLayer = null;
@@ -1034,7 +1143,6 @@ function buildNavHTML(lat, lng, name) {
 
 // ════════════════════════════════════════════════════════════
 //  MAP
-//  FIX: invalidateSize tras init para garantizar dimensiones
 // ════════════════════════════════════════════════════════════
 function initMap() {
   mapInstance = L.map('map', { zoomControl: true }).setView([40.416, -3.703], 6);
@@ -1042,7 +1150,6 @@ function initMap() {
     attribution: '© OpenStreetMap', maxZoom: 19
   }).addTo(mapInstance);
   markersLayer = L.layerGroup().addTo(mapInstance);
-  // FIX: forzar recalculo de tamaño tras render inicial
   setTimeout(() => mapInstance.invalidateSize(), 200);
 }
 
@@ -1057,15 +1164,17 @@ function makeIcon(color) {
 }
 
 // ════════════════════════════════════════════════════════════
-//  API
+//  API — usa fetchWithCORS para funcionar en producción
 // ════════════════════════════════════════════════════════════
 async function loadProvincias() {
   try {
-    const res  = await fetch(`${API}/Listados/Provincias/`);
-    const data = await res.json();
+    const data = await fetchWithCORS(`${API_BASE}/Listados/Provincias/`);
     const sel  = document.getElementById('sel-prov');
-    data.forEach(p => sel.appendChild(new Option(p.Provincia, p.IDPovincia)));
-  } catch { showError('No se pudieron cargar las provincias.'); }
+    const list = Array.isArray(data) ? data : (data.Provincias || data.ListaProvincias || []);
+    list.forEach(p => sel.appendChild(new Option(p.Provincia, p.IDPovincia || p.IDProvincia)));
+  } catch(e) {
+    showError('No se pudieron cargar las provincias. Comprueba tu conexión.');
+  }
 }
 
 async function onProvinciaChange() {
@@ -1075,27 +1184,29 @@ async function onProvinciaChange() {
   selMun.innerHTML = '<option>Cargando…</option>';
   if (!idProv) { selMun.innerHTML = '<option value="">Municipio</option>'; return; }
   try {
-    const res  = await fetch(`${API}/Listados/MunicipiosPorProvincia/${idProv}`);
-    const data = await res.json();
+    const data = await fetchWithCORS(`${API_BASE}/Listados/MunicipiosPorProvincia/${idProv}`);
+    const list = Array.isArray(data) ? data : (data.Municipios || data.ListaMunicipios || []);
     selMun.innerHTML = '<option value="">Municipio</option>';
-    data.forEach(m => selMun.appendChild(new Option(m.Municipio, m.IDMunicipio)));
+    list.forEach(m => selMun.appendChild(new Option(m.Municipio, m.IDMunicipio)));
     selMun.disabled = false;
-  } catch { showError('No se pudieron cargar los municipios.'); }
+  } catch(e) {
+    showError('No se pudieron cargar los municipios.');
+  }
 }
 
 async function buscarPorMunicipio() {
   const idMun = document.getElementById('sel-mun').value;
   if (!idMun) { alert('Elige un municipio primero ⛽'); return; }
-  showLoading();
+  showLoading('Buscando gasolineras…');
   try {
-    const res  = await fetch(`${API}/EstacionesTerrestres/FiltroMunicipio/${idMun}`);
-    const data = await res.json();
+    const data = await fetchWithCORS(`${API_BASE}/EstacionesTerrestres/FiltroMunicipio/${idMun}`);
     if (!data.ListaEESSPrecio) throw new Error('Sin datos');
     processStations(data.ListaEESSPrecio);
-    // FIX: colapsar búsqueda en desktop también tras obtener resultados
     if (searchOpen) toggleSearch();
     if (isMobile()) switchTab('lista');
-  } catch { showError('No hay datos para este municipio. ¡Prueba con otro!'); }
+  } catch(e) {
+    showError('No hay datos para este municipio. ¡Prueba con otro! ' + (e.message || ''));
+  }
 }
 
 function usarMiUbicacion() {
@@ -1113,8 +1224,7 @@ function usarMiUbicacion() {
       mapInstance.setView([userPos.lat, userPos.lng], 13);
       showLoading('Buscando gasolineras cercanas…');
       try {
-        const res  = await fetch(`${API}/EstacionesTerrestres/`);
-        const data = await res.json();
+        const data = await fetchWithCORS(`${API_BASE}/EstacionesTerrestres/`);
         if (!data.ListaEESSPrecio) throw new Error('Sin datos');
         const nearby = data.ListaEESSPrecio.filter(s => {
           const lat = parseFloat(s.Latitud.replace(',','.'));
@@ -1124,7 +1234,9 @@ function usarMiUbicacion() {
         processStations(nearby);
         if (searchOpen) toggleSearch();
         if (isMobile()) switchTab('lista');
-      } catch { showError('No se pudieron cargar gasolineras cercanas. Prueba por municipio.'); }
+      } catch(e) {
+        showError('No se pudieron cargar gasolineras cercanas. Prueba por municipio. ' + (e.message || ''));
+      }
     },
     function(err) {
       btn.disabled = false;
@@ -1197,6 +1309,15 @@ function getPriceClass(price, min, max) {
   return 'avg';
 }
 
+// ════════════════════════════════════════════════════════════
+//  RENDER LIST
+//  FIX CRÍTICO TOUCH MÓVIL:
+//  - NO usar touchstart/touchmove/touchend en las cards
+//  - Usar onclick nativo del navegador (funciona bien en móvil)
+//  - Los botones internos tienen onclick con stopPropagation
+//  - touch-action: manipulation en todos los elementos clickables
+//  - pointer-events correctos para no bloquear scroll
+// ════════════════════════════════════════════════════════════
 function renderList() {
   const scroll = document.getElementById('stations-scroll');
   if (!filteredStations.length) {
@@ -1224,27 +1345,32 @@ function renderList() {
       .filter(([k]) => k!==activeFuel && s.prices[k])
       .map(([k,v]) => `<div class="fuel-pill"><span class="fuel-pill-tag">${v.short}</span>${s.prices[k]?.toFixed(3)} €</div>`)
       .join('');
-    // FIX: usar getIdeess() robusto
     const ideess  = getIdeess(s);
     const isFav   = favorites.has(ideess);
     const distStr = s.dist!==null ? `<span class="station-dist">⊙ ${s.dist.toFixed(1)} km</span><span class="meta-dot">●</span>` : '';
 
+    // FIX: botones con onclick directo, sin touch handlers manuales
+    // data-idx en la card para el click handler global
     const loggedBtns = currentUser
       ? `<div class="card-action-btns">
            <div class="card-action-row">
              <button class="btn-refuel-card" onclick="event.stopPropagation();openRefuelModal(${i})">⛽ Repostar</button>
              <button class="btn-alert-card"  onclick="event.stopPropagation();openAlertModal(${i})">🔔</button>
-             <button class="fav-btn ${isFav?'saved':''}" style="font-size:18px" onclick="event.stopPropagation();toggleFavorite(${i},this)">${isFav?'★':'☆'}</button>
+             <button class="fav-btn ${isFav?'saved':''}" onclick="event.stopPropagation();toggleFavorite(${i},this)">${isFav?'★':'☆'}</button>
            </div>
          </div>`
       : `<button class="fav-btn" onclick="event.stopPropagation();openAuthModal()" title="Inicia sesión para guardar favoritas">☆</button>`;
 
+    const isFirst = i === 0;
     const card = document.createElement('div');
-    card.className = 'station-card';
+    card.className = 'station-card' + (isFirst ? ' has-winner-band' : '');
     card.id = `card-${i}`;
     card.style.animationDelay = `${Math.min(i*0.04,0.32)}s`;
+    // FIX: onclick directo sin touch handlers — más fiable en móvil
+    card.setAttribute('onclick', `selectStation(${i})`);
+
     card.innerHTML = `
-      <div class="winner-band">${topBadge}</div>
+      ${isFirst ? `<div class="winner-band">${topBadge}</div>` : ''}
       <div class="card-body">
         <div class="brand-logo">${getBrandLogo(s.Rótulo)}</div>
         <div class="card-info">
@@ -1265,13 +1391,6 @@ function renderList() {
       </div>
       ${otherPrices ? `<div class="card-footer">${otherPrices}</div>` : ''}
     `;
-
-    // FIX: touch handling mejorado — evitar que scroll active el click
-    let touchStartY = 0, touchMoved = false;
-    card.addEventListener('touchstart', e => { touchStartY = e.touches[0].clientY; touchMoved = false; }, { passive: true });
-    card.addEventListener('touchmove',  e => { if (Math.abs(e.touches[0].clientY - touchStartY) > 8) touchMoved = true; }, { passive: true });
-    card.addEventListener('touchend',   e => { if (!touchMoved) { e.preventDefault(); selectStation(i); } });
-    card.addEventListener('click', () => { if (!isMobile()) selectStation(i); });
 
     frag.appendChild(card);
   });
@@ -1313,7 +1432,6 @@ function renderMarkers() {
       <div class="popup-prices">${rows}</div>
       ${buildNavHTML(s.lat, s.lng, s.Rótulo)}
     `, { maxWidth: 280 });
-    // FIX: en mobile, el click en marker no llama switchTab si ya estamos en mapa
     marker.on('click', () => selectStation(i, false));
     marker.addTo(markersLayer);
     s._marker = marker;
@@ -1325,7 +1443,6 @@ function renderMarkers() {
   }
 }
 
-// FIX: selectStation — en mobile solo cambia al mapa si no estamos ya en él
 function selectStation(i, scrollToCard=true) {
   if (selectedCard) selectedCard.classList.remove('selected');
   const card = document.getElementById(`card-${i}`);
@@ -1336,7 +1453,6 @@ function selectStation(i, scrollToCard=true) {
   }
   const s = filteredStations[i];
   if (!s||isNaN(s.lat)||isNaN(s.lng)) return;
-  // Solo cambiar al mapa en mobile si no estamos ya en él
   if (isMobile() && currentTab !== 'mapa') switchTab('mapa');
   const delay = (isMobile() && currentTab !== 'mapa') ? 150 : 40;
   setTimeout(() => {
@@ -1383,8 +1499,6 @@ function showError(msg) {
 
 // ════════════════════════════════════════════════════════════
 //  AUTH
-//  FIX: closeAuthModal limpia campos y resetea estado
-//  FIX: onAuthStateChange cierra la modal automáticamente tras login
 // ════════════════════════════════════════════════════════════
 let authTab = 'login';
 
@@ -1432,7 +1546,6 @@ async function doAuth() {
     if (authTab === 'login') {
       const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
       if (error) throw error;
-      // onAuthStateChange se encarga de cerrar la modal
     } else {
       const redirectTo = window.location.origin + window.location.pathname;
       const { data, error } = await sb.auth.signUp({
@@ -1490,7 +1603,6 @@ function openProfilePanel() {
 }
 function closeProfilePanel() {
   document.getElementById('profile-panel').classList.remove('open');
-  // FIX: en mobile resetear el tab a lista
   if (isMobile()) {
     currentTab = 'lista';
     ['lista','mapa','perfil'].forEach(t => {
@@ -1585,7 +1697,6 @@ async function renderHistorial(scroll) {
       durationHTML = `<div class="duration-badge">⏱ ${days} día${days!==1?'s':''} de autonomía${kmStr} · Vacío: ${fmtDate(r.emptied_at)}</div>`;
     } else {
       const safeId   = r.id;
-      // FIX: escapar correctamente el nombre para uso en atributo onclick
       const safeName = (r.station_name || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
       durationHTML = `<button class="btn-empty-tank" onclick="openTankEmptyModal('${safeId}','${safeName}',${r.km_at_refuel||0},'${r.refueled_at}')">🪫 ¿Se vació el depósito?</button>`;
     }
@@ -1675,7 +1786,6 @@ async function renderAlertas(scroll) {
 
 // ════════════════════════════════════════════════════════════
 //  FAVORITES
-//  FIX: usar getIdeess() consistentemente
 // ════════════════════════════════════════════════════════════
 async function loadFavorites() {
   if (!currentUser) return;
@@ -1958,11 +2068,9 @@ async function deleteAlert(id) {
 
 // ════════════════════════════════════════════════════════════
 //  AUTH STATE LISTENER
-//  FIX: cerrar modal de auth automáticamente cuando la sesión se inicia
 // ════════════════════════════════════════════════════════════
 sb.auth.onAuthStateChange(async (event, session) => {
   currentUser = session?.user || null;
-  // FIX: cerrar modal de auth si hay sesión activa (login exitoso)
   if (currentUser && document.getElementById('auth-modal').classList.contains('open')) {
     closeAuthModal();
   }
@@ -1983,12 +2091,11 @@ sb.auth.onAuthStateChange(async (event, session) => {
   });
 });
 
-// Enter en formulario de login/registro
+// Enter en formularios
 document.getElementById('auth-password').addEventListener('keydown', e => { if (e.key==='Enter') doAuth(); });
 document.getElementById('auth-email').addEventListener('keydown',    e => { if (e.key==='Enter') doAuth(); });
 document.getElementById('auth-name').addEventListener('keydown',     e => { if (e.key==='Enter') doAuth(); });
 document.getElementById('qr-station').addEventListener('keydown',    e => { if (e.key==='Enter') document.getElementById('qr-price').focus(); });
-// FIX: Enter en campos de precio/litros avanza al siguiente
 document.getElementById('refuel-price').addEventListener('keydown',  e => { if (e.key==='Enter') document.getElementById('refuel-liters').focus(); });
 document.getElementById('refuel-liters').addEventListener('keydown', e => { if (e.key==='Enter') document.getElementById('refuel-km').focus(); });
 document.getElementById('qr-price').addEventListener('keydown',      e => { if (e.key==='Enter') document.getElementById('qr-liters').focus(); });
@@ -1999,7 +2106,6 @@ document.getElementById('qr-price').addEventListener('keydown',      e => { if (
 initMap();
 loadProvincias();
 if (isMobile()) toggleSearch();
-// FIX: checkVerificationCallback después de que onAuthStateChange haya tenido oportunidad de resolver
 setTimeout(checkVerificationCallback, 100);
 </script>
 </body>
