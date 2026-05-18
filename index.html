@@ -797,21 +797,17 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
 </div>
  
 <script>
-// ════════════════════════════════════════════════════════════
-//  LIMPIEZA DE CACHÉ ANTIGUA — evita que datos viejos en
-//  localStorage bloqueen el arranque en navegador normal
-// ════════════════════════════════════════════════════════════
-(function() {
-  const VER = 'v5';
-  if (localStorage.getItem('ibu_ver') !== VER) {
-    // Preservar SOLO el token de auth del proyecto actual
-    const sbKey = Object.keys(localStorage).find(k => k.startsWith('sb-gwycdrnwkzmoxbxcqxih'));
-    const sbVal = sbKey ? localStorage.getItem(sbKey) : null;
-    try { localStorage.clear(); } catch(e) {}
-    if (sbKey && sbVal) localStorage.setItem(sbKey, sbVal);
-    localStorage.setItem('ibu_ver', VER);
+// Limpiar caché de provincias con formato antiguo (si existe)
+try {
+  const _old = localStorage.getItem('iberofuel_provincias');
+  if (_old) {
+    const _p = JSON.parse(_old);
+    // Si el primer elemento no tiene ni 'id' ni 'IDProvincia' es formato viejo
+    if (_p.length && !_p[0].id && !_p[0].IDProvincia && !_p[0].IDPovincia) {
+      localStorage.removeItem('iberofuel_provincias');
+    }
   }
-})();
+} catch(_) { try { localStorage.removeItem('iberofuel_provincias'); } catch(__) {} }
 
 // ════════════════════════════════════════════════════════════
 //  PROVINCIAS FALLBACK (cargadas si la API del MINETUR está caída)
@@ -1184,38 +1180,26 @@ function poblarProvincias(list) {
   });
 }
 
-async function loadProvincias() {
-  const cached = localStorage.getItem('iberofuel_provincias');
-
-  if (cached) {
-    // Con caché: mostrar inmediatamente y refrescar en segundo plano sin bloquear
-    try { poblarProvincias(JSON.parse(cached)); } catch { /* caché corrupta */ }
-    fetchWithCORS(`${API_BASE}/Listados/Provincias/`)
-      .then(data => {
-        const list = Array.isArray(data) ? data : (data.Provincias || data.ListaProvincias || []);
-        if (list.length) {
-          localStorage.setItem('iberofuel_provincias', JSON.stringify(list));
-          poblarProvincias(list);
-          hideApiOfflineBanner();
-        }
-      })
-      .catch(() => { /* silencioso — ya tenemos provincias del caché */ });
-    return;
-  }
-
-  // Sin caché: cargar con fallback hardcodeado si la API falla
+function loadProvincias() {
+  // 1. Mostrar INMEDIATAMENTE — caché o hardcoded (nunca dejar el selector vacío)
+  let fromCache = false;
   try {
-    const data = await fetchWithCORS(`${API_BASE}/Listados/Provincias/`);
-    const list = Array.isArray(data) ? data : (data.Provincias || data.ListaProvincias || []);
-    if (list.length) {
-      localStorage.setItem('iberofuel_provincias', JSON.stringify(list));
-      poblarProvincias(list);
-      hideApiOfflineBanner();
-    }
-  } catch {
-    poblarProvincias(PROVINCIAS_FALLBACK);
-    showApiOfflineBanner();
-  }
+    const cached = localStorage.getItem('iberofuel_provincias');
+    if (cached) { poblarProvincias(JSON.parse(cached)); fromCache = true; }
+  } catch (_) {}
+  if (!fromCache) poblarProvincias(PROVINCIAS_FALLBACK);
+
+  // 2. Refrescar desde la API en segundo plano (sin bloquear nada)
+  fetchWithCORS(`${API_BASE}/Listados/Provincias/`)
+    .then(data => {
+      const list = Array.isArray(data) ? data : (data.Provincias || data.ListaProvincias || []);
+      if (list.length) {
+        try { localStorage.setItem('iberofuel_provincias', JSON.stringify(list)); } catch(_) {}
+        poblarProvincias(list);
+        hideApiOfflineBanner();
+      }
+    })
+    .catch(() => showApiOfflineBanner());
 }
 
 function showApiOfflineBanner() {
