@@ -798,6 +798,29 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
  
 <script>
 // ════════════════════════════════════════════════════════════
+//  PROVINCIAS FALLBACK (cargadas si la API del MINETUR está caída)
+// ════════════════════════════════════════════════════════════
+const PROVINCIAS_FALLBACK = [
+  {id:'1',name:'ÁLAVA'},{id:'2',name:'ALBACETE'},{id:'3',name:'ALICANTE/ALACANT'},
+  {id:'4',name:'ALMERÍA'},{id:'5',name:'ÁVILA'},{id:'6',name:'BADAJOZ'},
+  {id:'7',name:'BALEARS (ILLES)'},{id:'8',name:'BARCELONA'},{id:'9',name:'BURGOS'},
+  {id:'10',name:'CÁCERES'},{id:'11',name:'CÁDIZ'},{id:'12',name:'CASTELLÓN/CASTELLÓ'},
+  {id:'13',name:'CIUDAD REAL'},{id:'14',name:'CÓRDOBA'},{id:'15',name:'CORUÑA (A)'},
+  {id:'16',name:'CUENCA'},{id:'17',name:'GIRONA'},{id:'18',name:'GRANADA'},
+  {id:'19',name:'GUADALAJARA'},{id:'20',name:'GIPUZKOA'},{id:'21',name:'HUELVA'},
+  {id:'22',name:'HUESCA'},{id:'23',name:'JAÉN'},{id:'24',name:'LEÓN'},
+  {id:'25',name:'LLEIDA'},{id:'26',name:'RIOJA (LA)'},{id:'27',name:'LUGO'},
+  {id:'28',name:'MADRID'},{id:'29',name:'MÁLAGA'},{id:'30',name:'MURCIA'},
+  {id:'31',name:'NAVARRA'},{id:'32',name:'OURENSE'},{id:'33',name:'ASTURIAS'},
+  {id:'34',name:'PALENCIA'},{id:'35',name:'PALMAS (LAS)'},{id:'36',name:'PONTEVEDRA'},
+  {id:'37',name:'SALAMANCA'},{id:'38',name:'SANTA CRUZ DE TENERIFE'},{id:'39',name:'CANTABRIA'},
+  {id:'40',name:'SEGOVIA'},{id:'41',name:'SEVILLA'},{id:'42',name:'SORIA'},
+  {id:'43',name:'TARRAGONA'},{id:'44',name:'TERUEL'},{id:'45',name:'TOLEDO'},
+  {id:'46',name:'VALENCIA/VALÈNCIA'},{id:'47',name:'VALLADOLID'},{id:'48',name:'BIZKAIA'},
+  {id:'49',name:'ZAMORA'},{id:'50',name:'ZARAGOZA'},{id:'51',name:'CEUTA'},{id:'52',name:'MELILLA'},
+];
+
+// ════════════════════════════════════════════════════════════
 //  SUPABASE INIT
 // ════════════════════════════════════════════════════════════
 const SUPABASE_URL  = 'https://gwycdrnwkzmoxbxcqxih.supabase.co';
@@ -1049,19 +1072,55 @@ function makeIcon(color) {
 // ════════════════════════════════════════════════════════════
 //  API — proxy /api/fuel
 // ════════════════════════════════════════════════════════════
+function poblarProvincias(list) {
+  const sel = document.getElementById('sel-prov');
+  sel.innerHTML = '<option value="">Provincia</option>';
+  provinciasData = [];
+  list.forEach(p => {
+    const id   = p.id   || p.IDPovincia || p.IDProvincia;
+    const name = p.name || p.Provincia;
+    provinciasData.push({ id, name });
+    sel.appendChild(new Option(name, id));
+  });
+}
+
 async function loadProvincias() {
+  // Intenta cargar desde caché localStorage primero (datos de sesiones anteriores)
+  const cached = localStorage.getItem('iberofuel_provincias');
+  if (cached) {
+    try { poblarProvincias(JSON.parse(cached)); } catch { /* ignorar caché corrupta */ }
+  }
+
   try {
     const data = await fetchWithCORS(`${API_BASE}/Listados/Provincias/`);
-    const sel  = document.getElementById('sel-prov');
     const list = Array.isArray(data) ? data : (data.Provincias || data.ListaProvincias || []);
-    list.forEach(p => {
-      const id = p.IDPovincia || p.IDProvincia;
-      provinciasData.push({ id, name: p.Provincia });
-      sel.appendChild(new Option(p.Provincia, id));
-    });
-  } catch(e) {
-    showError('No se pudieron cargar las provincias. ' + e.message);
+    if (list.length) {
+      localStorage.setItem('iberofuel_provincias', JSON.stringify(list));
+      poblarProvincias(list);
+    }
+  } catch {
+    // Si la API falla y no había caché, usar la lista hardcodeada
+    if (!cached) {
+      poblarProvincias(PROVINCIAS_FALLBACK);
+      showApiOfflineBanner();
+    }
   }
+}
+
+function showApiOfflineBanner() {
+  if (document.getElementById('api-offline-banner')) return;
+  const el = document.createElement('div');
+  el.id = 'api-offline-banner';
+  el.style.cssText = `
+    position:fixed;bottom:0;left:0;right:0;z-index:9999;
+    background:#EF4444;color:white;font-size:13px;font-weight:600;
+    padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;
+  `;
+  el.innerHTML = `
+    <span>⚠️ La API del Ministerio (MINETUR) está temporalmente no disponible. Los precios no se pueden cargar ahora.</span>
+    <button onclick="this.parentElement.remove()" style="background:rgba(255,255,255,0.25);border:none;color:white;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">✕</button>
+  `;
+  document.body.appendChild(el);
 }
 
 async function onProvinciaChange() {
@@ -1093,7 +1152,10 @@ async function buscarPorMunicipio() {
     if (searchOpen) toggleSearch();
     if (isMobile()) switchTab('lista');
   } catch(e) {
-    showError('No hay datos para este municipio. ' + e.message);
+    const msg503 = e.message.includes('503') || e.message.includes('502')
+      ? 'La API del Ministerio (MINETUR) está temporalmente no disponible. Inténtalo en unos minutos.'
+      : e.message;
+    showError('Error al buscar gasolineras. ' + msg503);
   }
 }
 
@@ -1127,7 +1189,10 @@ function usarMiUbicacion() {
         if (searchOpen) toggleSearch();
         if (isMobile()) switchTab('lista');
       } catch(e) {
-        showError('No se pudieron cargar gasolineras cercanas. Prueba por municipio. ' + e.message);
+        const msg503 = e.message.includes('503') || e.message.includes('502')
+          ? 'La API del Ministerio (MINETUR) está temporalmente no disponible. Inténtalo en unos minutos.'
+          : e.message;
+        showError('No se pudieron cargar gasolineras cercanas. ' + msg503);
       }
     },
     function(err) {
