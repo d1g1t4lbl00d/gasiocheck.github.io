@@ -6,14 +6,14 @@ y escribe en la tabla minetur_cache de Supabase.
 
 import sys
 import json
-import re
+import unicodedata
 from datetime import datetime, timezone
 import requests
 import xlrd
 
-XLS_URL   = 'https://geoportalgasolineras.es/resources/files/preciosEESS_es.xls'
-SB_URL    = 'https://gwycdrnwkzmoxbxcqxih.supabase.co'
-SB_KEY    = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd3eWNkcm53a3ptb3hieGNxeGloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwMzgyNDEsImV4cCI6MjA5NDYxNDI0MX0.fTm-TesEgil6NjaiiCspZdjMCX6PxAclFhlPs6PNngc'
+XLS_URL = 'https://geoportalgasolineras.es/resources/files/preciosEESS_es.xls'
+SB_URL  = 'https://gwycdrnwkzmoxbxcqxih.supabase.co'
+SB_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd3eWNkcm53a3ptb3hieGNxeGloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwMzgyNDEsImV4cCI6MjA5NDYxNDI0MX0.fTm-TesEgil6NjaiiCspZdjMCX6PxAclFhlPs6PNngc'
 
 PROV_MAP = {
     'A CORUÑA': '15', 'ÁLAVA': '01', 'ALBACETE': '02', 'ALICANTE': '03',
@@ -32,8 +32,6 @@ PROV_MAP = {
     'ZARAGOZA': '50',
 }
 
-import unicodedata
-
 def norm(s: str) -> str:
     return unicodedata.normalize('NFD', s.upper()).encode('ascii', 'ignore').decode().replace('  ', ' ').strip()
 
@@ -43,11 +41,9 @@ def resolve_prov_id(name: str):
     up = name.upper().strip()
     if up in PROV_MAP:
         return PROV_MAP[up]
-    n = norm(up)
-    return PROV_MAP_NORM.get(n)
+    return PROV_MAP_NORM.get(norm(up))
 
 def float_str(val) -> str:
-    """Convierte un número XLS al formato español con coma (e.g. 1.659 → '1,659')."""
     if val == '' or val is None:
         return ''
     try:
@@ -56,7 +52,8 @@ def float_str(val) -> str:
             return ''
         return f'{f:.3f}'.replace('.', ',')
     except (TypeError, ValueError):
-        return str(val).replace('.', ',')
+        s = str(val).strip()
+        return s.replace('.', ',') if s else ''
 
 def str_val(val) -> str:
     if isinstance(val, float) and val == int(val):
@@ -76,9 +73,17 @@ def sb_upsert(records: list) -> bool:
         timeout=60,
     )
     if not r.ok:
-        print(f'  Supabase error {r.status_code}: {r.text[:300]}', file=sys.stderr)
+        print(f'  Supabase error {r.status_code}: {r.text[:500]}', file=sys.stderr)
         return False
     return True
+
+def find_header_row(ws) -> int:
+    """Encuentra la fila que contiene los nombres de columna reales."""
+    for row_idx in range(min(5, ws.nrows)):
+        vals = [str(ws.cell_value(row_idx, c)).strip() for c in range(ws.ncols)]
+        if any('Provincia' in v or 'PROVINCIA' in v or 'IDEESS' in v for v in vals):
+            return row_idx
+    return 0  # fallback a la primera fila
 
 def main():
     print(f'[{datetime.now()}] Descargando XLS...')
@@ -93,19 +98,42 @@ def main():
     print('Parseando...')
     wb = xlrd.open_workbook(file_contents=resp.content)
     ws = wb.sheets()[0]
+    print(f'  Hoja: "{ws.name}", filas={ws.nrows}, cols={ws.ncols}')
 
-    # Primera fila = cabeceras
-    headers = [str(ws.cell_value(0, c)).strip() for c in range(ws.ncols)]
-    print(f'  Columnas ({ws.ncols}): {headers[:8]}...')
+    # Imprimir primeras 3 filas para diagnóstico
+    for i in range(min(3, ws.nrows)):
+        vals = [str(ws.cell_value(i, c))[:20] for c in range(min(10, ws.ncols))]
+        print(f'  Fila {i}: {vals}')
+
+    header_row = find_header_row(ws)
+    print(f'  Fila de cabeceras detectada: {header_row}')
+    headers = [str(ws.cell_value(header_row, c)).strip() for c in range(ws.ncols)]
+    print(f'  Cabeceras: {headers[:10]}')
 
     by_prov: dict[str, list] = {}
+    skipped = 0
 
-    for row_idx in range(1, ws.nrows):
+    for row_idx in range(header_row + 1, ws.nrows):
         row = {headers[c]: ws.cell_value(row_idx, c) for c in range(ws.ncols)}
-        prov_name = str(row.get('Provincia') or row.get('PROVINCIA') or '').strip()
-        prov_id = resolve_prov_id(prov_name)
+
+        # Preferir IDProvincia directo si está disponible
+        prov_id = None
+        raw_id = row.get('IDProvincia') or row.get('IDPROVINCIA') or ''
+        if raw_id != '':
+            try:
+                prov_id = str(int(float(raw_id))).zfill(2)
+            except (ValueError, TypeError):
+                pass
+
         if not prov_id:
+            prov_name = str(row.get('Provincia') or row.get('PROVINCIA') or '').strip()
+            prov_id = resolve_prov_id(prov_name)
+
+        if not prov_id:
+            skipped += 1
             continue
+
+        prov_name = str(row.get('Provincia') or row.get('PROVINCIA') or '').strip()
 
         station = {
             'IDEESS': str_val(row.get('IDEESS', '')),
@@ -116,8 +144,8 @@ def main():
             'IDMunicipio': str_val(row.get('IDMunicipio', '')),
             'IDProvincia': prov_id,
             'Provincia': prov_name,
-            'Latitud': str(row.get('Latitud', '')).replace('.', ','),
-            'Longitud (WGS84)': str(row.get('Longitud (WGS84)') or row.get('Longitud') or '').replace('.', ','),
+            'Latitud': str_val(row.get('Latitud', '')).replace('.', ','),
+            'Longitud (WGS84)': str_val(row.get('Longitud (WGS84)') or row.get('Longitud') or '').replace('.', ','),
             'Precio Gasolina 95 E5': float_str(row.get('Precio Gasolina 95 E5', '')),
             'Precio Gasolina 98 E5': float_str(row.get('Precio Gasolina 98 E5', '')),
             'Precio Gasóleo A': float_str(row.get('Precio Gasóleo A') or row.get('Precio Gasoleo A', '')),
@@ -135,7 +163,11 @@ def main():
 
     prov_ids = list(by_prov.keys())
     total = sum(len(v) for v in by_prov.values())
-    print(f'  Estaciones: {total:,} en {len(prov_ids)} provincias')
+    print(f'  Estaciones: {total:,} en {len(prov_ids)} provincias, omitidas: {skipped}')
+
+    if total == 0:
+        print('ERROR: 0 estaciones procesadas. Revisa las cabeceras del XLS.', file=sys.stderr)
+        sys.exit(1)
 
     now = datetime.now(timezone.utc).isoformat()
     fecha = datetime.now().strftime('%d/%m/%Y')
@@ -158,18 +190,14 @@ def main():
         records = [
             {
                 'cache_key': f'EstacionesTerrestresFiltros/FiltroProvincia/{pid}',
-                'payload': {
-                    'ListaEESSPrecio': by_prov[pid],
-                    'Fecha': fecha,
-                    'ResultadoConsulta': 'OK',
-                },
+                'payload': {'ListaEESSPrecio': by_prov[pid], 'Fecha': fecha, 'ResultadoConsulta': 'OK'},
                 'updated_at': now,
             }
             for pid in batch_ids
         ]
         if not sb_upsert(records):
             errors += 1
-        print(f'  Lote {i // BATCH + 1}: {batch_ids}')
+        print(f'  Lote {i // BATCH + 1}/{(len(prov_ids) + BATCH - 1) // BATCH}: {batch_ids}')
 
     print(f'\nFinalizado. Estaciones: {total}, Provincias: {len(prov_ids)}, Errores: {errors}')
     sys.exit(1 if errors else 0)
