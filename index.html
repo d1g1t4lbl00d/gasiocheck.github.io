@@ -3,396 +3,708 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>IberoFuel — Combustible inteligente</title>
+<title>IberoFuel — Encuentra tu gasolinera, ahorra siempre</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="alternate icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="favicon.png">
+<meta name="theme-color" content="#1E6B4B">
+<meta name="description" content="IberoFuel — Encuentra las gasolineras más baratas cerca de ti. Datos oficiales del Ministerio en tiempo real. Pepe te ayuda a ahorrar.">
+<meta property="og:title" content="IberoFuel — Combustible inteligente">
+<meta property="og:description" content="Encuentra tu gasolinera, ahorra siempre. Pepe el cerdito te guía.">
+<meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Cabinet+Grotesk:wght@400;500;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ─── RESET & TOKENS ──────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
- 
+
 :root {
-  --fire:        #FF6B2B;
-  --fire-deep:   #E8501A;
-  --fire-light:  #FF8E55;
-  --fire-glow:   rgba(255,107,43,0.18);
-  --amber:       #FFAA3B;
-  --amber-pale:  #FFF6E8;
-  --peach:       #FFDBC4;
-  --cream:       #FEFAF6;
-  --success:     #22C55E;
-  --success-bg:  rgba(34,197,94,0.10);
-  --danger:      #EF4444;
-  --danger-bg:   rgba(239,68,68,0.10);
-  --info:        #3B82F6;
-  --info-bg:     rgba(59,130,246,0.08);
-  --info-border: rgba(59,130,246,0.20);
-  --bg-base:     #FAF8F5;
-  --glass:       rgba(255,255,255,0.72);
-  --glass-2:     rgba(255,255,255,0.50);
+  /* Pepe palette */
+  --green-1:     #1E6B4B;
+  --green-2:     #2E8B57;
+  --green-soft:  #A7D7B7;
+  --green-pale:  #E8F3EC;
+  --green-50:    #F4FAF5;
+  --pink:        #FFC1C1;
+  --pink-soft:   #FFE6E6;
+  --ink:         #222222;
+  --ink-2:       #3A3F3C;
+  --ink-3:       #5C625F;
+  --ink-4:       #8A8A8A;
+  --ink-5:       #B7BDB9;
+  --bg-base:     #F7F9F6;
   --surface:     #FFFFFF;
-  --surface-2:   #FAFAF8;
-  --surface-3:   #F5F3EF;
-  --surface-4:   #EFECE6;
-  --text-1:      #18161A;
-  --text-2:      #3D3640;
-  --text-3:      #6B6370;
-  --text-4:      #9B93A0;
-  --text-5:      #C4BFCA;
-  --border:      rgba(24,22,26,0.08);
-  --border-2:    rgba(24,22,26,0.05);
-  --border-fire: rgba(255,107,43,0.25);
+  --surface-2:   #FBFBF8;
+  --surface-3:   #F2F5EF;
+  --surface-4:   #E7ECE3;
+  --glass:       rgba(255,255,255,0.78);
+  --border:      rgba(34,34,34,0.08);
+  --border-2:    rgba(34,34,34,0.05);
+  --border-g:    rgba(30,107,75,0.22);
+  --success:     #1E6B4B;
+  --success-bg:  rgba(30,107,75,0.10);
+  --danger:      #C8443A;
+  --danger-bg:   rgba(200,68,58,0.10);
+  --info:        #2E8B57;
+  --info-bg:     rgba(46,139,87,0.10);
+  --info-border: rgba(46,139,87,0.22);
+
   --shadow-xs:   0 1px 2px rgba(0,0,0,0.04);
-  --shadow-sm:   0 2px 8px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-  --shadow-md:   0 4px 20px rgba(0,0,0,0.07), 0 2px 6px rgba(0,0,0,0.04);
-  --shadow-lg:   0 12px 48px rgba(0,0,0,0.09), 0 4px 12px rgba(0,0,0,0.05);
-  --shadow-xl:   0 24px 80px rgba(0,0,0,0.11), 0 8px 24px rgba(0,0,0,0.06);
-  --shadow-fire: 0 4px 24px rgba(255,107,43,0.30), 0 2px 8px rgba(255,107,43,0.15);
-  --shadow-fire-lg: 0 8px 40px rgba(255,107,43,0.35), 0 4px 16px rgba(255,107,43,0.20);
+  --shadow-sm:   0 2px 8px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
+  --shadow-md:   0 6px 22px rgba(30,107,75,0.07), 0 2px 6px rgba(0,0,0,0.04);
+  --shadow-lg:   0 14px 44px rgba(30,107,75,0.12), 0 4px 12px rgba(0,0,0,0.05);
+  --shadow-xl:   0 24px 80px rgba(30,107,75,0.14), 0 8px 24px rgba(0,0,0,0.06);
+  --shadow-g:    0 4px 20px rgba(30,107,75,0.28), 0 2px 8px rgba(30,107,75,0.18);
+  --shadow-g-lg: 0 10px 40px rgba(30,107,75,0.30), 0 4px 16px rgba(30,107,75,0.18);
+
   --r-xs:6px; --r-sm:10px; --r-md:14px; --r-lg:20px;
   --r-xl:28px; --r-2xl:36px; --r-full:9999px;
-  --font-display: 'Sora', sans-serif;
-  --font-body:    'Plus Jakarta Sans', sans-serif;
+  --font-display: 'Nunito', system-ui, sans-serif;
+  --font-body:    'Plus Jakarta Sans', system-ui, sans-serif;
   --header-h: 68px;
   --tab-h: 0px;
 }
- 
-html, body { height: 100%; overflow: hidden; background: var(--bg-base); color: var(--text-1); font-family: var(--font-body); -webkit-font-smoothing: antialiased; -webkit-text-size-adjust: 100%; }
-button { font-family: var(--font-body); }
-a { text-decoration: none; }
- 
+
+html, body { height: 100%; overflow: hidden; background: var(--bg-base); color: var(--ink); font-family: var(--font-body); -webkit-font-smoothing: antialiased; -webkit-text-size-adjust: 100%; }
+button { font-family: var(--font-body); cursor: pointer; }
+a { text-decoration: none; color: inherit; }
+
 body::before {
   content: ''; position: fixed; inset: 0;
   background:
-    radial-gradient(ellipse 80% 60% at 10% 0%, rgba(255,180,120,0.13) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 40% at 90% 10%, rgba(255,120,60,0.08) 0%, transparent 55%),
-    radial-gradient(ellipse 50% 50% at 50% 100%, rgba(255,160,80,0.07) 0%, transparent 60%),
-    #FAF8F5;
+    radial-gradient(ellipse 90% 60% at 10% 0%, rgba(167,215,183,0.30) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 35% at 90% 10%, rgba(46,139,87,0.10) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 45% at 50% 110%, rgba(167,215,183,0.18) 0%, transparent 60%),
+    var(--bg-base);
   pointer-events: none; z-index: 0;
 }
- 
+
+/* ─── HEADER ──────────────────────────────────────── */
 header {
   position: fixed; inset: 0 0 auto 0; height: var(--header-h); z-index: 1000;
   background: var(--glass); backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border-bottom: 1px solid var(--border); padding: 0 24px;
+  border-bottom: 1px solid var(--border); padding: 0 22px;
   display: flex; align-items: center; justify-content: space-between;
 }
-header::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(255,107,43,0.04) 0%, transparent 40%); pointer-events: none; }
- 
-.logo { font-family: var(--font-display); font-size: 22px; font-weight: 800; color: var(--text-1); display: flex; align-items: center; gap: 12px; letter-spacing: -0.5px; position: relative; z-index: 1; }
-.logo-mark { width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, var(--fire) 0%, var(--amber) 100%); display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-fire); flex-shrink: 0; position: relative; overflow: hidden; }
-.logo-mark::before { content: ''; position: absolute; top: -8px; left: -8px; width: 24px; height: 24px; border-radius: 50%; background: rgba(255,255,255,0.25); filter: blur(6px); }
-.logo-mark svg { position: relative; z-index: 1; }
-.logo-wordmark { display: flex; flex-direction: column; gap: 1px; }
-.logo-name { color: var(--text-1); letter-spacing: -0.8px; line-height: 1; }
-.logo-name span { color: var(--fire); }
-.logo-tagline { font-family: var(--font-body); font-size: 10px; font-weight: 500; color: var(--text-4); letter-spacing: 0.3px; line-height: 1; }
-.header-right { display: flex; align-items: center; gap: 10px; position: relative; z-index: 1; }
- 
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo-mark { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer; transition: transform .3s cubic-bezier(0.34,1.56,0.64,1); }
+.logo-mark img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(30,107,75,0.18)); }
+.logo-mark:hover { transform: rotate(-6deg) scale(1.05); }
+.logo-wordmark { display: flex; flex-direction: column; gap: 1px; line-height: 1; }
+.logo-name { font-family: var(--font-display); font-size: 22px; font-weight: 900; color: var(--green-1); letter-spacing: -0.6px; }
+.logo-name span { color: var(--green-2); font-weight: 800; }
+.logo-tagline { font-family: var(--font-body); font-size: 10.5px; font-weight: 600; color: var(--ink-4); letter-spacing: 0.3px; margin-top: 3px; }
+.header-right { display: flex; align-items: center; gap: 10px; }
+
 .live-badge { display: flex; align-items: center; gap: 7px; background: var(--surface); border: 1px solid var(--border); padding: 7px 14px; border-radius: var(--r-full); box-shadow: var(--shadow-xs); }
-.live-dot { width: 7px; height: 7px; background: var(--success); border-radius: 50%; box-shadow: 0 0 8px rgba(34,197,94,0.6); animation: live-pulse 2.2s ease-in-out infinite; }
+.live-dot { width: 7px; height: 7px; background: var(--green-2); border-radius: 50%; box-shadow: 0 0 8px rgba(46,139,87,0.6); animation: live-pulse 2.2s ease-in-out infinite; }
 @keyframes live-pulse { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.7; transform:scale(0.8); } }
-.live-text { font-size: 11px; font-weight: 600; color: var(--text-3); letter-spacing: 0.1px; white-space: nowrap; }
- 
-.support-btn { display: flex; align-items: center; gap: 6px; background: var(--surface); border: 1px solid var(--border); color: var(--text-2); font-size: 12px; font-weight: 600; padding: 8px 16px; border-radius: var(--r-full); cursor: pointer; transition: all .2s cubic-bezier(0.34,1.56,0.64,1); white-space: nowrap; box-shadow: var(--shadow-xs); }
-.support-btn:hover { background: var(--fire); border-color: var(--fire); color: white; box-shadow: var(--shadow-fire); transform: translateY(-1px); }
-.support-btn-icon { font-size: 13px; animation: heartbeat 3s ease-in-out infinite; }
-@keyframes heartbeat { 0%,80%,100% { transform:scale(1); } 88% { transform:scale(1.25); } 94% { transform:scale(0.92); } }
- 
+.live-text { font-size: 11px; font-weight: 700; color: var(--ink-3); letter-spacing: 0.1px; white-space: nowrap; }
+
+.support-btn, .auth-btn {
+  display: flex; align-items: center; gap: 7px;
+  background: var(--surface); border: 1px solid var(--border); color: var(--ink-2);
+  font-size: 12px; font-weight: 700; padding: 8px 16px;
+  border-radius: var(--r-full); cursor: pointer;
+  transition: all .2s cubic-bezier(0.34,1.56,0.64,1);
+  white-space: nowrap; box-shadow: var(--shadow-xs);
+}
+.support-btn:hover { background: var(--green-1); border-color: var(--green-1); color: white; box-shadow: var(--shadow-g); transform: translateY(-1px); }
+.auth-btn:hover { border-color: var(--border-g); color: var(--green-1); box-shadow: var(--shadow-sm); transform: translateY(-1px); }
+.auth-btn.logged-in { background: var(--green-pale); border-color: var(--border-g); color: var(--green-1); }
+.auth-avatar { width: 22px; height: 22px; border-radius: 50%; background: linear-gradient(135deg, var(--green-1), var(--green-2)); color: white; font-size: 10px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+
+/* ─── LAYOUT ──────────────────────────────────────── */
 .app-layout { position: fixed; top: var(--header-h); left: 0; right: 0; bottom: var(--tab-h); display: flex; overflow: hidden; z-index: 1; }
- 
-.sidebar { width: 400px; flex-shrink: 0; display: flex; flex-direction: column; height: 100%; background: transparent; border-right: 1px solid var(--border); overflow: hidden; }
- 
-.search-panel { flex-shrink: 0; padding: 11px 13px 0; background: var(--glass); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-2); }
-.search-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); box-shadow: var(--shadow-sm); overflow: hidden; margin-bottom: 11px; }
-.search-card-header { padding: 11px 14px 10px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-2); background: linear-gradient(to right, rgba(255,107,43,0.03), transparent); }
-.search-title { font-family: var(--font-display); font-size: 14px; font-weight: 700; color: var(--text-1); display: flex; align-items: center; gap: 9px; cursor: pointer; user-select: none; letter-spacing: -0.2px; }
-.search-title-icon { width: 30px; height: 30px; background: var(--amber-pale); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; border: 1px solid rgba(255,170,59,0.15); }
-.chevron { font-size: 10px; color: var(--text-4); transition: transform .3s cubic-bezier(0.34,1.56,0.64,1); margin-left: 2px; }
-.locate-btn { display: flex; align-items: center; gap: 6px; background: linear-gradient(135deg, var(--fire), var(--amber)); border: none; color: white; font-family: var(--font-body); font-size: 12px; font-weight: 600; padding: 8px 15px; border-radius: var(--r-full); cursor: pointer; transition: all .2s cubic-bezier(0.34,1.56,0.64,1); white-space: nowrap; letter-spacing: 0.1px; box-shadow: var(--shadow-fire); }
-.locate-btn:hover { transform: translateY(-2px) scale(1.02); box-shadow: var(--shadow-fire-lg); filter: brightness(1.05); }
+.sidebar { width: 410px; flex-shrink: 0; display: flex; flex-direction: column; height: 100%; background: transparent; border-right: 1px solid var(--border); overflow: hidden; }
+
+/* ─── SEARCH PANEL ──────────────────────────────────────── */
+.search-panel { flex-shrink: 0; padding: 12px 13px 0; background: var(--glass); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-2); }
+.search-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); box-shadow: var(--shadow-sm); overflow: hidden; margin-bottom: 12px; }
+.search-card-header { padding: 12px 14px 11px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-2); background: linear-gradient(to right, rgba(167,215,183,0.18), transparent); }
+.search-title { font-family: var(--font-display); font-size: 14.5px; font-weight: 800; color: var(--ink); display: flex; align-items: center; gap: 9px; cursor: pointer; user-select: none; letter-spacing: -0.2px; }
+.search-title-icon { width: 30px; height: 30px; background: var(--green-pale); border-radius: 9px; display: flex; align-items: center; justify-content: center; color: var(--green-1); border: 1px solid var(--border-g); }
+.chevron { font-size: 10px; color: var(--ink-4); transition: transform .3s; margin-left: 2px; }
+
+.locate-btn {
+  display: flex; align-items: center; gap: 7px;
+  background: linear-gradient(135deg, var(--green-1), var(--green-2));
+  border: none; color: white; font-family: var(--font-body);
+  font-size: 12px; font-weight: 700; padding: 8px 15px;
+  border-radius: var(--r-full); cursor: pointer;
+  transition: all .2s cubic-bezier(0.34,1.56,0.64,1);
+  white-space: nowrap; box-shadow: var(--shadow-g);
+}
+.locate-btn:hover { transform: translateY(-2px) scale(1.02); box-shadow: var(--shadow-g-lg); filter: brightness(1.05); }
 .locate-btn:active { transform: translateY(0) scale(0.98); }
-.search-body { display: grid; grid-template-rows: 1fr; transition: grid-template-rows .32s cubic-bezier(0.4,0,0.2,1), opacity .25s; opacity: 1; }
+.locate-btn:disabled { opacity:.7; cursor:not-allowed; }
+.loc-dot { width: 8px; height: 8px; border-radius: 50%; background: white; box-shadow: 0 0 0 2px rgba(255,255,255,0.35); }
+
+.search-body { display: grid; grid-template-rows: 1fr; transition: grid-template-rows .32s, opacity .25s; opacity: 1; }
 .search-body.collapsed { grid-template-rows: 0fr; opacity: 0; }
-.search-body-inner { overflow: hidden; padding: 11px 14px 13px; display: flex; flex-direction: column; gap: 9px; }
+.search-body-inner { overflow: hidden; padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 9px; }
 .selects-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .select-wrap { position: relative; }
-.select-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 13px; pointer-events: none; z-index: 1; }
-select, input[type="text"], input[type="number"], input[type="password"] { width: 100%; background: var(--surface-3); border: 1.5px solid var(--border); color: var(--text-1); font-family: var(--font-body); font-size: 13px; font-weight: 500; padding: 10px 10px 10px 34px; border-radius: var(--r-md); outline: none; transition: all .2s cubic-bezier(0.4,0,0.2,1); appearance: none; -webkit-appearance: none; }
-select:focus, input:focus { border-color: var(--fire); background: white; box-shadow: 0 0 0 3px var(--fire-glow); }
+.select-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--green-1); z-index: 1; display: flex; }
+select, input[type="text"], input[type="number"], input[type="password"] {
+  width: 100%; background: var(--surface-3); border: 1.5px solid var(--border);
+  color: var(--ink); font-family: var(--font-body);
+  font-size: 13px; font-weight: 600;
+  padding: 10px 10px 10px 34px; border-radius: var(--r-md);
+  outline: none; transition: all .2s; appearance: none; -webkit-appearance: none;
+}
+select:focus, input:focus { border-color: var(--green-1); background: white; box-shadow: 0 0 0 3px rgba(30,107,75,0.14); }
 select:disabled { opacity: 0.5; cursor: not-allowed; }
-.btn-search { width: 100%; background: linear-gradient(135deg, var(--fire) 0%, var(--fire-light) 100%); color: white; border: none; font-family: var(--font-display); font-weight: 700; font-size: 14px; padding: 13px 20px; border-radius: var(--r-md); cursor: pointer; transition: all .2s cubic-bezier(0.34,1.56,0.64,1); box-shadow: var(--shadow-fire); display: flex; align-items: center; justify-content: center; gap: 7px; letter-spacing: -0.1px; position: relative; overflow: hidden; }
-.btn-search::after { content: ''; position: absolute; top: -50%; left: -60%; width: 60%; height: 200%; background: rgba(255,255,255,0.12); transform: skewX(-20deg); transition: left .4s ease; }
+
+.btn-search {
+  width: 100%; background: linear-gradient(135deg, var(--green-1), var(--green-2));
+  color: white; border: none; font-family: var(--font-display);
+  font-weight: 800; font-size: 14px; padding: 13px 20px;
+  border-radius: var(--r-md); cursor: pointer; transition: all .2s cubic-bezier(0.34,1.56,0.64,1);
+  box-shadow: var(--shadow-g);
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  letter-spacing: -0.1px; position: relative; overflow: hidden;
+}
+.btn-search::after { content: ''; position: absolute; top: -50%; left: -60%; width: 60%; height: 200%; background: rgba(255,255,255,0.14); transform: skewX(-20deg); transition: left .5s ease; }
 .btn-search:hover::after { left: 140%; }
-.btn-search:hover { transform: translateY(-2px); box-shadow: var(--shadow-fire-lg); filter: brightness(1.04); }
-.btn-search:active { transform: translateY(0); }
- 
-.fuel-section { flex-shrink: 0; padding: 9px 13px 10px; background: var(--glass); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-2); }
-.fuel-label { font-size: 10px; font-weight: 700; color: var(--text-4); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 7px; }
+.btn-search:hover { transform: translateY(-2px); box-shadow: var(--shadow-g-lg); filter: brightness(1.04); }
+
+/* ─── FUEL CHIPS ──────────────────────────────────────── */
+.fuel-section { flex-shrink: 0; padding: 10px 13px 11px; background: var(--glass); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-2); }
+.fuel-label { font-size: 10px; font-weight: 800; color: var(--ink-4); text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 8px; }
 .fuel-chips { display: flex; gap: 6px; flex-wrap: wrap; }
-.fuel-chip { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 7px 13px; border-radius: var(--r-full); border: 1.5px solid var(--border); background: var(--surface); color: var(--text-3); cursor: pointer; transition: all .2s cubic-bezier(0.34,1.56,0.64,1); white-space: nowrap; box-shadow: var(--shadow-xs); -webkit-tap-highlight-color: transparent; }
-.fuel-chip-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-5); transition: all .2s; flex-shrink: 0; }
-.fuel-chip.active { background: linear-gradient(135deg, var(--fire), var(--fire-light)); color: white; border-color: var(--fire); box-shadow: var(--shadow-fire); transform: translateY(-1px); }
-.fuel-chip.active .fuel-chip-dot { background: rgba(255,255,255,0.7); }
-.fuel-chip:hover:not(.active) { border-color: var(--border-fire); color: var(--fire); background: var(--amber-pale); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
- 
+.fuel-chip {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 700; padding: 7px 13px;
+  border-radius: var(--r-full);
+  border: 1.5px solid var(--border); background: var(--surface);
+  color: var(--ink-3); cursor: pointer;
+  transition: all .2s cubic-bezier(0.34,1.56,0.64,1);
+  white-space: nowrap; box-shadow: var(--shadow-xs);
+  -webkit-tap-highlight-color: transparent;
+}
+.fuel-chip-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ink-5); flex-shrink: 0; }
+.fuel-chip.active { background: linear-gradient(135deg, var(--green-1), var(--green-2)); color: white; border-color: var(--green-1); box-shadow: var(--shadow-g); transform: translateY(-1px); }
+.fuel-chip.active .fuel-chip-dot { background: rgba(255,255,255,0.85); }
+.fuel-chip:hover:not(.active) { border-color: var(--border-g); color: var(--green-1); background: var(--green-pale); transform: translateY(-1px); }
+
+/* ─── STATS BAR ──────────────────────────────────────── */
 .stats-bar { flex-shrink: 0; padding: 8px 10px; display: none; gap: 5px; background: var(--glass); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-2); }
 .stats-bar.visible { display: flex; }
 .stat-item { flex: 1; text-align: center; padding: 9px 6px; border-radius: var(--r-md); background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow-xs); }
-.stat-item:first-child { background: var(--success-bg); border-color: rgba(34,197,94,0.15); }
-.stat-item:last-child  { background: var(--danger-bg);  border-color: rgba(239,68,68,0.12); }
-.stat-value { font-family: var(--font-display); font-size: 15px; font-weight: 800; line-height: 1; color: var(--text-2); }
-.stat-item:first-child .stat-value { color: var(--success); }
+.stat-item:nth-child(2) { background: var(--success-bg); border-color: rgba(30,107,75,0.16); }
+.stat-item:last-child  { background: var(--danger-bg);  border-color: rgba(200,68,58,0.14); }
+.stat-value { font-family: var(--font-display); font-size: 16px; font-weight: 900; line-height: 1; color: var(--ink-2); }
+.stat-item:nth-child(2) .stat-value { color: var(--green-1); }
 .stat-item:last-child  .stat-value { color: var(--danger); }
-.stat-label { font-size: 9px; font-weight: 600; color: var(--text-4); text-transform: uppercase; letter-spacing: 0.7px; margin-top: 3px; }
- 
-.sort-row { flex-shrink: 0; padding: 7px 13px; display: none; align-items: center; gap: 10px; background: var(--glass); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-2); }
+.stat-label { font-size: 9px; font-weight: 800; color: var(--ink-4); text-transform: uppercase; letter-spacing: 0.7px; margin-top: 3px; }
+
+/* ─── SORT ──────────────────────────────────────── */
+.sort-row { flex-shrink: 0; padding: 8px 13px; display: none; align-items: center; gap: 10px; background: var(--glass); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-2); }
 .sort-row.visible { display: flex; }
-.sort-label { font-size: 10px; font-weight: 700; color: var(--text-4); text-transform: uppercase; letter-spacing: 0.8px; white-space: nowrap; }
-.sort-btns { display: flex; gap: 4px; }
-.sort-btn { font-family: var(--font-body); font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: var(--r-full); border: 1.5px solid var(--border); background: var(--surface); color: var(--text-3); cursor: pointer; transition: all .2s cubic-bezier(0.34,1.56,0.64,1); box-shadow: var(--shadow-xs); -webkit-tap-highlight-color: transparent; }
-.sort-btn.active { border-color: var(--fire); color: var(--fire); background: var(--amber-pale); font-weight: 700; box-shadow: 0 2px 8px var(--fire-glow); }
-.sort-btn:hover:not(.active) { border-color: var(--border-fire); color: var(--fire); transform: translateY(-1px); }
- 
+.sort-label { font-size: 10px; font-weight: 800; color: var(--ink-4); text-transform: uppercase; letter-spacing: 0.9px; white-space: nowrap; }
+.sort-btns { display: flex; gap: 5px; }
+.sort-btn { font-family: var(--font-body); font-size: 12px; font-weight: 700; padding: 6px 13px; border-radius: var(--r-full); border: 1.5px solid var(--border); background: var(--surface); color: var(--ink-3); cursor: pointer; transition: all .2s; box-shadow: var(--shadow-xs); }
+.sort-btn.active { border-color: var(--green-1); color: var(--green-1); background: var(--green-pale); box-shadow: 0 2px 8px rgba(30,107,75,0.14); }
+.sort-btn:hover:not(.active) { border-color: var(--border-g); color: var(--green-1); }
+
+/* ─── SCROLL / STATES ──────────────────────────────────────── */
 .stations-scroll-wrap { flex: 1; min-height: 0; overflow: hidden; position: relative; }
 .stations-scroll {
-  height: 100%;
-  overflow-y: scroll;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
-  touch-action: pan-y;
+  height: 100%; overflow-y: scroll; overflow-x: hidden;
+  -webkit-overflow-scrolling: touch; touch-action: pan-y;
   overscroll-behavior-y: contain;
   padding: 12px 8px 16px 12px;
-  scrollbar-width: thin;
-  scrollbar-color: #D4C9CF transparent;
-  position: relative;
+  scrollbar-width: thin; scrollbar-color: var(--green-soft) transparent;
 }
 .stations-scroll::-webkit-scrollbar { width: 6px; }
 .stations-scroll::-webkit-scrollbar-track { background: transparent; margin: 6px 0; }
-.stations-scroll::-webkit-scrollbar-thumb { background: #D4C9CF; border-radius: 99px; }
-.stations-scroll::-webkit-scrollbar-thumb:hover { background: #B0A5AD; }
- 
-.state-panel { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 48px 28px; text-align: center; }
-.state-icon-box { width: 88px; height: 88px; background: var(--surface); border: 1px solid var(--border); border-radius: 24px; display: flex; align-items: center; justify-content: center; font-size: 44px; box-shadow: var(--shadow-md); animation: float 4s ease-in-out infinite; }
+.stations-scroll::-webkit-scrollbar-thumb { background: var(--green-soft); border-radius: 99px; }
+.stations-scroll::-webkit-scrollbar-thumb:hover { background: var(--green-2); }
+
+.state-panel { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 40px 28px; text-align: center; }
+.state-icon-box { width: 88px; height: 88px; background: var(--surface); border: 1px solid var(--border); border-radius: 24px; display: flex; align-items: center; justify-content: center; font-size: 40px; box-shadow: var(--shadow-md); animation: float 4s ease-in-out infinite; }
 @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-.state-title { font-family: var(--font-display); font-size: 20px; font-weight: 800; color: var(--text-1); line-height: 1.3; letter-spacing: -0.4px; }
-.state-sub { font-size: 13px; font-weight: 400; color: var(--text-3); line-height: 1.7; max-width: 240px; }
-.spinner { width: 38px; height: 38px; border: 3px solid var(--border); border-top-color: var(--fire); border-radius: 50%; animation: spin .75s linear infinite; }
+.state-title { font-family: var(--font-display); font-size: 20px; font-weight: 900; color: var(--ink); line-height: 1.3; letter-spacing: -0.4px; }
+.state-sub { font-size: 13px; font-weight: 500; color: var(--ink-3); line-height: 1.6; max-width: 260px; }
+.spinner { width: 38px; height: 38px; border: 3px solid var(--green-pale); border-top-color: var(--green-1); border-radius: 50%; animation: spin .75s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
-.error-toast { background: var(--danger-bg); border: 1.5px solid rgba(239,68,68,0.15); color: var(--danger); padding: 14px 18px; border-radius: var(--r-lg); font-size: 13px; font-weight: 600; line-height: 1.5; text-align: center; }
- 
+.error-toast { background: var(--danger-bg); border: 1.5px solid rgba(200,68,58,0.18); color: var(--danger); padding: 14px 18px; border-radius: var(--r-lg); font-size: 13px; font-weight: 600; line-height: 1.5; text-align: center; }
+.btn-pill { display: inline-flex; align-items: center; gap: 7px; background: var(--green-pale); border: 1.5px solid var(--border-g); color: var(--green-1); font-family: var(--font-body); font-size: 12px; font-weight: 700; padding: 8px 14px; border-radius: var(--r-full); cursor: pointer; transition: all .18s; margin-top: 4px; }
+.btn-pill:hover { background: var(--green-1); color: white; border-color: var(--green-1); }
+
+/* ─── STATION CARDS ──────────────────────────────────────── */
 .station-card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 20px;
-  margin-bottom: 10px;
-  cursor: pointer;
+  margin-bottom: 10px; cursor: pointer;
   transition: transform .24s cubic-bezier(0.34,1.56,0.64,1), box-shadow .24s ease, border-color .18s ease;
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-  position: relative;
-  overflow: visible;
+  position: relative; overflow: visible;
   animation: card-reveal .35s cubic-bezier(0.34,1.56,0.64,1) both;
-  background-image: linear-gradient(160deg, #fff 0%, #faf8f5 100%);
-  touch-action: manipulation;
+  background-image: linear-gradient(160deg, #fff 0%, #faf9f6 100%);
   -webkit-tap-highlight-color: transparent;
 }
-@keyframes card-reveal { from { opacity: 0; transform: translateY(12px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
-.station-card:nth-child(2) { animation-delay:.05s; } .station-card:nth-child(3) { animation-delay:.10s; } .station-card:nth-child(4) { animation-delay:.15s; } .station-card:nth-child(5) { animation-delay:.20s; } .station-card:nth-child(6) { animation-delay:.25s; } .station-card:nth-child(7) { animation-delay:.28s; } .station-card:nth-child(8) { animation-delay:.30s; }
-.station-card:last-child { margin-bottom: 0; }
-.station-card:hover { box-shadow: 0 8px 28px rgba(0,0,0,0.09), 0 3px 8px rgba(0,0,0,0.05); transform: translateY(-3px) scale(1.005); border-color: rgba(255,107,43,0.20); }
-.station-card:active { transform: translateY(-1px) scale(0.998); transition-duration: .12s; }
-.station-card.selected { border-color: var(--fire); box-shadow: 0 0 0 3px var(--fire-glow), 0 8px 28px rgba(255,107,43,0.12); background-image: linear-gradient(160deg, #fff9f6 0%, #fff5ef 100%); }
-.winner-band { background: linear-gradient(90deg, var(--fire) 0%, var(--amber) 100%); color: white; font-size: 10.5px; font-weight: 700; padding: 6px 16px; display: flex; align-items: center; gap: 5px; letter-spacing: 0.3px; border-radius: 20px 20px 0 0; }
+@keyframes card-reveal { from { opacity: 0; transform: translateY(12px) scale(0.98); } to { opacity: 1; transform: none; } }
+.station-card:hover { box-shadow: 0 10px 30px rgba(30,107,75,0.10), 0 3px 8px rgba(0,0,0,0.05); transform: translateY(-3px); border-color: var(--border-g); }
+.station-card.selected { border-color: var(--green-1); box-shadow: 0 0 0 3px rgba(30,107,75,0.18), 0 10px 30px rgba(30,107,75,0.12); background-image: linear-gradient(160deg, #f3faf5 0%, #e8f3ec 100%); }
+.station-card.is-winner { background-image: linear-gradient(160deg, #f3faf5 0%, #ffffff 60%); border-color: var(--border-g); }
+
+.winner-band { background: linear-gradient(90deg, var(--green-1), var(--green-2)); color: white; font-size: 11px; font-weight: 800; padding: 6px 16px; display: flex; align-items: center; gap: 5px; letter-spacing: 0.3px; border-radius: 20px 20px 0 0; font-family: var(--font-display); }
+
 .card-body { padding: 16px 16px 12px; display: flex; align-items: flex-start; gap: 13px; }
-.has-winner-band .card-body { padding-top: 10px; }
-.brand-logo { width: 52px; height: 52px; border-radius: 14px; background: var(--surface-2); display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; overflow: hidden; border: 1px solid var(--border-2); padding: 4px; transition: transform .22s cubic-bezier(0.34,1.56,0.64,1); box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
-.station-card:hover .brand-logo { transform: scale(1.06) rotate(-1deg); }
+.has-winner-band .card-body { padding-top: 11px; }
+.brand-logo { width: 52px; height: 52px; border-radius: 14px; background: var(--surface-2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; border: 1px solid var(--border-2); padding: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+.brand-logo svg { width: 40px; height: 40px; }
 .card-info { flex: 1; min-width: 0; padding-top: 1px; }
-.station-name { font-family: var(--font-display); font-weight: 800; font-size: 15px; color: var(--text-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: -0.3px; line-height: 1.2; }
-.station-meta { display: flex; align-items: center; gap: 5px; margin-top: 4px; flex-wrap: wrap; }
-.station-dist { font-size: 12px; font-weight: 600; color: var(--fire); display: flex; align-items: center; gap: 3px; }
-.station-city { font-size: 12px; font-weight: 500; color: var(--text-4); }
-.meta-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--text-5); flex-shrink: 0; }
-.station-address { font-size: 11px; color: var(--text-4); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.4; }
-.card-right { flex-shrink: 0; text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 5px; padding-top: 1px; }
-.price-display { line-height: 1; display: flex; align-items: baseline; gap: 0; }
-.price-val { font-family: var(--font-display); font-weight: 900; font-size: 30px; letter-spacing: -1.5px; transition: transform .18s; }
-.station-card:hover .price-val { transform: scale(1.03); }
-.price-unit { font-size: 11px; font-weight: 600; color: var(--text-4); margin-left: 3px; align-self: flex-end; margin-bottom: 3px; }
-.price-cheap    .price-val { color: var(--success); }
-.price-avg      .price-val { color: var(--fire); }
+.station-name { font-family: var(--font-display); font-weight: 900; font-size: 15px; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: -0.3px; line-height: 1.2; }
+.station-meta { display: flex; align-items: center; gap: 6px; margin-top: 4px; flex-wrap: wrap; }
+.station-dist { font-size: 12px; font-weight: 700; color: var(--green-1); }
+.station-city { font-size: 12px; font-weight: 600; color: var(--ink-4); }
+.meta-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--ink-5); flex-shrink: 0; }
+.station-address { font-size: 11.5px; color: var(--ink-4); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.4; font-weight: 500; }
+
+.card-right { flex-shrink: 0; text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; padding-top: 1px; }
+.price-display { line-height: 1; display: flex; align-items: baseline; }
+.price-val { font-family: var(--font-display); font-weight: 900; font-size: 30px; letter-spacing: -1.5px; }
+.price-unit { font-size: 11px; font-weight: 700; color: var(--ink-4); margin-left: 3px; align-self: flex-end; margin-bottom: 3px; }
+.price-cheap     .price-val { color: var(--green-1); }
+.price-avg       .price-val { color: var(--ink-2); }
 .price-expensive .price-val { color: var(--danger); }
-.badge-pill { font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: var(--r-full); letter-spacing: 0.1px; white-space: nowrap; }
-.badge-winner { background: var(--success-bg); color: var(--success); }
-.badge-saving  { background: var(--surface-3); color: var(--text-4); }
-.fav-btn { background: none; border: none; cursor: pointer; font-size: 15px; color: var(--text-5); transition: all .2s cubic-bezier(0.34,1.56,0.64,1); padding: 3px; line-height: 1; touch-action: manipulation; -webkit-tap-highlight-color: transparent; position: relative; z-index: 10; min-width: 32px; min-height: 32px; display: flex; align-items: center; justify-content: center; }
-.fav-btn:hover { color: var(--danger); transform: scale(1.3); }
-.fav-btn.saved { color: #F59E0B; }
-.card-action-btns { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
-.card-action-row  { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+
+.badge-pill { font-size: 10px; font-weight: 800; padding: 3px 9px; border-radius: var(--r-full); letter-spacing: 0.1px; white-space: nowrap; font-family: var(--font-display); }
+.badge-winner { background: var(--success-bg); color: var(--green-1); }
+.badge-saving { background: var(--surface-3); color: var(--ink-4); }
+
+.fav-btn { background: none; border: none; cursor: pointer; font-size: 15px; color: var(--ink-5); transition: all .2s; padding: 3px; line-height: 1; position: relative; z-index: 10; min-width: 32px; min-height: 32px; display: flex; align-items: center; justify-content: center; }
+.fav-btn:hover { color: #F2B23A; transform: scale(1.3); }
+.fav-btn.saved { color: #F2B23A; }
+
+.card-action-row { display: flex; gap: 5px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
 .card-footer { padding: 0 16px 14px; display: flex; gap: 5px; flex-wrap: wrap; }
-.fuel-pill { font-size: 11px; font-weight: 600; padding: 4px 10px; background: var(--surface-3); border: 1px solid var(--border); border-radius: var(--r-full); color: var(--text-3); display: flex; align-items: center; gap: 4px; transition: all .15s; }
-.fuel-pill:hover { background: var(--amber-pale); border-color: var(--border-fire); color: var(--fire); }
-.fuel-pill-tag { font-size: 9.5px; font-weight: 700; color: var(--text-4); background: var(--surface-4); padding: 1px 5px; border-radius: 4px; }
-.btn-refuel-card, .btn-alert-card { touch-action: manipulation; -webkit-tap-highlight-color: transparent; position: relative; z-index: 10; cursor: pointer; min-height: 32px; }
- 
+.fuel-pill { font-size: 11px; font-weight: 600; padding: 4px 10px; background: var(--surface-3); border: 1px solid var(--border); border-radius: var(--r-full); color: var(--ink-3); display: flex; align-items: center; gap: 4px; }
+.fuel-pill:hover { background: var(--green-pale); border-color: var(--border-g); color: var(--green-1); }
+.fuel-pill-tag { font-size: 9.5px; font-weight: 800; color: var(--ink-4); background: var(--surface-4); padding: 1px 5px; border-radius: 4px; }
+
+.btn-refuel-card {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--green-pale); border: 1px solid var(--border-g);
+  color: var(--green-1); font-family: var(--font-body);
+  font-size: 11px; font-weight: 700; padding: 6px 11px;
+  border-radius: var(--r-full); cursor: pointer; transition: all .18s;
+  white-space: nowrap; -webkit-tap-highlight-color: transparent;
+  position: relative; z-index: 10; min-height: 32px;
+}
+.btn-refuel-card:hover { background: var(--green-1); color: white; border-color: var(--green-1); box-shadow: var(--shadow-g); }
+.btn-alert-card {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--info-bg); border: 1px solid var(--info-border);
+  color: var(--info); font-family: var(--font-body);
+  font-size: 12px; font-weight: 700; padding: 6px 10px;
+  border-radius: var(--r-full); cursor: pointer; transition: all .18s;
+  position: relative; z-index: 10; min-height: 32px;
+}
+.btn-alert-card:hover { background: var(--info); color: white; border-color: var(--info); }
+
+/* ─── MAP ──────────────────────────────────────── */
 #map-container { flex: 1; height: 100%; overflow: hidden; position: relative; display: block; }
 #map { width: 100%; height: 100%; }
 .leaflet-popup-content-wrapper { background: var(--surface) !important; border-radius: 18px !important; box-shadow: var(--shadow-xl) !important; border: 1px solid var(--border) !important; font-family: var(--font-body) !important; padding: 0 !important; }
 .leaflet-popup-content { margin: 0 !important; width: auto !important; min-width: 240px; }
 .leaflet-popup-tip { background: var(--surface) !important; }
-.leaflet-popup-close-button { top: 8px !important; right: 10px !important; font-size: 20px !important; color: var(--text-3) !important; z-index: 10 !important; }
-.popup-header { padding: 14px 36px 12px 16px; background: linear-gradient(to bottom right, rgba(255,107,43,0.06), transparent); border-bottom: 1px solid var(--border-2); border-radius: 18px 18px 0 0; }
-.popup-brand { font-family: var(--font-display); font-weight: 800; font-size: 15px; color: var(--fire); letter-spacing: -0.3px; }
-.popup-addr { font-size: 11px; color: var(--text-4); font-weight: 500; margin-top: 2px; line-height: 1.4; }
+.leaflet-popup-close-button { top: 8px !important; right: 10px !important; font-size: 20px !important; color: var(--ink-3) !important; z-index: 10 !important; }
+.popup-header { padding: 14px 36px 12px 16px; background: linear-gradient(to bottom right, rgba(167,215,183,0.20), transparent); border-bottom: 1px solid var(--border-2); border-radius: 18px 18px 0 0; }
+.popup-brand { font-family: var(--font-display); font-weight: 900; font-size: 15px; color: var(--green-1); letter-spacing: -0.3px; }
+.popup-addr { font-size: 11px; color: var(--ink-4); font-weight: 500; margin-top: 2px; line-height: 1.4; }
 .popup-prices { padding: 10px 14px; display: flex; flex-direction: column; gap: 5px; }
 .popup-price-row { display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 600; gap: 20px; padding: 5px 10px; background: var(--surface-3); border-radius: 8px; }
-.popup-fuel-name  { color: var(--text-3); }
-.popup-fuel-price { color: var(--text-1); font-weight: 800; }
+.popup-fuel-name  { color: var(--ink-3); }
+.popup-fuel-price { color: var(--ink); font-family: var(--font-display); font-weight: 900; }
 .popup-nav { border-top: 1px solid var(--border-2); padding: 10px 14px 14px; }
-.popup-nav-label { font-size: 9.5px; font-weight: 700; color: var(--text-4); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 7px; }
+.popup-nav-label { font-size: 9.5px; font-weight: 800; color: var(--ink-4); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 7px; }
 .popup-nav-btns { display: flex; gap: 5px; }
-.nav-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 4px; padding: 8px 6px; border-radius: 10px; border: 1.5px solid var(--border); background: var(--surface-3); font-family: var(--font-body); font-size: 11px; font-weight: 700; color: var(--text-2); cursor: pointer; transition: all .18s cubic-bezier(0.34,1.56,0.64,1); white-space: nowrap; }
+.nav-btn { flex: 1; text-align: center; padding: 8px 6px; border-radius: 10px; border: 1.5px solid var(--border); background: var(--surface-3); font-family: var(--font-body); font-size: 11px; font-weight: 800; color: var(--ink-2); cursor: pointer; transition: all .18s; }
 .nav-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); }
-.nav-btn.waze  { background: #FFFBE6; border-color: rgba(230,210,0,0.4); color: #7A6000; }
 .nav-btn.waze:hover  { background: #33CCFF; border-color: #33CCFF; color: white; }
-.nav-btn.gmaps { background: #EBF3FF; border-color: rgba(66,133,244,0.2); color: #1A56C9; }
 .nav-btn.gmaps:hover { background: #1A73E8; border-color: #1A73E8; color: white; }
-.nav-btn.apple { background: var(--surface-3); border-color: var(--border); color: var(--text-2); }
 .nav-btn.apple:hover { background: #1C1C1E; border-color: #1C1C1E; color: white; }
- 
-.donate-float { position: fixed; bottom: calc(var(--tab-h) + 20px); right: 20px; z-index: 500; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
-.donate-tooltip { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-xl); padding: 16px 18px; box-shadow: var(--shadow-xl); max-width: 210px; opacity: 0; transform: translateY(8px) scale(.94); pointer-events: none; transition: all .25s cubic-bezier(0.34,1.56,0.64,1); transform-origin: bottom right; }
-.donate-tooltip.open { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
-.donate-tooltip-title { font-family: var(--font-display); font-size: 14px; font-weight: 800; color: var(--text-1); margin-bottom: 5px; display: flex; align-items: center; gap: 6px; letter-spacing: -0.3px; }
-.donate-tooltip-sub { font-size: 12px; color: var(--text-3); line-height: 1.6; margin-bottom: 12px; }
-.donate-paypal-btn { display: flex; align-items: center; justify-content: center; gap: 7px; width: 100%; background: #0070BA; color: white; font-family: var(--font-body); font-size: 12px; font-weight: 700; padding: 10px 16px; border-radius: var(--r-md); transition: all .18s; letter-spacing: 0.1px; }
-.donate-paypal-btn:hover { background: #005EA6; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,112,186,.30); }
-.donate-pill { display: flex; align-items: center; gap: 8px; background: var(--glass); backdrop-filter: blur(16px); border: 1px solid var(--border); color: var(--text-2); font-family: var(--font-body); font-size: 12px; font-weight: 600; padding: 10px 16px 10px 12px; border-radius: var(--r-full); cursor: pointer; box-shadow: var(--shadow-md); transition: all .22s cubic-bezier(0.34,1.56,0.64,1); white-space: nowrap; user-select: none; }
-.donate-pill:hover { border-color: var(--border-fire); color: var(--fire); transform: translateY(-2px); }
-.donate-pill.active { border-color: var(--fire); color: var(--fire); background: var(--amber-pale); }
-.donate-pill-icon { font-size: 16px; animation: heartbeat 3s ease-in-out infinite; }
- 
-.tab-bar { display: none; }
- 
-.auth-btn { display: flex; align-items: center; gap: 7px; background: var(--surface); border: 1px solid var(--border); color: var(--text-2); font-family: var(--font-body); font-size: 12px; font-weight: 600; padding: 8px 14px; border-radius: var(--r-full); cursor: pointer; transition: all .2s cubic-bezier(0.34,1.56,0.64,1); box-shadow: var(--shadow-xs); white-space: nowrap; }
-.auth-btn:hover { border-color: var(--border-fire); color: var(--fire); box-shadow: var(--shadow-sm); transform: translateY(-1px); }
-.auth-btn.logged-in { background: var(--amber-pale); border-color: rgba(255,170,59,0.3); color: var(--text-1); }
-.auth-avatar { width: 22px; height: 22px; border-radius: 50%; background: linear-gradient(135deg, var(--fire), var(--amber)); color: white; font-size: 10px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
- 
-.upsell-banner { display: none; align-items: center; gap: 10px; padding: 10px 14px; background: linear-gradient(90deg, rgba(255,107,43,0.08) 0%, rgba(255,170,59,0.06) 100%); border-bottom: 1px solid rgba(255,107,43,0.15); flex-shrink: 0; }
+
+/* ─── UPSELL BANNER ──────────────────────────────────────── */
+.upsell-banner { display: none; align-items: center; gap: 10px; padding: 11px 14px; background: linear-gradient(90deg, rgba(167,215,183,0.30) 0%, rgba(46,139,87,0.10) 100%); border-bottom: 1px solid var(--border-g); flex-shrink: 0; }
 .upsell-banner.visible { display: flex; }
-.upsell-text { flex: 1; font-size: 12px; font-weight: 500; color: var(--text-2); line-height: 1.4; }
-.upsell-text strong { color: var(--fire); font-weight: 700; }
-.upsell-cta { background: var(--fire); color: white; border: none; font-family: var(--font-body); font-size: 11px; font-weight: 700; padding: 6px 13px; border-radius: var(--r-full); cursor: pointer; white-space: nowrap; transition: all .18s; box-shadow: var(--shadow-fire); flex-shrink: 0; touch-action: manipulation; }
-.upsell-cta:hover { background: var(--fire-deep); transform: translateY(-1px); }
- 
-.modal-backdrop { position: fixed; inset: 0; background: rgba(24,22,26,0.45); backdrop-filter: blur(6px); z-index: 3000; display: flex; align-items: center; justify-content: center; padding: 20px; opacity: 0; pointer-events: none; transition: opacity .22s ease; }
-.modal-backdrop.open { opacity: 1; pointer-events: auto; }
-.modal { background: var(--surface); border-radius: 24px; box-shadow: var(--shadow-xl); width: 100%; max-width: 400px; overflow: hidden; transform: translateY(16px) scale(0.97); transition: transform .28s cubic-bezier(0.34,1.56,0.64,1); max-height: 90vh; overflow-y: auto; }
-.modal-backdrop.open .modal { transform: translateY(0) scale(1); }
-.modal-header { padding: 24px 24px 0; display: flex; justify-content: space-between; align-items: flex-start; position: sticky; top: 0; background: var(--surface); z-index: 1; padding-bottom: 12px; border-bottom: 1px solid var(--border-2); }
-.modal-title { font-family: var(--font-display); font-size: 22px; font-weight: 800; color: var(--text-1); letter-spacing: -0.5px; line-height: 1.2; }
-.modal-sub { font-size: 13px; color: var(--text-3); margin-top: 4px; font-weight: 400; }
-.modal-close { background: var(--surface-3); border: none; cursor: pointer; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; color: var(--text-3); transition: all .15s; flex-shrink: 0; margin-left: 12px; margin-top: 2px; touch-action: manipulation; }
-.modal-close:hover { background: var(--surface-4); color: var(--text-1); }
-.modal-body { padding: 16px 24px 24px; display: flex; flex-direction: column; gap: 12px; }
-.modal-tabs { display: flex; background: var(--surface-3); border-radius: 10px; padding: 3px; gap: 2px; margin-bottom: 4px; }
-.modal-tab { flex: 1; padding: 8px; border-radius: 8px; border: none; background: transparent; color: var(--text-3); font-family: var(--font-body); font-size: 13px; font-weight: 600; cursor: pointer; transition: all .18s; touch-action: manipulation; }
-.modal-tab.active { background: var(--surface); color: var(--text-1); box-shadow: var(--shadow-xs); }
-.field-group { display: flex; flex-direction: column; gap: 5px; }
-.field-label { font-size: 12px; font-weight: 600; color: var(--text-3); }
-.field-input { width: 100%; background: var(--surface-3); border: 1.5px solid var(--border); color: var(--text-1); font-family: var(--font-body); font-size: 14px; font-weight: 500; padding: 11px 14px; border-radius: var(--r-md); outline: none; transition: all .18s; }
-.field-input:focus { border-color: var(--fire); background: white; box-shadow: 0 0 0 3px var(--fire-glow); }
-.btn-auth-submit { width: 100%; background: linear-gradient(135deg, var(--fire), var(--fire-light)); color: white; border: none; font-family: var(--font-display); font-size: 15px; font-weight: 700; padding: 13px; border-radius: var(--r-md); cursor: pointer; transition: all .2s cubic-bezier(0.34,1.56,0.64,1); box-shadow: var(--shadow-fire); margin-top: 4px; touch-action: manipulation; }
-.btn-auth-submit:hover { transform: translateY(-2px); box-shadow: var(--shadow-fire-lg); }
-.btn-auth-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-.auth-msg { font-size: 12px; font-weight: 500; text-align: center; padding: 8px 12px; border-radius: var(--r-sm); display: none; }
-.auth-msg.error   { display: block; background: var(--danger-bg); color: var(--danger); }
-.auth-msg.success { display: block; background: var(--success-bg); color: var(--success); }
- 
-.refuel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.refuel-station-info { background: var(--amber-pale); border: 1px solid rgba(255,170,59,0.25); border-radius: var(--r-md); padding: 11px 14px; }
-.refuel-station-name { font-family: var(--font-display); font-size: 14px; font-weight: 800; color: var(--text-1); }
-.refuel-station-addr { font-size: 11px; color: var(--text-3); margin-top: 2px; }
-.refuel-total-preview { background: var(--success-bg); border: 1px solid rgba(34,197,94,0.15); border-radius: var(--r-md); padding: 10px 14px; text-align: center; display: none; }
-.refuel-total-preview.visible { display: block; }
-.refuel-total-label { font-size: 10px; font-weight: 700; color: var(--success); text-transform: uppercase; letter-spacing: 0.5px; }
-.refuel-total-val { font-family: var(--font-display); font-size: 22px; font-weight: 900; color: var(--success); }
-.field-row { display: flex; gap: 8px; }
-.field-row .field-group { flex: 1; }
- 
+.upsell-text { flex: 1; font-size: 12px; font-weight: 500; color: var(--ink-2); line-height: 1.4; }
+.upsell-text strong { color: var(--green-1); font-weight: 800; }
+.upsell-cta { background: var(--green-1); color: white; border: none; font-family: var(--font-body); font-size: 11px; font-weight: 800; padding: 7px 14px; border-radius: var(--r-full); cursor: pointer; white-space: nowrap; transition: all .18s; box-shadow: var(--shadow-g); }
+.upsell-cta:hover { background: var(--green-2); transform: translateY(-1px); }
+
+/* ─── PEPE ASSISTANT ──────────────────────────────────────── */
+.pepe-anchor {
+  position: fixed; bottom: 20px; right: 20px; z-index: 700;
+  display: flex; flex-direction: column; align-items: flex-end; gap: 8px;
+  max-width: calc(100vw - 40px);
+  pointer-events: none;
+}
+.pepe-anchor > * { pointer-events: auto; }
+.pepe-char {
+  width: 86px; height: 86px;
+  border-radius: 50%;
+  box-shadow: var(--shadow-lg);
+  cursor: pointer; position: relative;
+  z-index: 1;
+  transition: transform .25s cubic-bezier(0.34,1.56,0.64,1), box-shadow .25s;
+  flex-shrink: 0;
+}
+.pepe-char::after {
+  content: ''; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%);
+  width: 58px; height: 7px; background: rgba(34,34,34,0.12); border-radius: 50%; filter: blur(3px);
+  z-index: -1;
+}
+.pepe-char-inner {
+  width: 100%; height: 100%; border-radius: 50%;
+  background: var(--green-1);
+  border: 3px solid var(--green-1);
+  overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+.pepe-char img {
+  width: 100%; height: 100%; object-fit: cover; border-radius: 50%;
+  display: block;
+}
+.pepe-char:hover { transform: translateY(-3px) scale(1.04); box-shadow: var(--shadow-xl); }
+.pepe-char.mood-idle .pepe-char-inner      { animation: pepe-bob 3.6s ease-in-out infinite; }
+.pepe-char.mood-happy .pepe-char-inner     { animation: pepe-bounce .7s cubic-bezier(0.34,1.56,0.64,1) 2, pepe-bob 3s ease-in-out 1.5s infinite; }
+.pepe-char.mood-thinking .pepe-char-inner  { animation: pepe-tilt 1.6s ease-in-out infinite; }
+.pepe-char.mood-talking .pepe-char-inner   { animation: pepe-talk .55s ease-in-out infinite; }
+@keyframes pepe-bob    { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+@keyframes pepe-bounce { 0%,100% { transform: translateY(0) scale(1); } 40% { transform: translateY(-6px) scale(1.05); } }
+@keyframes pepe-tilt   { 0%,100% { transform: rotate(-4deg); } 50% { transform: rotate(4deg); } }
+@keyframes pepe-talk   { 0%,100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-1px) rotate(1deg); } }
+
+.pepe-tag {
+  position: absolute; bottom: -2px; right: -2px;
+  width: 26px; height: 26px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--green-1), var(--green-2));
+  border: 2px solid white; color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; box-shadow: 0 2px 6px rgba(30,107,75,0.4);
+  animation: tag-pulse 2.6s ease-in-out infinite;
+}
+@keyframes tag-pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.10); } }
+
+/* ─── JUICY ANIMATIONS ─── */
+@keyframes wiggle {
+  0%,100% { transform: rotate(0); }
+  20% { transform: rotate(-6deg); }
+  40% { transform: rotate(5deg); }
+  60% { transform: rotate(-3deg); }
+  80% { transform: rotate(2deg); }
+}
+@keyframes pop-bump {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+@keyframes pop-down {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.92); }
+  100% { transform: scale(1); }
+}
+@keyframes shine-sweep {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes drop-fall {
+  0% { transform: translateY(-30px); opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { transform: translateY(110vh); opacity: 0; }
+}
+@keyframes ripple-out {
+  0% { transform: scale(0); opacity: 0.7; }
+  100% { transform: scale(3.5); opacity: 0; }
+}
+@keyframes count-pop {
+  0% { transform: scale(0.5); opacity: 0; }
+  60% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes confetti-fall {
+  0% { transform: translate(0,0) rotate(0deg); opacity: 1; }
+  100% { transform: translate(var(--cx, 0), 80vh) rotate(720deg); opacity: 0; }
+}
+@keyframes bg-float {
+  0%,100% { transform: translateY(0) translateX(0); }
+  50% { transform: translateY(-20px) translateX(10px); }
+}
+@keyframes price-flash {
+  0% { background: rgba(46,139,87,0.30); }
+  100% { background: transparent; }
+}
+@keyframes badge-bob {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+
+/* Floating background droplets */
+.bg-droplets { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.bg-drop {
+  position: absolute; top: -20px;
+  width: 8px; height: 12px;
+  background: linear-gradient(180deg, transparent, rgba(46,139,87,0.18));
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  animation: drop-fall linear infinite;
+}
+.bg-drop:nth-child(1) { left: 8%;  animation-duration: 18s; animation-delay: 0s;   width: 6px; height: 9px; opacity: 0.5; }
+.bg-drop:nth-child(2) { left: 22%; animation-duration: 22s; animation-delay: -4s;  width: 9px; height: 13px; opacity: 0.4; }
+.bg-drop:nth-child(3) { left: 38%; animation-duration: 16s; animation-delay: -8s;  width: 7px; height: 10px; opacity: 0.6; }
+.bg-drop:nth-child(4) { left: 55%; animation-duration: 24s; animation-delay: -2s;  width: 8px; height: 12px; opacity: 0.45; }
+.bg-drop:nth-child(5) { left: 71%; animation-duration: 19s; animation-delay: -11s; width: 6px; height: 9px; opacity: 0.5; }
+.bg-drop:nth-child(6) { left: 88%; animation-duration: 21s; animation-delay: -6s;  width: 9px; height: 14px; opacity: 0.4; }
+
+/* Confetti container */
+.confetti { position: fixed; inset: 0; pointer-events: none; z-index: 9000; overflow: hidden; }
+.confetti span {
+  position: absolute; top: 30%; left: 50%;
+  width: 10px; height: 14px;
+  border-radius: 2px;
+  animation: confetti-fall 1.4s cubic-bezier(0.2,0.4,0.4,1) forwards;
+}
+
+/* Ripple effect base */
+.ripple-host { position: relative; overflow: hidden; }
+.ripple-host .ripple {
+  position: absolute; border-radius: 50%;
+  background: rgba(255,255,255,0.5);
+  transform: scale(0); pointer-events: none;
+  animation: ripple-out .65s ease-out forwards;
+}
+
+/* Universal "press" feel — every clickable element squishes a bit */
+button:active:not(:disabled),
+.fuel-chip:active,
+.sort-btn:active,
+.fav-btn:active,
+.modal-tab:active,
+.ptab:active,
+.tab-btn:active,
+.nav-btn:active {
+  transform: scale(0.96) !important;
+  transition: transform .08s ease !important;
+}
+
+/* Fuel chip + sort-btn now have a satisfying pop on activate */
+.fuel-chip.active { animation: pop-bump .35s cubic-bezier(0.34,1.56,0.64,1); }
+.sort-btn.active  { animation: pop-bump .35s cubic-bezier(0.34,1.56,0.64,1); }
+
+/* Stat values flash on update */
+.stat-item.flash { animation: price-flash .8s ease-out; }
+
+/* Live dot — add radiating aura */
+.live-dot::after {
+  content: ''; position: absolute; inset: -4px; border-radius: 50%;
+  border: 1.5px solid var(--green-2); opacity: 0.6;
+  animation: live-radiate 2.2s ease-out infinite;
+}
+.live-dot { position: relative; }
+@keyframes live-radiate { 0% { transform: scale(0.6); opacity: 0.7; } 100% { transform: scale(2.2); opacity: 0; } }
+
+/* Cards: subtle bob on the winning card */
+.station-card.is-winner .winner-band {
+  background-size: 200% 100%;
+  background-image: linear-gradient(90deg, var(--green-1), var(--green-2), var(--green-1), var(--green-2));
+  animation: shine-sweep 4s linear infinite;
+}
+.station-card.is-winner .brand-logo {
+  animation: badge-bob 2.6s ease-in-out infinite;
+}
+
+/* Hover lift the price value */
+.station-card:hover .price-val { transform: scale(1.06); transition: transform .25s cubic-bezier(0.34,1.56,0.64,1); }
+.price-val { transition: transform .25s; }
+
+/* Subtle wiggle on the Pepe tag */
+.pepe-tag { animation: tag-pulse 2.6s ease-in-out infinite, badge-bob 3s ease-in-out infinite; }
+
+/* Donate pill has a heartbeat when not active */
+.donate-pill:not(.active) span:first-child { animation: badge-bob 1.8s ease-in-out infinite; }
+
+/* Search title icon spins gently on header hover */
+.search-card-header:hover .search-title-icon {
+  animation: wiggle .6s ease-in-out;
+}
+
+/* Map markers entrance */
+.leaflet-marker-icon { animation: pop-bump .5s cubic-bezier(0.34,1.56,0.64,1); }
+
+.pepe-bubble {
+  display: none;
+  max-width: 280px; min-width: 180px;
+  background: var(--surface); border: 1.5px solid var(--border-g);
+  border-radius: 18px 18px 4px 18px;
+  padding: 14px 16px 14px 16px;
+  box-shadow: var(--shadow-lg);
+  font-family: var(--font-body); font-size: 13px; line-height: 1.5;
+  color: var(--ink-2); font-weight: 500;
+  position: relative;
+  z-index: 2;
+  animation: bubble-pop .28s cubic-bezier(0.34,1.56,0.64,1);
+}
+.pepe-bubble.open { display: block; }
+@keyframes bubble-pop {
+  from { opacity: 0; transform: translateY(8px) scale(0.94); }
+  to   { opacity: 1; transform: none; }
+}
+.pepe-bubble b { color: var(--green-1); font-weight: 800; }
+.pepe-bubble::before {
+  content: 'Pepe'; position: absolute; top: -10px; left: 14px;
+  font-family: var(--font-display); font-size: 10px; font-weight: 900;
+  color: white; background: var(--green-1);
+  padding: 3px 9px 3px 8px; border-radius: 20px;
+  letter-spacing: 0.5px; text-transform: uppercase;
+  box-shadow: 0 2px 6px rgba(30,107,75,0.25);
+}
+.pepe-bubble::after {
+  content: ''; position: absolute; bottom: -9px; right: 24px;
+  width: 16px; height: 16px;
+  background: var(--surface);
+  border-right: 1.5px solid var(--border-g);
+  border-bottom: 1.5px solid var(--border-g);
+  transform: rotate(45deg);
+}
+.pepe-bubble-body { padding-right: 24px; }
+.pepe-bubble-close {
+  position: absolute; top: 6px; right: 6px;
+  width: 22px; height: 22px; border: none; background: var(--surface-3);
+  border-radius: 50%; color: var(--ink-4); font-size: 11px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s;
+}
+.pepe-bubble-close:hover { background: var(--surface-4); color: var(--ink); }
+
+/* ─── DONATE ──────────────────────────────────────── */
+.donate-float { position: fixed; bottom: calc(var(--tab-h) + 22px); left: 22px; z-index: 500; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
+.donate-tooltip { background: var(--surface); border: 1.5px solid var(--border-g); border-radius: var(--r-xl); padding: 16px 18px; box-shadow: var(--shadow-xl); max-width: 220px; opacity: 0; transform: translateY(8px) scale(.94); pointer-events: none; transition: all .25s cubic-bezier(0.34,1.56,0.64,1); transform-origin: bottom right; }
+.donate-tooltip.open { opacity: 1; transform: none; pointer-events: auto; }
+.donate-tooltip-title { font-family: var(--font-display); font-size: 14px; font-weight: 900; color: var(--ink); margin-bottom: 5px; display: flex; align-items: center; gap: 6px; }
+.donate-tooltip-sub { font-size: 12px; color: var(--ink-3); line-height: 1.55; margin-bottom: 12px; }
+.donate-paypal-btn { display: flex; align-items: center; justify-content: center; gap: 7px; width: 100%; background: #0070BA; color: white; font-family: var(--font-body); font-size: 12px; font-weight: 800; padding: 10px 16px; border-radius: var(--r-md); transition: all .18s; }
+.donate-paypal-btn:hover { background: #005EA6; transform: translateY(-1px); }
+.donate-pill { display: flex; align-items: center; gap: 8px; background: var(--glass); backdrop-filter: blur(16px); border: 1.5px solid var(--border-g); color: var(--green-1); font-family: var(--font-body); font-size: 12px; font-weight: 800; padding: 10px 16px 10px 14px; border-radius: var(--r-full); cursor: pointer; box-shadow: var(--shadow-md); transition: all .22s; }
+.donate-pill:hover { background: var(--green-pale); transform: translateY(-2px); }
+.donate-pill.active { background: var(--green-pale); }
+
+/* ─── TAB BAR (mobile) ──────────────────────────────────────── */
+.tab-bar { display: none; }
+
+/* ─── PROFILE PANEL ──────────────────────────────────────── */
 .profile-panel { width: 340px; flex-shrink: 0; height: 100%; background: var(--surface); border-left: 1px solid var(--border); display: none; flex-direction: column; overflow: hidden; }
 .profile-panel.open { display: flex; }
-.profile-header { padding: 20px 18px 16px; border-bottom: 1px solid var(--border-2); background: linear-gradient(135deg, rgba(255,107,43,0.05) 0%, transparent 60%); flex-shrink: 0; position: relative; }
+.profile-header { padding: 20px 18px 16px; border-bottom: 1px solid var(--border-2); background: linear-gradient(135deg, rgba(167,215,183,0.18) 0%, transparent 60%); flex-shrink: 0; position: relative; }
 .profile-top { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
-.profile-avatar-lg { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--fire), var(--amber)); color: white; font-size: 20px; font-weight: 800; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-fire); flex-shrink: 0; }
-.profile-name  { font-family: var(--font-display); font-size: 16px; font-weight: 800; color: var(--text-1); letter-spacing: -0.3px; }
-.profile-email { font-size: 11px; color: var(--text-4); font-weight: 500; margin-top: 2px; }
+.profile-avatar-lg { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--green-1), var(--green-2)); color: white; font-size: 20px; font-family: var(--font-display); font-weight: 900; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-g); flex-shrink: 0; }
+.profile-name  { font-family: var(--font-display); font-size: 16px; font-weight: 900; color: var(--ink); letter-spacing: -0.3px; }
+.profile-email { font-size: 11px; color: var(--ink-4); font-weight: 500; margin-top: 2px; }
 .profile-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; }
 .pstat { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r-md); padding: 10px 8px; text-align: center; }
-.pstat-val { font-family: var(--font-display); font-size: 18px; font-weight: 800; color: var(--fire); line-height: 1; }
-.pstat-val.green { color: var(--success); }
-.pstat-label { font-size: 9px; font-weight: 700; color: var(--text-4); text-transform: uppercase; letter-spacing: 0.6px; margin-top: 3px; }
+.pstat-val { font-family: var(--font-display); font-size: 18px; font-weight: 900; color: var(--green-1); line-height: 1; }
+.pstat-val.green { color: var(--green-1); }
+.pstat-label { font-size: 9px; font-weight: 800; color: var(--ink-4); text-transform: uppercase; letter-spacing: 0.6px; margin-top: 3px; }
 .profile-tabs { display: flex; border-bottom: 1px solid var(--border-2); flex-shrink: 0; }
-.ptab { flex: 1; padding: 11px 8px; background: none; border: none; font-family: var(--font-body); font-size: 12px; font-weight: 600; color: var(--text-4); cursor: pointer; border-bottom: 2px solid transparent; transition: all .18s; touch-action: manipulation; }
-.ptab.active { color: var(--fire); border-bottom-color: var(--fire); }
-.profile-scroll { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 12px; scrollbar-width: thin; scrollbar-color: #D4C9CF transparent; }
+.ptab { flex: 1; padding: 11px 8px; background: none; border: none; font-family: var(--font-body); font-size: 12px; font-weight: 700; color: var(--ink-4); cursor: pointer; border-bottom: 2px solid transparent; transition: all .18s; }
+.ptab.active { color: var(--green-1); border-bottom-color: var(--green-1); }
+.profile-scroll { flex: 1; min-height: 0; overflow-y: auto; padding: 12px; scrollbar-width: thin; scrollbar-color: var(--green-soft) transparent; }
 .profile-scroll::-webkit-scrollbar { width: 4px; }
-.profile-scroll::-webkit-scrollbar-thumb { background: #D4C9CF; border-radius: 4px; }
-.profile-close-btn { position: absolute; top: 12px; right: 12px; background: var(--surface-3); border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; color: var(--text-3); transition: all .15s; touch-action: manipulation; }
+.profile-scroll::-webkit-scrollbar-thumb { background: var(--green-soft); border-radius: 4px; }
+.profile-close-btn { position: absolute; top: 12px; right: 12px; background: var(--surface-3); border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; color: var(--ink-3); transition: all .15s; }
 .profile-close-btn:hover { background: var(--surface-4); }
-.btn-logout { margin: 0 12px 14px; width: calc(100% - 24px); background: var(--danger-bg); border: 1.5px solid rgba(239,68,68,0.25); color: var(--danger); font-family: var(--font-body); font-size: 13px; font-weight: 700; padding: 11px; border-radius: var(--r-md); cursor: pointer; transition: all .18s; flex-shrink: 0; display: flex; align-items: center; justify-content: center; gap: 7px; touch-action: manipulation; }
-.btn-logout:hover { background: var(--danger); color: white; border-color: var(--danger); box-shadow: 0 4px 16px rgba(239,68,68,0.25); }
-.history-item { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r-md); padding: 11px 12px; margin-bottom: 7px; transition: box-shadow .18s; }
-.history-item:hover { box-shadow: var(--shadow-sm); }
+.btn-logout { margin: 0 12px 14px; width: calc(100% - 24px); background: var(--danger-bg); border: 1.5px solid rgba(200,68,58,0.25); color: var(--danger); font-family: var(--font-body); font-size: 13px; font-weight: 800; padding: 11px; border-radius: var(--r-md); cursor: pointer; transition: all .18s; flex-shrink: 0; display: flex; align-items: center; justify-content: center; gap: 7px; }
+.btn-logout:hover { background: var(--danger); color: white; border-color: var(--danger); }
+
+.history-item, .alert-item { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r-md); padding: 11px 12px; margin-bottom: 7px; transition: box-shadow .18s; }
+.history-item:hover, .alert-item:hover { box-shadow: var(--shadow-sm); }
+.alert-item { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
 .hi-top  { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
-.hi-name { font-family: var(--font-display); font-size: 13px; font-weight: 700; color: var(--text-1); }
-.hi-price{ font-family: var(--font-display); font-size: 15px; font-weight: 900; color: var(--fire); white-space: nowrap; }
-.hi-meta { font-size: 11px; color: var(--text-4); margin-top: 3px; line-height: 1.5; }
-.hi-delete { background: none; border: none; cursor: pointer; font-size: 13px; color: var(--text-5); padding: 2px; transition: color .15s; flex-shrink: 0; touch-action: manipulation; min-width: 28px; min-height: 28px; display: flex; align-items: center; justify-content: center; }
-.hi-delete:hover { color: var(--danger); }
-.btn-refuel-card { display: inline-flex; align-items: center; gap: 4px; background: var(--amber-pale); border: 1px solid rgba(255,170,59,0.3); color: var(--fire); font-family: var(--font-body); font-size: 11px; font-weight: 700; padding: 5px 10px; border-radius: var(--r-full); cursor: pointer; transition: all .18s; white-space: nowrap; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
-.btn-refuel-card:hover { background: var(--fire); color: white; border-color: var(--fire); box-shadow: var(--shadow-fire); }
-.empty-state { text-align: center; padding: 24px 16px; color: var(--text-4); font-size: 13px; line-height: 1.6; }
+.hi-name { font-family: var(--font-display); font-size: 13px; font-weight: 800; color: var(--ink); }
+.hi-price{ font-family: var(--font-display); font-size: 15px; font-weight: 900; color: var(--green-1); white-space: nowrap; }
+.hi-meta { font-size: 11px; color: var(--ink-4); margin-top: 3px; line-height: 1.5; }
+.hi-delete, .alert-delete { background: none; border: none; cursor: pointer; font-size: 13px; color: var(--ink-5); padding: 2px; transition: color .15s; min-width: 28px; min-height: 28px; display: flex; align-items: center; justify-content: center; }
+.hi-delete:hover, .alert-delete:hover { color: var(--danger); }
+.empty-state { text-align: center; padding: 28px 16px; color: var(--ink-4); font-size: 13px; line-height: 1.6; }
 .empty-state-icon { font-size: 32px; margin-bottom: 8px; }
-.alert-item { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r-md); padding: 11px 12px; margin-bottom: 7px; display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
 .alert-item-info { flex: 1; min-width: 0; }
-.alert-item-name { font-family: var(--font-display); font-size: 12px; font-weight: 700; color: var(--text-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.alert-item-detail { font-size: 11px; color: var(--text-4); margin-top: 2px; }
+.alert-item-name { font-family: var(--font-display); font-size: 12px; font-weight: 800; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.alert-item-detail { font-size: 11px; color: var(--ink-4); margin-top: 2px; }
 .alert-item-price { font-family: var(--font-display); font-size: 15px; font-weight: 900; color: var(--info); white-space: nowrap; }
-.alert-delete { background: none; border: none; cursor: pointer; font-size: 13px; color: var(--text-5); padding: 2px; transition: color .15s; touch-action: manipulation; min-width: 28px; min-height: 28px; display: flex; align-items: center; justify-content: center; }
-.alert-delete:hover { color: var(--danger); }
- 
-.verify-overlay { position: fixed; inset: 0; background: linear-gradient(160deg, rgba(255,249,244,0.98) 0%, rgba(255,245,232,0.98) 100%); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 40px; text-align: center; animation: verifyIn .4s cubic-bezier(0.34,1.56,0.64,1); }
-@keyframes verifyIn { from { opacity:0; transform:scale(0.96); } to { opacity:1; transform:scale(1); } }
-.verify-icon { font-size: 72px; line-height: 1; animation: verifyBounce .6s .2s cubic-bezier(0.34,1.56,0.64,1) both; }
+
+.btn-empty-tank { display: inline-flex; align-items: center; gap: 5px; background: var(--surface-3); border: 1px solid var(--border); color: var(--ink-3); font-family: var(--font-body); font-size: 11px; font-weight: 700; padding: 5px 11px; border-radius: var(--r-full); cursor: pointer; transition: all .18s; margin-top: 6px; }
+.btn-empty-tank:hover { background: var(--danger-bg); border-color: rgba(200,68,58,0.22); color: var(--danger); }
+.duration-badge { display: inline-flex; align-items: center; gap: 5px; background: var(--info-bg); border: 1px solid var(--info-border); color: var(--info); font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: var(--r-full); margin-top: 5px; font-family: var(--font-display); }
+
+.ptab-add-btn { display: flex; align-items: center; gap: 8px; background: linear-gradient(135deg, var(--green-1), var(--green-2)); color: white; border: none; border-radius: var(--r-md); padding: 12px 16px; font-family: var(--font-display); font-size: 13px; font-weight: 800; cursor: pointer; box-shadow: var(--shadow-g); transition: all .2s; width: 100%; justify-content: center; margin-bottom: 12px; }
+.ptab-add-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-g-lg); }
+
+/* ─── MODALS ──────────────────────────────────────── */
+.modal-backdrop { position: fixed; inset: 0; background: rgba(34,34,34,0.45); backdrop-filter: blur(6px); z-index: 3000; display: flex; align-items: center; justify-content: center; padding: 20px; opacity: 0; pointer-events: none; transition: opacity .22s ease; }
+.modal-backdrop.open { opacity: 1; pointer-events: auto; }
+.modal { background: var(--surface); border-radius: 24px; box-shadow: var(--shadow-xl); width: 100%; max-width: 410px; overflow: hidden; transform: translateY(16px) scale(0.97); transition: transform .28s cubic-bezier(0.34,1.56,0.64,1); max-height: 90vh; overflow-y: auto; }
+.modal-backdrop.open .modal { transform: none; }
+.modal-header { padding: 22px 22px 12px; display: flex; justify-content: space-between; align-items: flex-start; position: sticky; top: 0; background: var(--surface); z-index: 1; border-bottom: 1px solid var(--border-2); gap: 12px; }
+.modal-title { font-family: var(--font-display); font-size: 22px; font-weight: 900; color: var(--ink); letter-spacing: -0.5px; line-height: 1.2; }
+.modal-sub { font-size: 13px; color: var(--ink-3); margin-top: 4px; font-weight: 500; }
+.modal-close { background: var(--surface-3); border: none; cursor: pointer; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; color: var(--ink-3); transition: all .15s; flex-shrink: 0; }
+.modal-close:hover { background: var(--surface-4); color: var(--ink); }
+.modal-body { padding: 16px 22px 22px; display: flex; flex-direction: column; gap: 12px; }
+.modal-tabs { display: flex; background: var(--surface-3); border-radius: 10px; padding: 3px; gap: 2px; margin-bottom: 4px; }
+.modal-tab { flex: 1; padding: 9px; border-radius: 8px; border: none; background: transparent; color: var(--ink-3); font-family: var(--font-body); font-size: 13px; font-weight: 700; cursor: pointer; transition: all .18s; }
+.modal-tab.active { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-xs); }
+
+.field-group { display: flex; flex-direction: column; gap: 5px; }
+.field-label { font-size: 12px; font-weight: 700; color: var(--ink-3); }
+.field-input { width: 100%; background: var(--surface-3); border: 1.5px solid var(--border); color: var(--ink); font-family: var(--font-body); font-size: 14px; font-weight: 500; padding: 11px 14px; border-radius: var(--r-md); outline: none; transition: all .18s; }
+.field-input:focus { border-color: var(--green-1); background: white; box-shadow: 0 0 0 3px rgba(30,107,75,0.14); }
+.btn-auth-submit { width: 100%; background: linear-gradient(135deg, var(--green-1), var(--green-2)); color: white; border: none; font-family: var(--font-display); font-size: 15px; font-weight: 800; padding: 13px; border-radius: var(--r-md); cursor: pointer; transition: all .2s cubic-bezier(0.34,1.56,0.64,1); box-shadow: var(--shadow-g); margin-top: 4px; }
+.btn-auth-submit:hover { transform: translateY(-2px); box-shadow: var(--shadow-g-lg); }
+.btn-auth-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+.auth-msg { font-size: 12px; font-weight: 600; text-align: center; padding: 8px 12px; border-radius: var(--r-sm); display: none; }
+.auth-msg.error   { display: block; background: var(--danger-bg); color: var(--danger); }
+.auth-msg.success { display: block; background: var(--success-bg); color: var(--green-1); }
+
+.refuel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.refuel-station-info { background: var(--green-pale); border: 1px solid var(--border-g); border-radius: var(--r-md); padding: 11px 14px; }
+.refuel-station-name { font-family: var(--font-display); font-size: 14px; font-weight: 900; color: var(--ink); }
+.refuel-station-addr { font-size: 11px; color: var(--ink-3); margin-top: 2px; }
+.refuel-total-preview, .autonomy-preview { background: var(--success-bg); border: 1px solid rgba(30,107,75,0.20); border-radius: var(--r-md); padding: 10px 14px; text-align: center; display: none; }
+.refuel-total-preview.visible, .autonomy-preview.visible { display: block; }
+.refuel-total-label, .autonomy-label { font-size: 10px; font-weight: 800; color: var(--green-1); text-transform: uppercase; letter-spacing: 0.5px; }
+.refuel-total-val, .autonomy-val { font-family: var(--font-display); font-size: 22px; font-weight: 900; color: var(--green-1); }
+.date-display { background: var(--success-bg); border: 1px solid rgba(30,107,75,0.20); border-radius: var(--r-md); padding: 10px 14px; display: flex; align-items: center; gap: 8px; }
+.date-display-text { flex: 1; font-size: 13px; font-weight: 700; color: var(--green-1); text-transform: capitalize; }
+.date-auto-badge { font-size: 10px; font-weight: 800; color: var(--green-1); background: rgba(30,107,75,0.15); padding: 3px 8px; border-radius: var(--r-full); white-space: nowrap; }
+
+.auth-perks { background: var(--green-pale); border: 1px solid var(--border-g); border-radius: var(--r-md); padding: 12px 14px; display: flex; flex-direction: column; gap: 7px; }
+.auth-perks-title { font-family: var(--font-display); font-size: 12px; font-weight: 800; color: var(--green-1); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+.auth-perk { font-size: 12.5px; color: var(--ink-2); display: flex; align-items: center; gap: 8px; }
+
+/* ─── VERIFY OVERLAY ──────────────────────────────────────── */
+.verify-overlay { position: fixed; inset: 0; background: linear-gradient(160deg, rgba(244,250,245,0.98), rgba(232,243,236,0.98)); backdrop-filter: blur(20px); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 40px; text-align: center; animation: verifyIn .4s cubic-bezier(0.34,1.56,0.64,1); }
+@keyframes verifyIn { from { opacity:0; transform:scale(0.96); } to { opacity:1; transform:none; } }
+.verify-pepe { width: 130px; height: 130px; border-radius: 50%; border: 4px solid var(--green-1); box-shadow: var(--shadow-g-lg); background: white; padding: 4px; animation: verifyBounce .6s .2s cubic-bezier(0.34,1.56,0.64,1) both; }
+.verify-pepe img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
 @keyframes verifyBounce { from { transform: scale(0); opacity:0; } to { transform: scale(1); opacity:1; } }
-.verify-title { font-family: var(--font-display); font-size: 28px; font-weight: 800; color: var(--text-1); letter-spacing: -0.6px; line-height: 1.2; }
-.verify-sub { font-size: 15px; color: var(--text-3); line-height: 1.7; max-width: 300px; }
-.verify-perks { display: flex; flex-direction: column; gap: 9px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 14px 18px; max-width: 300px; width: 100%; box-shadow: var(--shadow-sm); }
-.verify-perk { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text-2); text-align: left; }
-.verify-btn { background: linear-gradient(135deg, var(--fire), var(--fire-light)); color: white; border: none; padding: 14px 40px; border-radius: var(--r-full); font-family: var(--font-display); font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: var(--shadow-fire); transition: all .2s cubic-bezier(0.34,1.56,0.64,1); touch-action: manipulation; }
-.verify-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-fire-lg); }
-.date-display { background: var(--success-bg); border: 1px solid rgba(34,197,94,0.2); border-radius: var(--r-md); padding: 10px 14px; display: flex; align-items: center; gap: 8px; }
-.date-display-text { flex: 1; font-size: 13px; font-weight: 600; color: var(--success); }
-.date-auto-badge { font-size: 10px; font-weight: 700; color: var(--success); background: rgba(34,197,94,0.15); padding: 3px 8px; border-radius: var(--r-full); white-space: nowrap; }
-.ptab-add-btn { display: flex; align-items: center; gap: 8px; background: linear-gradient(135deg, var(--fire), var(--fire-light)); color: white; border: none; border-radius: var(--r-md); padding: 12px 16px; font-family: var(--font-display); font-size: 13px; font-weight: 700; cursor: pointer; box-shadow: var(--shadow-fire); transition: all .2s cubic-bezier(0.34,1.56,0.64,1); width: 100%; justify-content: center; margin-bottom: 12px; touch-action: manipulation; }
-.ptab-add-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-fire-lg); }
-.btn-empty-tank { display: inline-flex; align-items: center; gap: 5px; background: var(--surface-3); border: 1px solid var(--border); color: var(--text-3); font-family: var(--font-body); font-size: 11px; font-weight: 600; padding: 5px 11px; border-radius: var(--r-full); cursor: pointer; transition: all .18s; margin-top: 6px; white-space: nowrap; touch-action: manipulation; }
-.btn-empty-tank:hover { background: var(--danger-bg); border-color: rgba(239,68,68,0.2); color: var(--danger); }
-.duration-badge { display: inline-flex; align-items: center; gap: 5px; background: var(--info-bg); border: 1px solid var(--info-border); color: var(--info); font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: var(--r-full); margin-top: 5px; }
-.btn-alert-card { display: inline-flex; align-items: center; gap: 4px; background: var(--info-bg); border: 1px solid var(--info-border); color: var(--info); font-family: var(--font-body); font-size: 11px; font-weight: 700; padding: 5px 10px; border-radius: var(--r-full); cursor: pointer; transition: all .18s; white-space: nowrap; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
-.btn-alert-card:hover { background: var(--info); color: white; border-color: var(--info); }
-.autonomy-preview { background: var(--info-bg); border: 1px solid var(--info-border); border-radius: var(--r-md); padding: 10px 14px; text-align: center; display: none; }
-.autonomy-preview.visible { display: block; }
-.autonomy-label { font-size: 10px; font-weight: 700; color: var(--info); text-transform: uppercase; letter-spacing: 0.5px; }
-.autonomy-val { font-family: var(--font-display); font-size: 20px; font-weight: 900; color: var(--info); }
- 
+.verify-title { font-family: var(--font-display); font-size: 28px; font-weight: 900; color: var(--ink); letter-spacing: -0.6px; line-height: 1.2; }
+.verify-sub { font-size: 15px; color: var(--ink-3); line-height: 1.6; max-width: 320px; }
+.verify-perks { display: flex; flex-direction: column; gap: 9px; background: var(--surface); border: 1px solid var(--border-g); border-radius: var(--r-lg); padding: 14px 18px; max-width: 320px; width: 100%; box-shadow: var(--shadow-sm); }
+.verify-perk { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--ink-2); text-align: left; font-weight: 500; }
+.verify-btn { background: linear-gradient(135deg, var(--green-1), var(--green-2)); color: white; border: none; padding: 14px 40px; border-radius: var(--r-full); font-family: var(--font-display); font-size: 15px; font-weight: 800; cursor: pointer; box-shadow: var(--shadow-g); transition: all .2s; }
+.verify-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-g-lg); }
+
+/* ─── MOBILE ──────────────────────────────────────── */
 @media (max-width: 768px) {
   :root { --header-h: 58px; --tab-h: 62px; }
   .app-layout { flex-direction: column; }
@@ -402,54 +714,59 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
   .sidebar.map-active { display: none; }
   .search-panel { padding: 9px 10px 0; }
   .selects-row  { grid-template-columns: 1fr; gap: 7px; }
-  .stations-scroll { padding: 8px 6px 80px 8px; }
-  .donate-float { bottom: calc(var(--tab-h) + 70px) !important; right: 14px !important; }
-  .tab-bar { display: flex; position: fixed; bottom: 0; left: 0; right: 0; height: var(--tab-h); background: var(--glass); backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); border-top: 1px solid var(--border); z-index: 200; padding-bottom: env(safe-area-inset-bottom, 0); }
-  .tab-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; background: none; border: none; cursor: pointer; color: var(--text-4); font-family: var(--font-body); font-size: 10px; font-weight: 700; letter-spacing: 0.2px; transition: color .18s; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+  .stations-scroll { padding: 8px 6px 90px 8px; }
+  .donate-float { bottom: calc(var(--tab-h) + 76px) !important; right: 14px !important; }
+  .tab-bar { display: flex; position: fixed; bottom: 0; left: 0; right: 0; height: var(--tab-h); background: var(--glass); backdrop-filter: blur(20px) saturate(180%); border-top: 1px solid var(--border); z-index: 200; padding-bottom: env(safe-area-inset-bottom, 0); }
+  .tab-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; background: none; border: none; cursor: pointer; color: var(--ink-4); font-family: var(--font-body); font-size: 10px; font-weight: 800; letter-spacing: 0.2px; transition: color .18s; -webkit-tap-highlight-color: transparent; }
   .tab-icon { font-size: 20px; line-height: 1; }
-  .tab-btn.active { color: var(--fire); }
-  header { padding: 0 16px; }
-  .logo { font-size: 18px; }
-  .logo-mark { width: 34px; height: 34px; border-radius: 10px; }
+  .tab-btn.active { color: var(--green-1); }
+  header { padding: 0 14px; }
+  .logo-name { font-size: 18px; }
+  .logo-mark { width: 42px; height: 42px; }
   .logo-tagline { display: none; }
   .live-text { display: none; }
   .support-btn span:last-child { display: none; }
-  .nav-btn { font-size: 10px; padding: 7px 4px; }
-  .profile-panel { width: 100% !important; border-left: none !important; border-top: 1px solid var(--border); position: fixed; top: var(--header-h); left: 0; right: 0; bottom: var(--tab-h); z-index: 70; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-  .card-action-btns { gap: 4px; }
-  .card-action-row  { gap: 3px; }
-  .btn-refuel-card, .btn-alert-card { font-size: 10px; padding: 6px 10px; min-height: 32px; }
-  .card-right { gap: 4px; }
+  .auth-btn-text { display: none; }
+  .profile-panel { width: 100% !important; border-left: none !important; border-top: 1px solid var(--border); position: fixed; top: var(--header-h); left: 0; right: 0; bottom: var(--tab-h); z-index: 70; overflow-y: auto; }
   .station-card:hover { transform: none; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border-color: var(--border); }
-  .station-card.selected:hover { box-shadow: 0 0 0 3px var(--fire-glow), 0 8px 28px rgba(255,107,43,0.12); border-color: var(--fire); }
+  .pepe-anchor { bottom: calc(var(--tab-h) + 14px); right: 14px; }
+  .pepe-char { width: 64px; height: 64px; border-width: 2.5px; }
+  .pepe-char img { width: 58px; height: 58px; }
+  .pepe-bubble { max-width: 220px; font-size: 12px; }
+  .donate-float { display: none; }
 }
 </style>
 </head>
 <body>
- 
+
+<!-- Background floating droplets -->
+<div class="bg-droplets" aria-hidden="true">
+  <div class="bg-drop"></div><div class="bg-drop"></div><div class="bg-drop"></div>
+  <div class="bg-drop"></div><div class="bg-drop"></div><div class="bg-drop"></div>
+</div>
+<div id="confetti-host" class="confetti" aria-hidden="true"></div>
+
+<!-- ─── VERIFY OVERLAY (post-signup) ─── -->
 <div id="verify-overlay" style="display:none;" class="verify-overlay">
-  <div class="verify-icon">✅</div>
+  <div class="verify-pepe"><img src="assets/pepe-head.png" alt="Pepe"></div>
   <div class="verify-title">¡Email verificado!</div>
-  <div class="verify-sub">Tu cuenta en IberoFuel está activa y lista para usar.</div>
+  <div class="verify-sub">Tu cuenta en IberoFuel está activa. Pepe ya está listo para ayudarte a ahorrar.</div>
   <div class="verify-perks">
     <div class="verify-perk">⭐ Guarda gasolineras favoritas</div>
     <div class="verify-perk">🧾 Registra y analiza tus repostajes</div>
     <div class="verify-perk">📏 Seguimiento de autonomía del depósito</div>
-    <div class="verify-perk">🔔 Alertas de precio personalizadas</div>
+    <div class="verify-perk">🔔 Alertas cuando bajen los precios</div>
   </div>
-  <button class="verify-btn" onclick="dismissVerifyOverlay()">🔥 Empezar a ahorrar</button>
+  <button class="verify-btn" onclick="dismissVerifyOverlay()">Empezar a ahorrar 🐽</button>
 </div>
- 
+
+<!-- ─── HEADER ─── -->
 <header>
   <div class="logo">
-    <div class="logo-mark">
-      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-        <path d="M11 3L13.5 8.5H19L14.5 12L16.5 18L11 14.5L5.5 18L7.5 12L3 8.5H8.5L11 3Z" fill="white" opacity="0.9"/>
-      </svg>
-    </div>
+    <div class="logo-mark"><img src="assets/pepe-head-transparent.png" alt="Pepe"></div>
     <div class="logo-wordmark">
-      <div class="logo-name">Ibero<span>Fuel</span></div>
-      <div class="logo-tagline">Combustible inteligente</div>
+      <div class="logo-name">ibero<span>fuel</span></div>
+      <div class="logo-tagline">Encuentra tu gasolinera, ahorra siempre</div>
     </div>
   </div>
   <div class="header-right">
@@ -458,7 +775,7 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
       <span class="live-text">Precios en vivo</span>
     </div>
     <a class="support-btn" href="https://www.paypal.me/DinoCheck360" target="_blank" rel="noopener">
-      <span class="support-btn-icon">🫶</span>
+      <span style="font-family: &quot;Plus Jakarta Sans&quot;">🫶</span>
       <span>Apoyar</span>
     </a>
     <button class="auth-btn" id="auth-btn" onclick="handleAuthBtn()">
@@ -467,64 +784,78 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
     </button>
   </div>
 </header>
- 
+
+<!-- ─── APP LAYOUT ─── -->
 <div class="app-layout">
+
   <aside class="sidebar" id="sidebar">
+
     <div class="upsell-banner" id="upsell-banner">
-      <div class="upsell-text">⭐ <strong>Regístrate gratis</strong> para guardar favoritas, registrar repostajes y recibir alertas de precio.</div>
+      <div class="upsell-text">⭐ <strong>Regístrate gratis</strong> para guardar favoritas, registrar repostajes y recibir alertas.</div>
       <button class="upsell-cta" onclick="openAuthModal()">Unirme</button>
     </div>
+
     <div class="search-panel">
       <div class="search-card">
         <div class="search-card-header">
           <div class="search-title" onclick="toggleSearch()">
-            <div class="search-title-icon">📍</div>
+            <div class="search-title-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2C7.58 2 4 5.58 4 10c0 5.25 7 12 8 12s8-6.75 8-12c0-4.42-3.58-8-8-8zm0 11a3 3 0 110-6 3 3 0 010 6z" fill="currentColor"/></svg>
+            </div>
             ¿Dónde repostas?
             <span class="chevron" id="search-chevron">▾</span>
           </div>
           <button class="locate-btn" id="locate-btn" onclick="usarMiUbicacion()">
-            <span>◎</span> Ubicarme
+            <span class="loc-dot"></span> Ubicarme
           </button>
         </div>
         <div class="search-body" id="search-body">
           <div class="search-body-inner">
             <div class="selects-row">
               <div class="select-wrap">
-                <span class="select-icon">🗺️</span>
+                <span class="select-icon">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 2L3 5v17l6-3 6 3 6-3V2l-6 3-6-3z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 2v17M15 5v17" stroke="currentColor" stroke-width="2"/></svg>
+                </span>
                 <select id="sel-prov" onchange="onProvinciaChange()">
                   <option value="">Provincia</option>
                 </select>
               </div>
               <div class="select-wrap">
-                <span class="select-icon">🏘️</span>
+                <span class="select-icon">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 21V10l9-6 9 6v11" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 21v-7h6v7" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+                </span>
                 <select id="sel-mun" disabled>
                   <option value="">Municipio</option>
                 </select>
               </div>
             </div>
             <button class="btn-search" onclick="buscarPorMunicipio()">
-              <span>🔍</span> Buscar gasolineras
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="white" stroke-width="2.5"/><path d="M21 21l-4.35-4.35" stroke="white" stroke-width="2.5" stroke-linecap="round"/></svg>
+              Buscar gasolineras
             </button>
           </div>
         </div>
       </div>
     </div>
+
     <div class="fuel-section">
       <div class="fuel-label">Combustible</div>
       <div class="fuel-chips" id="fuel-filter">
         <div class="fuel-chip active" data-fuel="gasolina95" onclick="toggleFuel(this)"><span class="fuel-chip-dot"></span>G-95</div>
-        <div class="fuel-chip" data-fuel="gasolina98" onclick="toggleFuel(this)"><span class="fuel-chip-dot" style="background:#F59E0B"></span>G-98</div>
-        <div class="fuel-chip" data-fuel="gasoleoA"   onclick="toggleFuel(this)"><span class="fuel-chip-dot" style="background:#6B7280"></span>Gasóleo A</div>
-        <div class="fuel-chip" data-fuel="gasoleoB"   onclick="toggleFuel(this)"><span class="fuel-chip-dot" style="background:#9CA3AF"></span>Gasóleo B</div>
-        <div class="fuel-chip" data-fuel="glp"        onclick="toggleFuel(this)"><span class="fuel-chip-dot" style="background:#3B82F6"></span>GLP</div>
+        <div class="fuel-chip" data-fuel="gasolina98" onclick="toggleFuel(this)"><span class="fuel-chip-dot" style="background:#E8A93A"></span>G-98</div>
+        <div class="fuel-chip" data-fuel="gasoleoA"   onclick="toggleFuel(this)"><span class="fuel-chip-dot" style="background:#5C625F"></span>Gasóleo A</div>
+        <div class="fuel-chip" data-fuel="gasoleoB"   onclick="toggleFuel(this)"><span class="fuel-chip-dot" style="background:#9CA3A0"></span>Gasóleo B</div>
+        <div class="fuel-chip" data-fuel="glp"        onclick="toggleFuel(this)"><span class="fuel-chip-dot" style="background:#2E8B57"></span>GLP</div>
       </div>
     </div>
+
     <div id="stats-bar" class="stats-bar">
       <div class="stat-item"><div class="stat-value" id="stat-total">—</div><div class="stat-label">Estaciones</div></div>
       <div class="stat-item"><div class="stat-value" id="stat-min">—</div><div class="stat-label">Mín €/L</div></div>
       <div class="stat-item"><div class="stat-value" id="stat-avg">—</div><div class="stat-label">Media</div></div>
       <div class="stat-item"><div class="stat-value" id="stat-max">—</div><div class="stat-label">Máx €/L</div></div>
     </div>
+
     <div class="sort-row" id="sort-row">
       <span class="sort-label">Ordenar</span>
       <div class="sort-btns">
@@ -532,19 +863,22 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
         <button class="sort-btn" onclick="setSortMode('distancia',this)">📍 Distancia</button>
       </div>
     </div>
+
     <div class="stations-scroll-wrap" id="stations-scroll-wrap">
       <div class="stations-scroll" id="stations-scroll">
         <div class="state-panel">
-          <div class="state-icon-box">⛽</div>
-          <div class="state-title">Ahorra en cada repostaje</div>
-          <div class="state-sub">Encuentra las gasolineras más baratas cerca de ti en tiempo real.</div>
+          <div class="state-icon-box" style="width:104px;height:104px;border-radius:28px;background:linear-gradient(145deg,#fff,var(--green-pale));border-color:var(--border-g);font-size:48px;color:var(--green-1)">⛽</div>
+          <div class="state-title">Listo para ahorrar</div>
+          <div class="state-sub">Pulsa <b style="color:var(--green-1)">Ubicarme</b> o elige una provincia. Pepe te enseñará las gasolineras más baratas cerca de ti.</div>
         </div>
       </div>
     </div>
   </aside>
+
   <div id="map-container">
     <div id="map"></div>
   </div>
+
   <div class="profile-panel" id="profile-panel">
     <div class="profile-header">
       <button class="profile-close-btn" onclick="closeProfilePanel()">✕</button>
@@ -570,42 +904,57 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
     <button class="btn-logout" onclick="doLogout()">🚪 Cerrar sesión</button>
   </div>
 </div>
- 
+
+<!-- ─── PEPE ASSISTANT ─── -->
+<div class="pepe-anchor">
+  <div id="pepe-bubble" class="pepe-bubble">
+    <button class="pepe-bubble-close" onclick="Pepe.hide()" aria-label="Cerrar">✕</button>
+    <div id="pepe-body" class="pepe-bubble-body">¡Hola! Soy <b>Pepe</b> 🐽</div>
+  </div>
+  <div id="pepe-char" class="pepe-char mood-idle" role="button" aria-label="Pepe el asistente">
+    <div class="pepe-char-inner">
+      <img src="assets/pepe-head.png" alt="Pepe">
+    </div>
+    <div class="pepe-tag">💬</div>
+  </div>
+</div>
+
+<!-- ─── DONATE PILL ─── -->
 <div class="donate-float" id="donate-float">
   <div class="donate-tooltip" id="donate-tooltip">
-    <div class="donate-tooltip-title">⭐ Apoya IberoFuel</div>
-    <div class="donate-tooltip-sub">Proyecto gratuito y sin anuncios. Si te ahorra dinero, ¿nos ayudas a mantenerlo?</div>
+    <div class="donate-tooltip-title">⭐ Apoya a Pepe</div>
+    <div class="donate-tooltip-sub">Proyecto gratuito y sin anuncios. Si te ahorra dinero, ¿nos ayudas a mantenerlo vivo?</div>
     <a class="donate-paypal-btn" href="https://www.paypal.me/DinoCheck360" target="_blank" rel="noopener" onclick="closeTooltip()">💙 Donar con PayPal</a>
   </div>
   <div class="donate-pill" id="donate-pill" onclick="toggleTooltip()">
-    <span class="donate-pill-icon">🫶</span>
-    Apoyar el proyecto
+    <span>🫶</span> Apoyar el proyecto
   </div>
 </div>
- 
+
+<!-- ─── MOBILE TAB BAR ─── -->
 <nav class="tab-bar">
   <button class="tab-btn active" id="tab-lista"  onclick="switchTab('lista')"><span class="tab-icon">☰</span>Lista</button>
   <button class="tab-btn"        id="tab-mapa"   onclick="switchTab('mapa')"><span class="tab-icon">🗺️</span>Mapa</button>
   <button class="tab-btn"        id="tab-perfil" onclick="switchTab('perfil')"><span class="tab-icon">👤</span>Perfil</button>
 </nav>
- 
-<!-- AUTH MODAL -->
+
+<!-- ─── AUTH MODAL ─── -->
 <div class="modal-backdrop" id="auth-modal">
   <div class="modal">
     <div class="modal-header">
       <div>
-        <div class="modal-title">🔥 Únete a IberoFuel</div>
+        <div class="modal-title">🐽 Únete a IberoFuel</div>
         <div class="modal-sub">Gratis · Sin tarjeta · Sin publicidad</div>
       </div>
       <button class="modal-close" onclick="closeAuthModal()">✕</button>
     </div>
     <div class="modal-body">
-      <div id="auth-perks" style="background:var(--amber-pale);border:1px solid rgba(255,170,59,0.25);border-radius:var(--r-md);padding:12px 14px;display:flex;flex-direction:column;gap:7px;">
-        <div style="font-family:var(--font-display);font-size:12px;font-weight:700;color:var(--fire);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px;">Con cuenta obtienes:</div>
-        <div style="font-size:12px;color:var(--text-2);">⭐ Guarda gasolineras favoritas</div>
-        <div style="font-size:12px;color:var(--text-2);">🧾 Historial de repostajes + autonomía</div>
-        <div style="font-size:12px;color:var(--text-2);">📏 Cuánto dura tu depósito (días + km)</div>
-        <div style="font-size:12px;color:var(--text-2);">🔔 Alertas de precio en gasolineras</div>
+      <div class="auth-perks">
+        <div class="auth-perks-title">Con cuenta obtienes:</div>
+        <div class="auth-perk">⭐ Guarda gasolineras favoritas</div>
+        <div class="auth-perk">🧾 Historial de repostajes + autonomía</div>
+        <div class="auth-perk">📏 Cuánto dura tu depósito (días + km)</div>
+        <div class="auth-perk">🔔 Alertas de precio personalizadas</div>
       </div>
       <div class="modal-tabs">
         <button class="modal-tab active" id="tab-login"    onclick="switchAuthTab('login')">Iniciar sesión</button>
@@ -613,23 +962,23 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
       </div>
       <div class="field-group" id="auth-name-field" style="display:none;">
         <label class="field-label" for="auth-name">Nombre</label>
-        <input class="field-input" type="text" id="auth-name" placeholder="Tu nombre">
+        <input class="field-input" type="text" id="auth-name" placeholder="Tu nombre" autocomplete="name">
       </div>
       <div class="field-group">
         <label class="field-label" for="auth-email">Email</label>
-        <input class="field-input" type="text" id="auth-email" placeholder="tu@email.com">
+        <input class="field-input" type="text" id="auth-email" placeholder="tu@email.com" autocomplete="email">
       </div>
       <div class="field-group">
         <label class="field-label" for="auth-password">Contraseña</label>
-        <input class="field-input" type="password" id="auth-password" placeholder="••••••••">
+        <input class="field-input" type="password" id="auth-password" placeholder="••••••••" autocomplete="current-password">
       </div>
       <div class="auth-msg" id="auth-msg"></div>
       <button class="btn-auth-submit" id="auth-submit-btn" onclick="doAuth()">Entrar</button>
     </div>
   </div>
 </div>
- 
-<!-- REFUEL MODAL -->
+
+<!-- ─── REFUEL MODAL ─── -->
 <div class="modal-backdrop" id="refuel-modal">
   <div class="modal">
     <div class="modal-header">
@@ -642,7 +991,7 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
     <div class="modal-body">
       <div class="date-display">
         <div class="date-display-text" id="refuel-date-display">—</div>
-        <div class="date-auto-badge">📅 Automática</div>
+        <div class="date-auto-badge">Automática</div>
       </div>
       <div class="refuel-station-info">
         <div class="refuel-station-name" id="refuel-station-name">—</div>
@@ -681,8 +1030,8 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
     </div>
   </div>
 </div>
- 
-<!-- QUICK REFUEL MODAL -->
+
+<!-- ─── QUICK REFUEL MODAL ─── -->
 <div class="modal-backdrop" id="quick-refuel-modal">
   <div class="modal">
     <div class="modal-header">
@@ -695,11 +1044,11 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
     <div class="modal-body">
       <div class="date-display">
         <div class="date-display-text" id="qr-date-display">—</div>
-        <div class="date-auto-badge">📅 Automática</div>
+        <div class="date-auto-badge">Automática</div>
       </div>
       <div class="field-group">
         <label class="field-label" for="qr-station">Gasolinera</label>
-        <input class="field-input" type="text" id="qr-station" placeholder="ej. Repsol, BP, Cepsa…" style="padding-left:12px;">
+        <input class="field-input" type="text" id="qr-station" placeholder="Nombre de la estación" style="padding-left:12px;">
       </div>
       <div class="field-group">
         <label class="field-label" for="qr-fuel">Combustible</label>
@@ -722,7 +1071,7 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
         </div>
       </div>
       <div class="field-group">
-        <label class="field-label" for="qr-km">Km actuales (para seguimiento de autonomía)</label>
+        <label class="field-label" for="qr-km">Km actuales (opcional)</label>
         <input class="field-input" type="text" inputmode="numeric" id="qr-km" placeholder="ej. 85430" style="padding-left:12px;">
       </div>
       <div class="refuel-total-preview" id="qr-preview">
@@ -734,23 +1083,23 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
     </div>
   </div>
 </div>
- 
-<!-- TANK EMPTY MODAL -->
+
+<!-- ─── TANK EMPTY MODAL ─── -->
 <div class="modal-backdrop" id="tank-empty-modal">
   <div class="modal">
     <div class="modal-header">
       <div>
         <div class="modal-title">🪫 Depósito vacío</div>
-        <div class="modal-sub" id="te-station-sub">Registrar cuándo se agotó</div>
+        <div class="modal-sub">Registrar cuándo se agotó</div>
       </div>
       <button class="modal-close" onclick="closeTankEmptyModal()">✕</button>
     </div>
     <div class="modal-body">
       <div class="date-display">
         <div class="date-display-text" id="te-date-display">—</div>
-        <div class="date-auto-badge">📅 Automática</div>
+        <div class="date-auto-badge">Automática</div>
       </div>
-      <div id="te-days-info" style="background:var(--surface-3);border:1px solid var(--border);border-radius:var(--r-md);padding:10px 14px;font-size:12px;color:var(--text-3);"></div>
+      <div id="te-days-info" style="background:var(--surface-3);border:1px solid var(--border);border-radius:var(--r-md);padding:10px 14px;font-size:12px;color:var(--ink-3);"></div>
       <div class="field-group">
         <label class="field-label" for="te-km">Km actuales al vaciarse (opcional)</label>
         <input class="field-input" type="text" inputmode="numeric" id="te-km" placeholder="ej. 85920" style="padding-left:12px;" oninput="updateTEPreview()">
@@ -764,8 +1113,8 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
     </div>
   </div>
 </div>
- 
-<!-- PRICE ALERT MODAL -->
+
+<!-- ─── PRICE ALERT MODAL ─── -->
 <div class="modal-backdrop" id="alert-modal">
   <div class="modal">
     <div class="modal-header">
@@ -795,1523 +1144,9 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
     </div>
   </div>
 </div>
- 
-<script>
-// Limpiar caché de provincias con formato antiguo (si existe)
-try {
-  const _old = localStorage.getItem('iberofuel_provincias');
-  if (_old) {
-    const _p = JSON.parse(_old);
-    // Si el primer elemento no tiene ni 'id' ni 'IDProvincia' es formato viejo
-    if (_p.length && !_p[0].id && !_p[0].IDProvincia && !_p[0].IDPovincia) {
-      localStorage.removeItem('iberofuel_provincias');
-    }
-  }
-} catch(_) { try { localStorage.removeItem('iberofuel_provincias'); } catch(__) {} }
 
-// ════════════════════════════════════════════════════════════
-//  PROVINCIAS FALLBACK (cargadas si la API del MINETUR está caída)
-// ════════════════════════════════════════════════════════════
-const PROVINCIAS_FALLBACK = [
-  {id:'1',name:'ÁLAVA'},{id:'2',name:'ALBACETE'},{id:'3',name:'ALICANTE/ALACANT'},
-  {id:'4',name:'ALMERÍA'},{id:'5',name:'ÁVILA'},{id:'6',name:'BADAJOZ'},
-  {id:'7',name:'BALEARS (ILLES)'},{id:'8',name:'BARCELONA'},{id:'9',name:'BURGOS'},
-  {id:'10',name:'CÁCERES'},{id:'11',name:'CÁDIZ'},{id:'12',name:'CASTELLÓN/CASTELLÓ'},
-  {id:'13',name:'CIUDAD REAL'},{id:'14',name:'CÓRDOBA'},{id:'15',name:'CORUÑA (A)'},
-  {id:'16',name:'CUENCA'},{id:'17',name:'GIRONA'},{id:'18',name:'GRANADA'},
-  {id:'19',name:'GUADALAJARA'},{id:'20',name:'GIPUZKOA'},{id:'21',name:'HUELVA'},
-  {id:'22',name:'HUESCA'},{id:'23',name:'JAÉN'},{id:'24',name:'LEÓN'},
-  {id:'25',name:'LLEIDA'},{id:'26',name:'RIOJA (LA)'},{id:'27',name:'LUGO'},
-  {id:'28',name:'MADRID'},{id:'29',name:'MÁLAGA'},{id:'30',name:'MURCIA'},
-  {id:'31',name:'NAVARRA'},{id:'32',name:'OURENSE'},{id:'33',name:'ASTURIAS'},
-  {id:'34',name:'PALENCIA'},{id:'35',name:'PALMAS (LAS)'},{id:'36',name:'PONTEVEDRA'},
-  {id:'37',name:'SALAMANCA'},{id:'38',name:'SANTA CRUZ DE TENERIFE'},{id:'39',name:'CANTABRIA'},
-  {id:'40',name:'SEGOVIA'},{id:'41',name:'SEVILLA'},{id:'42',name:'SORIA'},
-  {id:'43',name:'TARRAGONA'},{id:'44',name:'TERUEL'},{id:'45',name:'TOLEDO'},
-  {id:'46',name:'VALENCIA/VALÈNCIA'},{id:'47',name:'VALLADOLID'},{id:'48',name:'BIZKAIA'},
-  {id:'49',name:'ZAMORA'},{id:'50',name:'ZARAGOZA'},{id:'51',name:'CEUTA'},{id:'52',name:'MELILLA'},
-];
-
-// ════════════════════════════════════════════════════════════
-//  SUPABASE INIT
-// ════════════════════════════════════════════════════════════
-const SUPABASE_URL  = 'https://gwycdrnwkzmoxbxcqxih.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd3eWNkcm53a3ptb3hieGNxeGloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwMzgyNDEsImV4cCI6MjA5NDYxNDI0MX0.fTm-TesEgil6NjaiiCspZdjMCX6PxAclFhlPs6PNngc';
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
-
-// ════════════════════════════════════════════════════════════
-//  PROXY — cadena de fallbacks para alcanzar MINETUR
-//  0. MINETUR directo (si tiene CORS)
-//  1. Vercel proxy (servidor, cachea en Supabase)
-//  2. Supabase Edge Function (Deno/Cloudflare, IPs distintas)
-//  3. Proxies CORS del navegador
-//  4. Caché Supabase directo (último recurso)
-// ════════════════════════════════════════════════════════════
-const API_BASE  = 'https://sedeaplicaciones.minetur.gob.es/ServiciosRESTCarburantes/PreciosCarburantes';
-const SB_EDGE   = 'https://gwycdrnwkzmoxbxcqxih.supabase.co/functions/v1/fuel-proxy';
-
-const CLIENT_CORS_PROXIES = [
-  u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
-  u => `https://corsproxy.io/?url=${encodeURIComponent(u)}`,
-  u => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
-  u => `https://thingproxy.freeboard.io/fetch/${u}`,
-];
-
-// true tras el primer fallo completo — evita repetir 30s de espera en cada acción
-let apiKnownOffline = false;
-
-async function tryUrl(url, timeoutMs = 5000) {
-  const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), timeoutMs);
-  try {
-    const r = await fetch(url, { signal: ctrl.signal, headers: { Accept: 'application/json' } });
-    clearTimeout(t);
-    if (!r.ok) return null;
-    const text = await r.text();
-    try { return JSON.parse(text); } catch { return null; }
-  } catch { clearTimeout(t); return null; }
-}
-
-async function tryProxy(url, timeoutMs = 7000) {
-  const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), timeoutMs);
-  try {
-    const res = await fetch(url, { signal: ctrl.signal });
-    clearTimeout(t);
-    if (!res.ok) return null;
-    const xCache = res.headers.get('X-Cache');
-    const xDate  = res.headers.get('X-Cache-Date');
-    const data   = await res.json().catch(() => null);
-    if (!data) return null;
-    if (xCache === 'stale') showCacheBanner(xDate); else hideCacheBanner();
-    return data;
-  } catch { clearTimeout(t); return null; }
-}
-
-async function sbCacheRead(path) {
-  try {
-    const { data } = await sb
-      .from('minetur_cache')
-      .select('payload, updated_at')
-      .eq('cache_key', path)
-      .limit(1)
-      .maybeSingle();
-    if (data?.payload) { showCacheBanner(data.updated_at); return data.payload; }
-  } catch { /* ignorar */ }
-  return null;
-}
-
-async function fetchWithCORS(fullUrl) {
-  const path = fullUrl.replace(API_BASE, '').replace(/^\//, '');
-
-  // Si ya sabemos que la API está caída → solo caché Supabase (respuesta en <1s)
-  if (apiKnownOffline) {
-    const sb4 = await sbCacheRead(path);
-    if (sb4) return sb4;
-    throw new Error('API_OFFLINE');
-  }
-
-  // ── 0. MINETUR directo ────────────────────────────────────────────────────
-  const direct = await tryUrl(fullUrl, 4000);
-  if (direct) { apiKnownOffline = false; hideCacheBanner(); return direct; }
-
-  // ── 1. Proxy Vercel ────────────────────────────────────────────────────────
-  const vercel = await tryProxy(`/api/fuel?path=${encodeURIComponent(path)}`, 7000);
-  if (vercel) { apiKnownOffline = false; return vercel; }
-
-  // ── 2. Supabase Edge Function ─────────────────────────────────────────────
-  const edge = await tryProxy(`${SB_EDGE}?path=${encodeURIComponent(path)}`, 7000);
-  if (edge) { apiKnownOffline = false; return edge; }
-
-  // ── 3. Proxies CORS del navegador (4s cada uno) ───────────────────────────
-  for (const mkProxy of CLIENT_CORS_PROXIES) {
-    const data = await tryUrl(mkProxy(fullUrl), 4000);
-    if (data) { apiKnownOffline = false; hideCacheBanner(); return data; }
-  }
-
-  // ── 4. Caché Supabase directo ─────────────────────────────────────────────
-  const sb4 = await sbCacheRead(path);
-  if (sb4) return sb4;
-
-  // Marcar API como caída para que las siguientes llamadas fallen rápido
-  apiKnownOffline = true;
-  throw new Error('API_OFFLINE');
-}
-
-function showCacheBanner(dateStr) {
-  let el = document.getElementById('cache-banner');
-  if (!el) {
-    el = document.createElement('div');
-    el.id = 'cache-banner';
-    el.style.cssText = [
-      'margin:0 0 10px 0;padding:9px 14px;border-radius:10px',
-      'background:rgba(251,191,36,0.15);border:1px solid rgba(251,191,36,0.4)',
-      'font-size:12px;color:#92400e;display:flex;align-items:center;gap:8px',
-    ].join(';');
-  }
-  let fechaStr = '—';
-  try {
-    fechaStr = new Date(dateStr).toLocaleString('es-ES', {
-      day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'
-    });
-  } catch { /* ignorar */ }
-  el.innerHTML = `<span style="font-size:15px">🕐</span><span><b>Datos guardados</b> del ${fechaStr} — la API del Ministerio está temporalmente caída.</span>`;
-  const scroll = document.getElementById('stations-scroll');
-  if (scroll && !document.getElementById('cache-banner')) scroll.prepend(el);
-}
-
-function hideCacheBanner() {
-  document.getElementById('cache-banner')?.remove();
-}
-
-// ════════════════════════════════════════════════════════════
-//  HELPERS
-// ════════════════════════════════════════════════════════════
-function parseNum(val) {
-  if (val === null || val === undefined || val === '') return NaN;
-  return parseFloat(String(val).replace(',', '.'));
-}
-
-// Extrae ID estación de forma robusta
-function getIdeess(s) {
-  return String(s['IDEESS'] || s['IDEESS '] || (s.Dirección + '|' + s.Municipio + '|' + s.Rótulo));
-}
-
-// Escapa HTML para evitar XSS en atributos inline
-function escHtml(str) {
-  return String(str || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/'/g,'&#39;');
-}
-
-function fmtDate(iso) {
-  return new Date(iso).toLocaleDateString('es-ES', { day:'2-digit', month:'short', year:'numeric' });
-}
-function fmtDateTime(iso) {
-  return new Date(iso).toLocaleDateString('es-ES', {
-    weekday:'long', day:'2-digit', month:'long', year:'numeric',
-    hour:'2-digit', minute:'2-digit'
-  });
-}
-function nowIso() { return new Date().toISOString(); }
-
-// ════════════════════════════════════════════════════════════
-//  ESTADO
-// ════════════════════════════════════════════════════════════
-let currentUser  = null;
-let favorites    = new Set();
-let profileTab   = 'historial';
-let refuelTarget = null;
-let alertTarget  = null;
-let tankEmptyTarget = null;
-
-// CORREGIDO: mapa de favoritos por id para openRefuelModalFromFav sin JSON en onclick
-const favDataMap = new Map();
-
-// ════════════════════════════════════════════════════════════
-//  VERIFICACIÓN EMAIL
-// ════════════════════════════════════════════════════════════
-function checkVerificationCallback() {
-  const hash   = window.location.hash || '';
-  const params = new URLSearchParams(window.location.search);
-  const isVerification =
-    hash.includes('access_token') || hash.includes('type=signup') ||
-    params.get('code') || params.get('type') === 'signup';
-  if (isVerification) {
-    document.getElementById('verify-overlay').style.display = 'flex';
-    history.replaceState(null, '', window.location.pathname);
-  }
-}
-function dismissVerifyOverlay() {
-  document.getElementById('verify-overlay').style.display = 'none';
-}
-
-// ════════════════════════════════════════════════════════════
-//  DONATE
-// ════════════════════════════════════════════════════════════
-let tooltipOpen = false;
-function toggleTooltip() {
-  tooltipOpen = !tooltipOpen;
-  document.getElementById('donate-tooltip').classList.toggle('open', tooltipOpen);
-  document.getElementById('donate-pill').classList.toggle('active', tooltipOpen);
-}
-function closeTooltip() {
-  tooltipOpen = false;
-  document.getElementById('donate-tooltip').classList.remove('open');
-  document.getElementById('donate-pill').classList.remove('active');
-}
-document.addEventListener('click', e => {
-  if (tooltipOpen && !document.getElementById('donate-float').contains(e.target)) closeTooltip();
-});
-
-// ════════════════════════════════════════════════════════════
-//  MOBILE TABS
-// ════════════════════════════════════════════════════════════
-let currentTab = 'lista';
-function isMobile() { return window.innerWidth <= 768; }
-
-function switchTab(tab) {
-  if (tab === 'perfil' && !currentUser) {
-    openAuthModal();
-    ['lista','mapa','perfil'].forEach(t => {
-      const btn = document.getElementById('tab-'+t);
-      if (btn) btn.classList.toggle('active', t === 'lista');
-    });
-    currentTab = 'lista';
-    return;
-  }
-  currentTab = tab;
-  ['lista','mapa','perfil'].forEach(t => {
-    const btn = document.getElementById('tab-'+t);
-    if (btn) btn.classList.toggle('active', t === tab);
-  });
-  const sidebar   = document.getElementById('sidebar');
-  const mapEl     = document.getElementById('map-container');
-  const profileEl = document.getElementById('profile-panel');
-
-  if (tab === 'lista') {
-    sidebar.classList.remove('map-active');
-    mapEl.classList.remove('active');
-    if (isMobile()) profileEl.classList.remove('open');
-  } else if (tab === 'mapa') {
-    sidebar.classList.add('map-active');
-    mapEl.classList.add('active');
-    if (isMobile()) profileEl.classList.remove('open');
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      setTimeout(() => mapInstance && mapInstance.invalidateSize(), 50);
-    }));
-  } else if (tab === 'perfil') {
-    sidebar.classList.remove('map-active');
-    mapEl.classList.remove('active');
-    profileEl.classList.add('open');
-    setDonateVisible(false);
-    loadProfileData();
-  }
-  if (tab !== 'perfil') setDonateVisible(true);
-}
-
-// ════════════════════════════════════════════════════════════
-//  SEARCH COLLAPSE
-// ════════════════════════════════════════════════════════════
-let searchOpen = true;
-function toggleSearch() {
-  searchOpen = !searchOpen;
-  document.getElementById('search-body').classList.toggle('collapsed', !searchOpen);
-  document.getElementById('search-chevron').style.transform = searchOpen ? '' : 'rotate(-90deg)';
-}
-
-// ════════════════════════════════════════════════════════════
-//  CONSTANTES
-// ════════════════════════════════════════════════════════════
-let allStations = [], filteredStations = [], provinciasData = [];
-let activeFuel = 'gasolina95', sortMode = 'precio';
-let mapInstance = null, markersLayer = null;
-let selectedCard = null, userPos = null;
-
-const FUEL_MAP = {
-  gasolina95: { key: 'Precio Gasolina 95 E5',              label: 'G-95',      short: '95'  },
-  gasolina98: { key: 'Precio Gasolina 98 E5',              label: 'G-98',      short: '98'  },
-  gasoleoA:   { key: 'Precio Gasoleo A',                   label: 'Gasóleo A', short: 'GA'  },
-  gasoleoB:   { key: 'Precio Gasoleo B',                   label: 'Gasóleo B', short: 'GB'  },
-  glp:        { key: 'Precio Gases licuados del petróleo', label: 'GLP',       short: 'GLP' },
-};
-
-const BRAND_SVGS = {
-  'REPSOL':    `<svg viewBox="0 0 120 40" xmlns="http://www.w3.org/2000/svg" width="44" height="24"><rect width="120" height="40" rx="4" fill="#FF6B00"/><text x="60" y="28" font-family="Arial Black,sans-serif" font-size="18" font-weight="900" fill="white" text-anchor="middle" letter-spacing="1">REPSOL</text></svg>`,
-  'CEPSA':     `<svg viewBox="0 0 110 40" xmlns="http://www.w3.org/2000/svg" width="44" height="24"><rect width="110" height="40" rx="4" fill="#004A97"/><text x="55" y="28" font-family="Arial Black,sans-serif" font-size="18" font-weight="900" fill="white" text-anchor="middle" letter-spacing="1">CEPSA</text></svg>`,
-  'MOEVE':     `<svg viewBox="0 0 110 40" xmlns="http://www.w3.org/2000/svg" width="44" height="24"><rect width="110" height="40" rx="4" fill="#004A97"/><text x="55" y="28" font-family="Arial Black,sans-serif" font-size="16" font-weight="900" fill="white" text-anchor="middle" letter-spacing="1">MOEVE</text></svg>`,
-  'BP':        `<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" width="40" height="40"><circle cx="30" cy="30" r="30" fill="#009B3A"/><circle cx="30" cy="30" r="22" fill="#FFCC00"/><circle cx="30" cy="30" r="14" fill="#009B3A"/><text x="30" y="36" font-family="Arial Black,sans-serif" font-size="13" font-weight="900" fill="white" text-anchor="middle">BP</text></svg>`,
-  'SHELL':     `<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" width="40" height="40"><circle cx="30" cy="30" r="30" fill="#FFCC00"/><path d="M30 8 L34 22 L48 22 L37 31 L41 45 L30 36 L19 45 L23 31 L12 22 L26 22 Z" fill="#E63312"/></svg>`,
-  'GALP':      `<svg viewBox="0 0 100 40" xmlns="http://www.w3.org/2000/svg" width="44" height="24"><rect width="100" height="40" rx="4" fill="#E30613"/><text x="50" y="28" font-family="Arial Black,sans-serif" font-size="20" font-weight="900" fill="white" text-anchor="middle" letter-spacing="1">GALP</text></svg>`,
-  'CAMPSA':    `<svg viewBox="0 0 120 40" xmlns="http://www.w3.org/2000/svg" width="44" height="24"><rect width="120" height="40" rx="4" fill="#E30613"/><text x="60" y="28" font-family="Arial Black,sans-serif" font-size="16" font-weight="900" fill="white" text-anchor="middle" letter-spacing="1">CAMPSA</text></svg>`,
-  'PETRONOR':  `<svg viewBox="0 0 140 40" xmlns="http://www.w3.org/2000/svg" width="44" height="20"><rect width="140" height="40" rx="4" fill="#E30613"/><text x="70" y="27" font-family="Arial Black,sans-serif" font-size="14" font-weight="900" fill="white" text-anchor="middle" letter-spacing="0.5">PETRONOR</text></svg>`,
-  'CARREFOUR': `<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" width="40" height="40"><circle cx="30" cy="30" r="30" fill="white"/><path d="M15 30 L25 10 L35 10 L25 30 L35 50 L25 50 Z" fill="#E63312"/><path d="M45 30 L35 10 L45 10 L45 50 L35 50 Z" fill="#004A97"/></svg>`,
-  'AVIA':      `<svg viewBox="0 0 100 40" xmlns="http://www.w3.org/2000/svg" width="44" height="24"><rect width="100" height="40" rx="4" fill="#E30613"/><text x="50" y="28" font-family="Arial Black,sans-serif" font-size="20" font-weight="900" fill="white" text-anchor="middle" letter-spacing="2">AVIA</text></svg>`,
-  'BALLENOIL': `<svg viewBox="0 0 140 40" xmlns="http://www.w3.org/2000/svg" width="44" height="20"><rect width="140" height="40" rx="4" fill="#1A1A2E"/><text x="70" y="27" font-family="Arial Black,sans-serif" font-size="13" font-weight="900" fill="#00D4FF" text-anchor="middle" letter-spacing="0.5">BALLENOIL</text></svg>`,
-  'ALCAMPO':   `<svg viewBox="0 0 130 40" xmlns="http://www.w3.org/2000/svg" width="44" height="22"><rect width="130" height="40" rx="4" fill="#E30613"/><text x="65" y="27" font-family="Arial Black,sans-serif" font-size="14" font-weight="900" fill="white" text-anchor="middle" letter-spacing="0.5">ALCAMPO</text></svg>`,
-  'TAMOIL':    `<svg viewBox="0 0 120 40" xmlns="http://www.w3.org/2000/svg" width="44" height="22"><rect width="120" height="40" rx="4" fill="#E63312"/><text x="60" y="27" font-family="Arial Black,sans-serif" font-size="16" font-weight="900" fill="white" text-anchor="middle" letter-spacing="0.5">TAMOIL</text></svg>`,
-  'Q8':        `<svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg" width="40" height="30"><rect width="60" height="40" rx="4" fill="#004A97"/><text x="30" y="28" font-family="Arial Black,sans-serif" font-size="20" font-weight="900" fill="white" text-anchor="middle">Q8</text></svg>`,
-  'PLENOIL':   `<svg viewBox="0 0 120 40" xmlns="http://www.w3.org/2000/svg" width="44" height="22"><rect width="120" height="40" rx="4" fill="#FF6B00"/><text x="60" y="27" font-family="Arial Black,sans-serif" font-size="15" font-weight="900" fill="white" text-anchor="middle" letter-spacing="0.5">PLENOIL</text></svg>`,
-  'PETROPRIX': `<svg viewBox="0 0 140 40" xmlns="http://www.w3.org/2000/svg" width="44" height="20"><rect width="140" height="40" rx="4" fill="#E30613"/><text x="70" y="27" font-family="Arial Black,sans-serif" font-size="13" font-weight="900" fill="white" text-anchor="middle" letter-spacing="0.5">PETROPRIX</text></svg>`,
-  'EROSKI':    `<svg viewBox="0 0 120 40" xmlns="http://www.w3.org/2000/svg" width="44" height="22"><rect width="120" height="40" rx="4" fill="#E30613"/><text x="60" y="27" font-family="Arial Black,sans-serif" font-size="16" font-weight="900" fill="white" text-anchor="middle" letter-spacing="0.5">EROSKI</text></svg>`,
-};
-
-function getBrandLogo(name) {
-  if (!name) return `<span style="font-size:22px">⛽</span>`;
-  const upper = name.toUpperCase();
-  for (const [brand, svg] of Object.entries(BRAND_SVGS)) {
-    if (upper.includes(brand)) return svg;
-  }
-  const initials = name.trim().substring(0,2).toUpperCase();
-  const hue = [...name].reduce((acc,c) => acc + c.charCodeAt(0), 0) % 360;
-  return `<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" width="40" height="40"><rect width="40" height="40" rx="8" fill="hsl(${hue},55%,42%)"/><text x="20" y="26" font-family="Arial Black,sans-serif" font-size="14" font-weight="900" fill="white" text-anchor="middle">${initials}</text></svg>`;
-}
-
-function buildNavHTML(lat, lng, name) {
-  if (isNaN(lat) || isNaN(lng)) return '';
-  const enc = encodeURIComponent(name || 'Gasolinera');
-  return `<div class="popup-nav">
-    <div class="popup-nav-label">🧭 Cómo llegar</div>
-    <div class="popup-nav-btns">
-      <a class="nav-btn waze"  href="https://waze.com/ul?ll=${lat},${lng}&navigate=yes" target="_blank" rel="noopener">🚗 Waze</a>
-      <a class="nav-btn gmaps" href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&destination_place_name=${enc}&travelmode=driving" target="_blank" rel="noopener">🗺️ Google</a>
-      <a class="nav-btn apple" href="https://maps.apple.com/?daddr=${lat},${lng}&dirflg=d" target="_blank" rel="noopener">🍎 Apple</a>
-    </div>
-  </div>`;
-}
-
-// ════════════════════════════════════════════════════════════
-//  MAPA
-// ════════════════════════════════════════════════════════════
-function initMap() {
-  mapInstance = L.map('map', { zoomControl: true }).setView([40.416, -3.703], 6);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap', maxZoom: 19
-  }).addTo(mapInstance);
-  markersLayer = L.layerGroup().addTo(mapInstance);
-  setTimeout(() => mapInstance.invalidateSize(), 200);
-}
-
-function makeIcon(color) {
-  const cols = { cheap:'#22C55E', avg:'#FF6B2B', expensive:'#EF4444', default:'#9B93A0' };
-  const c = cols[color] || cols.default;
-  return L.divIcon({
-    className: '',
-    html: `<div style="width:32px;height:32px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:${c};border:3px solid white;box-shadow:0 4px 14px rgba(0,0,0,0.20)"></div>`,
-    iconSize:[32,32], iconAnchor:[16,32], popupAnchor:[0,-34],
-  });
-}
-
-// ════════════════════════════════════════════════════════════
-//  API — proxy /api/fuel
-// ════════════════════════════════════════════════════════════
-function poblarProvincias(list) {
-  const sel = document.getElementById('sel-prov');
-  sel.innerHTML = '<option value="">Provincia</option>';
-  provinciasData = [];
-  list.forEach(p => {
-    const id   = p.id   || p.IDPovincia || p.IDProvincia;
-    const name = p.name || p.Provincia;
-    provinciasData.push({ id, name });
-    sel.appendChild(new Option(name, id));
-  });
-}
-
-function loadProvincias() {
-  // 1. Mostrar INMEDIATAMENTE — caché o hardcoded (nunca dejar el selector vacío)
-  let fromCache = false;
-  try {
-    const cached = localStorage.getItem('iberofuel_provincias');
-    if (cached) { poblarProvincias(JSON.parse(cached)); fromCache = true; }
-  } catch (_) {}
-  if (!fromCache) poblarProvincias(PROVINCIAS_FALLBACK);
-
-  // 2. Refrescar desde la API en segundo plano (sin bloquear nada)
-  fetchWithCORS(`${API_BASE}/Listados/Provincias/`)
-    .then(data => {
-      const list = Array.isArray(data) ? data : (data.Provincias || data.ListaProvincias || []);
-      if (list.length) {
-        try { localStorage.setItem('iberofuel_provincias', JSON.stringify(list)); } catch(_) {}
-        poblarProvincias(list);
-        hideApiOfflineBanner();
-      }
-    })
-    .catch(() => showApiOfflineBanner());
-}
-
-function showApiOfflineBanner() {
-  if (document.getElementById('api-offline-banner')) return;
-  const el = document.createElement('div');
-  el.id = 'api-offline-banner';
-  el.style.cssText = `
-    position:fixed;bottom:0;left:0;right:0;z-index:9999;
-    background:#EF4444;color:white;font-size:13px;font-weight:600;
-    padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;
-  `;
-  el.innerHTML = `
-    <span>🔧 API del Ministerio temporalmente caída. Los datos se actualizarán automáticamente cuando vuelva online.</span>
-    <div style="display:flex;gap:8px;align-items:center;flex-shrink:0">
-      <button onclick="loadProvincias()" style="background:rgba(255,255,255,0.25);border:none;color:white;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">🔄</button>
-      <button onclick="this.parentElement.parentElement.remove()" style="background:rgba(255,255,255,0.15);border:none;color:white;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">✕</button>
-    </div>
-  `;
-  document.body.appendChild(el);
-}
-
-function hideApiOfflineBanner() {
-  document.getElementById('api-offline-banner')?.remove();
-}
-
-async function onProvinciaChange() {
-  const idProv = document.getElementById('sel-prov').value;
-  const selMun = document.getElementById('sel-mun');
-  selMun.disabled = true;
-  selMun.innerHTML = '<option>Cargando…</option>';
-  if (!idProv) { selMun.innerHTML = '<option value="">Municipio</option>'; selMun.disabled = false; return; }
-  try {
-    const data = await fetchWithCORS(`${API_BASE}/Listados/MunicipiosPorProvincia/${idProv}`);
-    const list = Array.isArray(data) ? data : (data.Municipios || data.ListaMunicipios || []);
-    selMun.innerHTML = '<option value="">Municipio</option>';
-    list.forEach(m => selMun.appendChild(new Option(m.Municipio, m.IDMunicipio)));
-    selMun.disabled = false;
-  } catch(e) {
-    selMun.innerHTML = '<option value="">API no disponible — intenta de nuevo</option>';
-    selMun.disabled = false;
-    if (e.message === 'API_OFFLINE') showApiOfflineBanner();
-  }
-}
-
-let _lastSearch = null;
-function retryLastSearch() { if (_lastSearch) _lastSearch(); }
-
-async function buscarPorMunicipio() {
-  const idMun = document.getElementById('sel-mun').value;
-  if (!idMun) { alert('Elige un municipio primero ⛽'); return; }
-  _lastSearch = buscarPorMunicipio;
-  showLoading('Buscando gasolineras…');
-  try {
-    const data = await fetchWithCORS(`${API_BASE}/EstacionesTerrestres/FiltroMunicipio/${idMun}`);
-    if (!data || !data.ListaEESSPrecio) throw new Error('La API no devolvió datos de estaciones');
-    processStations(data.ListaEESSPrecio);
-    if (searchOpen) toggleSearch();
-    if (isMobile()) switchTab('lista');
-  } catch(e) {
-    showError(e.message);
-  }
-}
-
-function usarMiUbicacion() {
-  if (!navigator.geolocation) { alert('Tu navegador no soporta geolocalización.'); return; }
-  const btn = document.getElementById('locate-btn');
-  btn.disabled = true;
-  btn.innerHTML = '<span>⏳</span> Localizando…';
-  showLoading('Detectando tu posición…');
-
-  navigator.geolocation.getCurrentPosition(
-    async function(pos) {
-      btn.disabled = false;
-      btn.innerHTML = '<span>◎</span> Ubicarme';
-      userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-      mapInstance.setView([userPos.lat, userPos.lng], 13);
-      showLoading('Identificando tu provincia…');
-      try {
-        const idProvincia = await getIdProvinciaDesdeCoords(userPos.lat, userPos.lng);
-        if (!idProvincia) throw new Error('No se pudo identificar tu provincia. Prueba buscando por municipio.');
-        showLoading('Buscando gasolineras en tu provincia…');
-        _lastSearch = usarMiUbicacion;
-        const data = await fetchWithCORS(`${API_BASE}/EstacionesTerrestresFiltros/FiltroProvincia/${idProvincia}`);
-        if (!data || !data.ListaEESSPrecio) throw new Error('Sin datos de la API');
-        const nearby = data.ListaEESSPrecio.filter(s => {
-          const lat = parseFloat((s.Latitud || '').replace(',','.'));
-          const lng = parseFloat((s['Longitud (WGS84)'] || s.Longitud || '').replace(',','.'));
-          return !isNaN(lat) && !isNaN(lng) && haversine(userPos.lat, userPos.lng, lat, lng) <= 15;
-        });
-        if (!nearby.length) throw new Error('No hay gasolineras en un radio de 15 km');
-        processStations(nearby);
-        if (searchOpen) toggleSearch();
-        if (isMobile()) switchTab('lista');
-      } catch(e) {
-        showError(e.message);
-      }
-    },
-    function(err) {
-      btn.disabled = false;
-      btn.innerHTML = '<span>◎</span> Ubicarme';
-      let msg = 'No se pudo obtener tu ubicación. Activa la geolocalización 📍';
-      if (err.code === 1) msg = 'Permiso denegado. Ve a Ajustes y permite el acceso a la ubicación.';
-      if (err.code === 2) msg = 'No se pudo determinar tu posición. Comprueba la señal GPS.';
-      if (err.code === 3) msg = 'Tiempo de espera agotado. Asegúrate de tener GPS activo.';
-      showError(msg);
-    },
-    { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-  );
-}
-
-function haversine(lat1,lng1,lat2,lng2) {
-  const R=6371, dLat=(lat2-lat1)*Math.PI/180, dLng=(lng2-lng1)*Math.PI/180;
-  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
-  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
-}
-
-function normProv(s) {
-  return (s || '').toLowerCase()
-    .normalize('NFD').replace(/[̀-ͯ]/g, '')
-    .replace(/\b(provincia|comunidad|comunitat|region|regiao|autonoma|autonomia)\b/g, '')
-    .replace(/\bde\b|\bdel\b|\bla\b|\bles\b|\blos\b|\blas\b/g, '')
-    .replace(/\s+/g, ' ').trim();
-}
-
-async function getIdProvinciaDesdeCoords(lat, lng) {
-  const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), 6000);
-  try {
-    const r = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=es`,
-      { headers: { 'User-Agent': 'IberoFuel/1.0' }, signal: ctrl.signal }
-    );
-    clearTimeout(t);
-    const d = await r.json();
-    const addr = d.address || {};
-    const candidatos = [addr.province, addr.state_district, addr.state, addr.county].filter(Boolean);
-    for (const c of candidatos) {
-      const nc = normProv(c);
-      const found = provinciasData.find(p => {
-        const np = normProv(p.name);
-        return np === nc || nc.includes(np) || np.includes(nc);
-      });
-      if (found) return found.id;
-    }
-  } catch { /* timeout o error de red */ }
-  clearTimeout(t);
-  return null;
-}
-
-// ════════════════════════════════════════════════════════════
-//  PROCESAR Y RENDERIZAR
-// ════════════════════════════════════════════════════════════
-function processStations(raw) {
-  allStations = raw.map(s => {
-    const lat  = parseFloat((s.Latitud || '').replace(',','.'));
-    const lng  = parseFloat((s['Longitud (WGS84)'] || s.Longitud || '').replace(',','.'));
-    const dist = (userPos && !isNaN(lat) && !isNaN(lng))
-      ? haversine(userPos.lat, userPos.lng, lat, lng) : null;
-    const prices = {};
-    Object.entries(FUEL_MAP).forEach(([k,v]) => {
-      const val = s[v.key];
-      prices[k] = (val && val !== '') ? parseFloat(val.replace(',','.')) : null;
-    });
-    return { ...s, lat, lng, dist, prices };
-  });
-  sortMode = 'precio';
-  document.querySelectorAll('.sort-btn').forEach((b,i) => b.classList.toggle('active', i===0));
-  renderAll();
-  document.getElementById('stats-bar').classList.add('visible');
-  document.getElementById('sort-row').classList.add('visible');
-  if (!currentUser) document.getElementById('upsell-banner').classList.add('visible');
-}
-
-function renderAll() {
-  filteredStations = allStations
-    .filter(s => s.prices[activeFuel] !== null)
-    .sort((a,b) => {
-      if (sortMode === 'precio')    return (a.prices[activeFuel] || 99) - (b.prices[activeFuel] || 99);
-      if (sortMode === 'distancia') return (a.dist ?? 999) - (b.dist ?? 999);
-      return 0;
-    });
-  updateStats();
-  renderList();
-  renderMarkers();
-}
-
-function updateStats() {
-  const prices = filteredStations.map(s => s.prices[activeFuel]).filter(Boolean);
-  document.getElementById('stat-total').textContent = filteredStations.length;
-  document.getElementById('stat-min').textContent   = prices.length ? Math.min(...prices).toFixed(3) : '—';
-  document.getElementById('stat-avg').textContent   = prices.length ? (prices.reduce((a,b)=>a+b,0)/prices.length).toFixed(3) : '—';
-  document.getElementById('stat-max').textContent   = prices.length ? Math.max(...prices).toFixed(3) : '—';
-}
-
-function getPriceClass(price, min, max) {
-  if (!price) return 'default';
-  const mid = (min + max) / 2;
-  if (price <= min + (mid - min) * 0.4) return 'cheap';
-  if (price >= max - (max - mid) * 0.4) return 'expensive';
-  return 'avg';
-}
-
-function renderList() {
-  const scroll = document.getElementById('stations-scroll');
-  if (!filteredStations.length) {
-    scroll.innerHTML = `<div class="state-panel">
-      <div class="state-icon-box">🔍</div>
-      <div class="state-title">Sin resultados</div>
-      <div class="state-sub">No hay datos de ${FUEL_MAP[activeFuel].label} en esta zona.</div>
-    </div>`;
-    return;
-  }
-  const prices = filteredStations.map(s => s.prices[activeFuel]).filter(Boolean);
-  const minP = Math.min(...prices), maxP = Math.max(...prices);
-  const frag = document.createDocumentFragment();
-
-  filteredStations.forEach((s, i) => {
-    const price    = s.prices[activeFuel];
-    const cls      = getPriceClass(price, minP, maxP);
-    const saving   = (price - minP).toFixed(3);
-    const isMin    = price === minP;
-    const topBadge = sortMode === 'distancia' ? '📍 Más cercana' : '🏆 Más económica';
-    const savingBadge = isMin
-      ? '<div class="badge-pill badge-winner">🏆 La más barata</div>'
-      : `<div class="badge-pill badge-saving">+ ${saving} €/L</div>`;
-
-    const otherPrices = Object.entries(FUEL_MAP)
-      .filter(([k]) => k !== activeFuel && s.prices[k])
-      .map(([k,v]) => `<div class="fuel-pill"><span class="fuel-pill-tag">${escHtml(v.short)}</span>${s.prices[k]?.toFixed(3)} €</div>`)
-      .join('');
-
-    const ideess = getIdeess(s);
-    const isFav  = favorites.has(ideess);
-    const distStr = s.dist !== null
-      ? `<span class="station-dist">⊙ ${s.dist.toFixed(1)} km</span><span class="meta-dot">●</span>` : '';
-
-    // CORREGIDO: sin JSON en onclick, usamos data-index
-    const loggedBtns = currentUser
-      ? `<div class="card-action-btns">
-           <div class="card-action-row">
-             <button class="btn-refuel-card" data-idx="${i}" onclick="event.stopPropagation();openRefuelModal(parseInt(this.dataset.idx))">⛽ Repostar</button>
-             <button class="btn-alert-card"  data-idx="${i}" onclick="event.stopPropagation();openAlertModal(parseInt(this.dataset.idx))">🔔</button>
-             <button class="fav-btn ${isFav?'saved':''}" data-idx="${i}" onclick="event.stopPropagation();toggleFavorite(parseInt(this.dataset.idx),this)">${isFav?'★':'☆'}</button>
-           </div>
-         </div>`
-      : `<button class="fav-btn" onclick="event.stopPropagation();openAuthModal()" title="Inicia sesión para guardar favoritas">☆</button>`;
-
-    const isFirst = i === 0;
-    const card = document.createElement('div');
-    card.className = 'station-card' + (isFirst ? ' has-winner-band' : '');
-    card.id = `card-${i}`;
-    card.style.animationDelay = `${Math.min(i * 0.04, 0.32)}s`;
-    card.setAttribute('data-idx', i);
-    card.setAttribute('onclick', `selectStation(parseInt(this.dataset.idx))`);
-
-    card.innerHTML = `
-      ${isFirst ? `<div class="winner-band">${topBadge}</div>` : ''}
-      <div class="card-body">
-        <div class="brand-logo">${getBrandLogo(s.Rótulo)}</div>
-        <div class="card-info">
-          <div class="station-name">${escHtml(s.Rótulo || 'Gasolinera')}</div>
-          <div class="station-meta">${distStr}<span class="station-city">${escHtml(s.Municipio || '')}</span></div>
-          <div class="station-address">📍 ${escHtml(s.Dirección || '')}</div>
-        </div>
-        <div class="card-right">
-          <div class="price-${cls}">
-            <div class="price-display">
-              <span class="price-val">${price?.toFixed(3)}</span>
-              <span class="price-unit">€/L</span>
-            </div>
-          </div>
-          ${savingBadge}
-          ${loggedBtns}
-        </div>
-      </div>
-      ${otherPrices ? `<div class="card-footer">${otherPrices}</div>` : ''}
-    `;
-    frag.appendChild(card);
-  });
-
-  scroll.innerHTML = '';
-  scroll.appendChild(frag);
-  scroll.scrollTop = 0;
-}
-
-function renderMarkers() {
-  markersLayer.clearLayers();
-  if (userPos) {
-    L.marker([userPos.lat, userPos.lng], {
-      icon: L.divIcon({
-        className: '',
-        html: '<div style="width:20px;height:20px;border-radius:50%;background:#3B82F6;border:3px solid white;box-shadow:0 0 0 6px rgba(59,130,246,.18)"></div>',
-        iconSize:[20,20], iconAnchor:[10,10]
-      })
-    }).addTo(markersLayer).bindPopup('📍 Estás aquí');
-  }
-
-  const prices = filteredStations.map(s => s.prices[activeFuel]).filter(Boolean);
-  const minP = Math.min(...prices), maxP = Math.max(...prices);
-  const bounds = [];
-
-  filteredStations.forEach((s, i) => {
-    if (isNaN(s.lat) || isNaN(s.lng)) return;
-    const cls    = getPriceClass(s.prices[activeFuel], minP, maxP);
-    const marker = L.marker([s.lat, s.lng], { icon: makeIcon(cls) });
-    const rows   = Object.entries(FUEL_MAP)
-      .filter(([k]) => s.prices[k])
-      .map(([k,v]) => `<div class="popup-price-row"><span class="popup-fuel-name">${v.label}</span><span class="popup-fuel-price">${s.prices[k]?.toFixed(3)} €</span></div>`)
-      .join('');
-    marker.bindPopup(`
-      <div class="popup-header">
-        <div class="popup-brand">⛽ ${escHtml(s.Rótulo || 'Gasolinera')}</div>
-        <div class="popup-addr">📍 ${escHtml(s.Dirección || '')} · ${escHtml(s.Municipio || '')}</div>
-      </div>
-      <div class="popup-prices">${rows}</div>
-      ${buildNavHTML(s.lat, s.lng, s.Rótulo)}
-    `, { maxWidth: 280 });
-    marker.on('click', () => selectStation(i, false));
-    marker.addTo(markersLayer);
-    s._marker = marker;
-    bounds.push([s.lat, s.lng]);
-  });
-
-  if (bounds.length) {
-    mapInstance.fitBounds(bounds, { padding:[40,40], maxZoom: userPos ? 14 : 18 });
-  }
-}
-
-function selectStation(i, scrollToCard=true) {
-  if (selectedCard) selectedCard.classList.remove('selected');
-  const card = document.getElementById(`card-${i}`);
-  if (card) {
-    card.classList.add('selected');
-    selectedCard = card;
-    if (scrollToCard) card.scrollIntoView({ behavior:'smooth', block:'nearest' });
-  }
-  const s = filteredStations[i];
-  if (!s || isNaN(s.lat) || isNaN(s.lng)) return;
-  if (isMobile() && currentTab !== 'mapa') switchTab('mapa');
-  const delay = (isMobile() && currentTab !== 'mapa') ? 150 : 40;
-  setTimeout(() => {
-    mapInstance.invalidateSize();
-    mapInstance.setView([s.lat, s.lng], 15, { animate: true });
-    if (s._marker) s._marker.openPopup();
-  }, delay);
-}
-
-// ════════════════════════════════════════════════════════════
-//  FILTROS / ORDEN
-// ════════════════════════════════════════════════════════════
-function toggleFuel(el) {
-  document.querySelectorAll('.fuel-chip').forEach(c => c.classList.remove('active'));
-  el.classList.add('active');
-  activeFuel = el.dataset.fuel;
-  if (allStations.length) renderAll();
-}
-
-function setSortMode(mode, btn) {
-  sortMode = mode;
-  document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  if (allStations.length) renderAll();
-}
-
-// ════════════════════════════════════════════════════════════
-//  LOADING / ERROR
-// ════════════════════════════════════════════════════════════
-function showLoading(msg = 'Buscando gasolineras…') {
-  document.getElementById('stations-scroll').innerHTML = `
-    <div class="state-panel">
-      <div class="spinner"></div>
-      <div class="state-title" style="font-size:15px;margin-top:6px">${escHtml(msg)}</div>
-    </div>`;
-}
-function showError(msg) {
-  const offline = msg === 'API_OFFLINE' || msg.includes('API_OFFLINE') || msg.includes('Ministerio') || msg.includes('503');
-  if (offline) {
-    document.getElementById('stations-scroll').innerHTML = `
-      <div class="state-panel">
-        <div class="state-icon-box">🔧</div>
-        <div class="state-title">API temporalmente caída</div>
-        <div class="state-sub" style="max-width:270px;line-height:1.6">
-          El servicio del Ministerio (MINETUR) está temporalmente no disponible.<br>
-          <b>Los datos se recargarán automáticamente cuando vuelva online.</b>
-        </div>
-        <button class="locate-btn" style="margin-top:4px" onclick="retryLastSearch()">🔄 Reintentar ahora</button>
-      </div>`;
-  } else {
-    document.getElementById('stations-scroll').innerHTML = `
-      <div class="state-panel">
-        <div class="state-icon-box">⚠️</div>
-        <div class="state-title">Algo fue mal</div>
-        <div class="error-toast">${escHtml(msg)}</div>
-      </div>`;
-  }
-}
-
-// ════════════════════════════════════════════════════════════
-//  AUTH
-// ════════════════════════════════════════════════════════════
-let authTab = 'login';
-
-function switchAuthTab(tab) {
-  authTab = tab;
-  document.getElementById('tab-login').classList.toggle('active', tab === 'login');
-  document.getElementById('tab-register').classList.toggle('active', tab === 'register');
-  document.getElementById('auth-name-field').style.display = tab === 'register' ? 'flex' : 'none';
-  document.getElementById('auth-submit-btn').textContent = tab === 'login' ? 'Entrar' : 'Crear cuenta';
-  clearAuthMsg();
-}
-
-function openAuthModal() {
-  document.getElementById('auth-modal').classList.add('open');
-  setTimeout(() => document.getElementById('auth-email').focus(), 100);
-}
-function closeAuthModal() {
-  document.getElementById('auth-modal').classList.remove('open');
-  clearAuthMsg();
-  document.getElementById('auth-email').value    = '';
-  document.getElementById('auth-password').value = '';
-  document.getElementById('auth-name').value     = '';
-}
-function clearAuthMsg() {
-  const el = document.getElementById('auth-msg');
-  el.className = 'auth-msg'; el.textContent = '';
-}
-function showAuthMsg(msg, type = 'error') {
-  const el = document.getElementById('auth-msg');
-  el.className = `auth-msg ${type}`; el.textContent = msg;
-}
-
-async function doAuth() {
-  const email = document.getElementById('auth-email').value.trim();
-  const pass  = document.getElementById('auth-password').value;
-  const name  = document.getElementById('auth-name').value.trim();
-  const btn   = document.getElementById('auth-submit-btn');
-
-  if (!email || !pass) { showAuthMsg('Completa todos los campos.'); return; }
-  btn.disabled = true;
-  btn.textContent = authTab === 'login' ? 'Entrando…' : 'Creando cuenta…';
-  clearAuthMsg();
-
-  try {
-    if (authTab === 'login') {
-      const { error } = await sb.auth.signInWithPassword({ email, password: pass });
-      if (error) throw error;
-    } else {
-      const redirectTo = window.location.origin + window.location.pathname;
-      const { data, error } = await sb.auth.signUp({
-        email, password: pass,
-        options: {
-          emailRedirectTo: redirectTo,
-          data: { display_name: name || email.split('@')[0] }
-        }
-      });
-      if (error) throw error;
-      if (data.user && !data.session) {
-        showAuthMsg('¡Revisa tu email para confirmar la cuenta!', 'success');
-        btn.disabled = false;
-        btn.textContent = 'Crear cuenta';
-        return;
-      }
-    }
-  } catch (err) {
-    showAuthMsg(translateAuthError(err.message));
-  } finally {
-    btn.disabled = false;
-    btn.textContent = authTab === 'login' ? 'Entrar' : 'Crear cuenta';
-  }
-}
-
-function translateAuthError(msg) {
-  if (!msg) return 'Error desconocido.';
-  if (msg.includes('Invalid login'))           return 'Email o contraseña incorrectos.';
-  if (msg.includes('User already registered')) return 'Este email ya está registrado. Inicia sesión.';
-  if (msg.includes('Password should be'))      return 'La contraseña debe tener al menos 6 caracteres.';
-  if (msg.includes('Invalid email'))           return 'El formato del email no es válido.';
-  if (msg.includes('Email not confirmed'))     return 'Confirma tu email primero (revisa tu bandeja).';
-  return msg;
-}
-
-async function doLogout() {
-  try { await sb.auth.signOut(); } catch (_) {}
-  currentUser = null;
-  favorites.clear();
-  favDataMap.clear();
-  closeProfilePanel();
-  updateAuthButton();
-}
-
-function handleAuthBtn() {
-  if (currentUser) {
-    const panel = document.getElementById('profile-panel');
-    if (panel.classList.contains('open')) closeProfilePanel();
-    else openProfilePanel();
-  } else {
-    openAuthModal();
-  }
-}
-
-// ════════════════════════════════════════════════════════════
-//  PERFIL
-// ════════════════════════════════════════════════════════════
-function setDonateVisible(v) {
-  const el = document.getElementById('donate-float');
-  if (el) el.style.display = v ? '' : 'none';
-}
-
-function openProfilePanel() {
-  document.getElementById('profile-panel').classList.add('open');
-  setDonateVisible(false);
-  loadProfileData();
-}
-function closeProfilePanel() {
-  document.getElementById('profile-panel').classList.remove('open');
-  setDonateVisible(true);
-  if (isMobile()) {
-    currentTab = 'lista';
-    ['lista','mapa','perfil'].forEach(t => {
-      const btn = document.getElementById('tab-'+t);
-      if (btn) btn.classList.toggle('active', t === 'lista');
-    });
-  }
-}
-
-function updateAuthButton() {
-  const btn = document.getElementById('auth-btn');
-  if (!btn) return; // CORREGIDO: guardia por si el DOM aún no está listo
-  if (currentUser) {
-    const displayName = currentUser.user_metadata?.display_name || currentUser.email || '?';
-    const initial     = displayName[0].toUpperCase();
-    btn.classList.add('logged-in');
-    btn.innerHTML = `<div class="auth-avatar">${initial}</div><span class="auth-btn-text">${escHtml(displayName)}</span>`;
-    document.getElementById('upsell-banner').classList.remove('visible');
-    const avatarEl = document.getElementById('profile-avatar-lg');
-    if (avatarEl) avatarEl.textContent = initial;
-    const nameEl  = document.getElementById('profile-name');
-    const emailEl = document.getElementById('profile-email');
-    if (nameEl)  nameEl.textContent  = displayName;
-    if (emailEl) emailEl.textContent = currentUser.email;
-  } else {
-    btn.classList.remove('logged-in');
-    btn.innerHTML = `<span>👤</span><span class="auth-btn-text">Acceder</span>`;
-    document.getElementById('profile-panel').classList.remove('open');
-    if (allStations.length) document.getElementById('upsell-banner').classList.add('visible');
-  }
-}
-
-function switchProfileTab(tab, btn) {
-  profileTab = tab;
-  document.querySelectorAll('.ptab').forEach(b => b.classList.remove('active'));
-  if (btn) btn.classList.add('active');
-  loadProfileData();
-}
-
-async function loadProfileData() {
-  if (!currentUser) return;
-  const scroll = document.getElementById('profile-scroll');
-  scroll.innerHTML = '<div style="text-align:center;padding:24px;"><div class="spinner" style="margin:0 auto"></div></div>';
-  try {
-    if      (profileTab === 'historial')  await renderHistorial(scroll);
-    else if (profileTab === 'favoritas')  await renderFavoritas(scroll);
-    else if (profileTab === 'alertas')    await renderAlertas(scroll);
-  } catch(err) {
-    scroll.innerHTML = `<div class="empty-state"><div class="empty-state-icon">⚠️</div>Error al cargar datos.<br><span style="font-size:11px;color:var(--danger)">${escHtml(err.message)}</span></div>`;
-  }
-}
-
-// ════════════════════════════════════════════════════════════
-//  HISTORIAL
-// ════════════════════════════════════════════════════════════
-async function renderHistorial(scroll) {
-  const { data, error } = await sb
-    .from('refuel_logs')
-    .select('*')
-    .eq('user_id', currentUser.id)
-    .order('refueled_at', { ascending: false })
-    .limit(100);
-
-  if (error) throw new Error('Supabase: ' + error.message);
-
-  const addBtn = `<button class="ptab-add-btn" onclick="openQuickRefuelModal()">＋ Añadir repostaje</button>`;
-
-  if (!data || !data.length) {
-    document.getElementById('pstat-repostajes').textContent = '0';
-    document.getElementById('pstat-gasto').textContent = '0€';
-    scroll.innerHTML = addBtn + `<div class="empty-state">
-      <div class="empty-state-icon">🧾</div>
-      Aún no tienes repostajes registrados.<br>
-      <span style="font-size:12px;margin-top:8px;display:block">Pulsa ⛽ Repostar en una gasolinera o el botón de arriba.</span>
-    </div>`;
-    return;
-  }
-
-  let totalGasto = 0;
-  data.forEach(r => { totalGasto += (r.total_cost || 0); });
-  document.getElementById('pstat-repostajes').textContent = data.length;
-  document.getElementById('pstat-gasto').textContent = totalGasto.toFixed(0) + '€';
-
-  const items = data.map(r => {
-    const dateStr   = fmtDate(r.refueled_at);
-    const total     = r.total_cost        ? r.total_cost.toFixed(2) + '€'        : '—';
-    const liters    = r.liters            ? r.liters.toFixed(1) + 'L'            : '—';
-    const price     = r.price_per_liter   ? r.price_per_liter.toFixed(3) + '€/L' : '—';
-    const fuelLabel = FUEL_MAP[r.fuel_type]?.label || r.fuel_type || '—';
-    // CORREGIDO: no usar JSON en onclick, usar data attributes
-    const safeId    = escHtml(r.id);
-    const safeName  = escHtml(r.station_name || 'Gasolinera');
-    const kmRef     = r.km_at_refuel || 0;
-    const safeDate  = escHtml(r.refueled_at);
-
-    let durationHTML = '';
-    if (r.emptied_at) {
-      const days = Math.max(0, Math.round((new Date(r.emptied_at) - new Date(r.refueled_at)) / 86400000));
-      let kmStr = '';
-      if (r.km_at_refuel && r.km_when_empty && r.km_when_empty > r.km_at_refuel) {
-        kmStr = ` · 📏 ${Math.round(r.km_when_empty - r.km_at_refuel)} km`;
-      }
-      durationHTML = `<div class="duration-badge">⏱ ${days} día${days!==1?'s':''} de autonomía${kmStr} · Vacío: ${fmtDate(r.emptied_at)}</div>`;
-    } else {
-      durationHTML = `<button class="btn-empty-tank"
-        data-id="${safeId}"
-        data-name="${safeName}"
-        data-km="${kmRef}"
-        data-date="${safeDate}"
-        onclick="openTankEmptyModalFromBtn(this)">🪫 ¿Se vació el depósito?</button>`;
-    }
-
-    return `<div class="history-item">
-      <div class="hi-top">
-        <div style="flex:1;min-width:0;">
-          <div class="hi-name">${safeName}</div>
-          <div class="hi-meta">${fuelLabel} · ${liters} · ${price} · ${dateStr}</div>
-          ${durationHTML}
-        </div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;">
-          <div class="hi-price">${total}</div>
-          <button class="hi-delete" data-id="${safeId}" onclick="deleteRefuel(this.dataset.id)">🗑</button>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
-
-  scroll.innerHTML = addBtn + items;
-}
-
-// ════════════════════════════════════════════════════════════
-//  FAVORITAS
-// ════════════════════════════════════════════════════════════
-async function renderFavoritas(scroll) {
-  const { data, error } = await sb
-    .from('favorites')
-    .select('*')
-    .eq('user_id', currentUser.id)
-    .order('created_at', { ascending: false })
-    .limit(100);
-
-  if (error) throw new Error('Supabase: ' + error.message);
-
-  document.getElementById('pstat-favoritas').textContent = data?.length || 0;
-
-  if (!data || !data.length) {
-    scroll.innerHTML = `<div class="empty-state"><div class="empty-state-icon">⭐</div>Aún no has guardado favoritas.<br><span style="font-size:12px;margin-top:8px;display:block">Pulsa ☆ en cualquier gasolinera de la lista.</span></div>`;
-    return;
-  }
-
-  // CORREGIDO: guardar datos en un mapa JS en lugar de JSON en onclick
-  favDataMap.clear();
-  data.forEach(f => favDataMap.set(f.ideess, f));
-
-  scroll.innerHTML = data.map(f => `
-    <div class="history-item">
-      <div class="hi-top">
-        <div>
-          <div class="hi-name">⭐ ${escHtml(f.station_name)}</div>
-          <div class="hi-meta">📍 ${escHtml(f.station_address || '')}${f.municipio ? ' · ' + escHtml(f.municipio) : ''}</div>
-        </div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
-          <button class="btn-refuel-card" data-ideess="${escHtml(f.ideess)}" onclick="openRefuelModalFromFavKey(this.dataset.ideess)">⛽ Repostar</button>
-          <button class="hi-delete" data-ideess="${escHtml(f.ideess)}" onclick="deleteFavorite(this.dataset.ideess)">🗑</button>
-        </div>
-      </div>
-    </div>`).join('');
-}
-
-// ════════════════════════════════════════════════════════════
-//  ALERTAS
-// ════════════════════════════════════════════════════════════
-async function renderAlertas(scroll) {
-  const { data, error } = await sb
-    .from('price_alerts')
-    .select('*')
-    .eq('user_id', currentUser.id)
-    .eq('is_active', true)
-    .order('created_at', { ascending: false })
-    .limit(100);
-
-  if (error) throw new Error('Supabase: ' + error.message);
-
-  if (!data || !data.length) {
-    scroll.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🔔</div>No tienes alertas activas.<br><span style="font-size:12px;margin-top:8px;display:block">Pulsa 🔔 en cualquier gasolinera de la lista.</span></div>`;
-    return;
-  }
-  scroll.innerHTML = data.map(a => {
-    const fuelLabel = FUEL_MAP[a.fuel_type]?.label || a.fuel_type;
-    return `<div class="alert-item">
-      <div class="alert-item-info">
-        <div class="alert-item-name">🔔 ${escHtml(a.station_name)}</div>
-        <div class="alert-item-detail">${fuelLabel} — Avisar si baja de</div>
-      </div>
-      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
-        <div class="alert-item-price">${a.target_price.toFixed(3)} €/L</div>
-        <button class="alert-delete" data-id="${escHtml(a.id)}" onclick="deleteAlert(this.dataset.id)">🗑</button>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-// ════════════════════════════════════════════════════════════
-//  FAVORITOS
-// ════════════════════════════════════════════════════════════
-async function loadFavorites() {
-  if (!currentUser) return;
-  const { data, error } = await sb
-    .from('favorites')
-    .select('ideess')
-    .eq('user_id', currentUser.id);
-  if (error) { console.error('Error cargando favoritos:', error.message); return; }
-  favorites = new Set((data || []).map(f => f.ideess));
-}
-
-async function toggleFavorite(i, btn) {
-  if (!currentUser) { openAuthModal(); return; }
-  const s      = filteredStations[i];
-  const ideess = getIdeess(s);
-
-  if (favorites.has(ideess)) {
-    const { error } = await sb.from('favorites').delete()
-      .eq('user_id', currentUser.id).eq('ideess', ideess);
-    if (error) { console.error(error); return; }
-    favorites.delete(ideess);
-    btn.textContent = '☆'; btn.classList.remove('saved');
-  } else {
-    const { error } = await sb.from('favorites').upsert({
-      user_id: currentUser.id, ideess,
-      station_name:    s.Rótulo    || 'Gasolinera',
-      station_address: s.Dirección || '',
-      municipio:       s.Municipio || '',
-      lat: s.lat || null, lng: s.lng || null,
-      fuel_type: activeFuel
-    }, { onConflict: 'user_id,ideess' });
-    if (error) { console.error(error); return; }
-    favorites.add(ideess);
-    btn.textContent = '★'; btn.classList.add('saved');
-  }
-}
-
-async function deleteFavorite(ideess) {
-  await sb.from('favorites').delete().eq('user_id', currentUser.id).eq('ideess', ideess);
-  favorites.delete(ideess);
-  loadProfileData();
-  if (allStations.length) renderList();
-}
-
-// ════════════════════════════════════════════════════════════
-//  REFUEL MODAL
-// ════════════════════════════════════════════════════════════
-function openRefuelModal(i) {
-  if (!currentUser) { openAuthModal(); return; }
-  refuelTarget = filteredStations[i];
-  document.getElementById('refuel-date-display').textContent = fmtDateTime(new Date());
-  document.getElementById('refuel-station-name').textContent = refuelTarget.Rótulo || 'Gasolinera';
-  document.getElementById('refuel-station-addr').textContent = `📍 ${refuelTarget.Dirección || ''} · ${refuelTarget.Municipio || ''}`;
-  const price = refuelTarget.prices[activeFuel];
-  document.getElementById('refuel-price').value  = price ? price.toFixed(3) : '';
-  document.getElementById('refuel-fuel').value   = activeFuel;
-  document.getElementById('refuel-liters').value = '';
-  document.getElementById('refuel-km').value     = '';
-  const msgEl = document.getElementById('refuel-msg');
-  msgEl.className = 'auth-msg'; msgEl.textContent = '';
-  document.getElementById('refuel-preview').classList.remove('visible');
-  document.getElementById('refuel-modal').classList.add('open');
-}
-
-// CORREGIDO: toma el ideess como clave y busca en el mapa de datos
-function openRefuelModalFromFavKey(ideess) {
-  const fav = favDataMap.get(ideess);
-  if (!fav) return;
-  refuelTarget = {
-    Rótulo:    fav.station_name,
-    Dirección: fav.station_address,
-    Municipio: fav.municipio,
-    lat:       fav.lat,
-    lng:       fav.lng,
-    IDEESS:    fav.ideess,
-    prices:    {}
-  };
-  document.getElementById('refuel-date-display').textContent = fmtDateTime(new Date());
-  document.getElementById('refuel-station-name').textContent = fav.station_name;
-  document.getElementById('refuel-station-addr').textContent = `📍 ${fav.station_address || ''} · ${fav.municipio || ''}`;
-  document.getElementById('refuel-price').value  = '';
-  document.getElementById('refuel-fuel').value   = fav.fuel_type || 'gasolina95';
-  document.getElementById('refuel-liters').value = '';
-  document.getElementById('refuel-km').value     = '';
-  const msgEl = document.getElementById('refuel-msg');
-  msgEl.className = 'auth-msg'; msgEl.textContent = '';
-  document.getElementById('refuel-preview').classList.remove('visible');
-  document.getElementById('refuel-modal').classList.add('open');
-}
-
-function closeRefuelModal() { document.getElementById('refuel-modal').classList.remove('open'); }
-
-function updateRefuelPreview() {
-  const price  = parseNum(document.getElementById('refuel-price').value);
-  const liters = parseNum(document.getElementById('refuel-liters').value);
-  const preview = document.getElementById('refuel-preview');
-  if (!isNaN(price) && !isNaN(liters) && price > 0 && liters > 0) {
-    document.getElementById('refuel-total-val').textContent = (price * liters).toFixed(2) + ' €';
-    preview.classList.add('visible');
-  } else {
-    preview.classList.remove('visible');
-  }
-}
-
-async function saveRefuel() {
-  if (!currentUser || !refuelTarget) return;
-  const price  = parseNum(document.getElementById('refuel-price').value);
-  const liters = parseNum(document.getElementById('refuel-liters').value);
-  const km     = parseNum(document.getElementById('refuel-km').value);
-  const fuel   = document.getElementById('refuel-fuel').value;
-  const msgEl  = document.getElementById('refuel-msg');
-
-  if (isNaN(price) || isNaN(liters) || price <= 0 || liters <= 0) {
-    msgEl.className = 'auth-msg error';
-    msgEl.textContent = 'Introduce precio y litros válidos (usa punto o coma como decimal).';
-    return;
-  }
-  const ideess = getIdeess(refuelTarget);
-  const { error } = await sb.from('refuel_logs').insert({
-    user_id:         currentUser.id,
-    ideess,
-    station_name:    refuelTarget.Rótulo    || 'Gasolinera',
-    station_address: refuelTarget.Dirección || '',
-    municipio:       refuelTarget.Municipio || '',
-    lat:             refuelTarget.lat || null,
-    lng:             refuelTarget.lng || null,
-    fuel_type:       fuel,
-    price_per_liter: price,
-    liters,
-    total_cost:      price * liters,
-    km_at_refuel:    isNaN(km) ? null : km,
-    refueled_at:     nowIso()
-  });
-  if (error) {
-    msgEl.className = 'auth-msg error';
-    msgEl.textContent = 'Error al guardar: ' + error.message;
-    return;
-  }
-  msgEl.className = 'auth-msg success';
-  msgEl.textContent = '✅ Repostaje guardado.';
-  setTimeout(() => {
-    closeRefuelModal();
-    if (document.getElementById('profile-panel').classList.contains('open')) loadProfileData();
-  }, 800);
-}
-
-async function deleteRefuel(id) {
-  await sb.from('refuel_logs').delete().eq('id', id).eq('user_id', currentUser.id);
-  loadProfileData();
-}
-
-// ════════════════════════════════════════════════════════════
-//  QUICK REFUEL MODAL
-// ════════════════════════════════════════════════════════════
-function openQuickRefuelModal() {
-  if (!currentUser) { openAuthModal(); return; }
-  document.getElementById('qr-date-display').textContent = fmtDateTime(new Date());
-  document.getElementById('qr-station').value = '';
-  document.getElementById('qr-fuel').value    = 'gasolina95';
-  document.getElementById('qr-price').value   = '';
-  document.getElementById('qr-liters').value  = '';
-  document.getElementById('qr-km').value      = '';
-  const msgEl = document.getElementById('qr-msg');
-  msgEl.className = 'auth-msg'; msgEl.textContent = '';
-  document.getElementById('qr-preview').classList.remove('visible');
-  document.getElementById('quick-refuel-modal').classList.add('open');
-  setTimeout(() => document.getElementById('qr-station').focus(), 100);
-}
-function closeQuickRefuelModal() { document.getElementById('quick-refuel-modal').classList.remove('open'); }
-
-function updateQRPreview() {
-  const price  = parseNum(document.getElementById('qr-price').value);
-  const liters = parseNum(document.getElementById('qr-liters').value);
-  const preview = document.getElementById('qr-preview');
-  if (!isNaN(price) && !isNaN(liters) && price > 0 && liters > 0) {
-    document.getElementById('qr-total-val').textContent = (price * liters).toFixed(2) + ' €';
-    preview.classList.add('visible');
-  } else {
-    preview.classList.remove('visible');
-  }
-}
-
-async function saveQuickRefuel() {
-  if (!currentUser) return;
-  const station = document.getElementById('qr-station').value.trim();
-  const fuel    = document.getElementById('qr-fuel').value;
-  const price   = parseNum(document.getElementById('qr-price').value);
-  const liters  = parseNum(document.getElementById('qr-liters').value);
-  const km      = parseNum(document.getElementById('qr-km').value);
-  const msgEl   = document.getElementById('qr-msg');
-
-  if (!station) {
-    msgEl.className = 'auth-msg error'; msgEl.textContent = 'Introduce el nombre de la gasolinera.'; return;
-  }
-  if (isNaN(price) || isNaN(liters) || price <= 0 || liters <= 0) {
-    msgEl.className = 'auth-msg error'; msgEl.textContent = 'Introduce precio y litros válidos.'; return;
-  }
-
-  const { error } = await sb.from('refuel_logs').insert({
-    user_id:         currentUser.id,
-    ideess:          'manual_' + Date.now(),
-    station_name:    station,
-    station_address: '', municipio: '',
-    lat: null, lng: null,
-    fuel_type:       fuel,
-    price_per_liter: price,
-    liters,
-    total_cost:      price * liters,
-    km_at_refuel:    isNaN(km) ? null : km,
-    refueled_at:     nowIso()
-  });
-
-  if (error) {
-    msgEl.className = 'auth-msg error'; msgEl.textContent = 'Error: ' + error.message; return;
-  }
-  msgEl.className = 'auth-msg success'; msgEl.textContent = '✅ Repostaje guardado.';
-  setTimeout(() => { closeQuickRefuelModal(); loadProfileData(); }, 800);
-}
-
-// ════════════════════════════════════════════════════════════
-//  TANK EMPTY MODAL
-// ════════════════════════════════════════════════════════════
-// CORREGIDO: recibe datos desde dataset del botón en lugar de argumentos con escapes
-function openTankEmptyModalFromBtn(btn) {
-  const id   = btn.dataset.id;
-  const name = btn.dataset.name;
-  const km   = parseFloat(btn.dataset.km) || null;
-  const date = btn.dataset.date;
-  openTankEmptyModal(id, name, km, date);
-}
-
-function openTankEmptyModal(refuelId, stationName, kmAtRefuel, refueledAt) {
-  tankEmptyTarget = { id: refuelId, kmAtRefuel: kmAtRefuel || null, refueledAt };
-  const refDate   = new Date(refueledAt);
-  const now       = new Date();
-  const daysSince = Math.max(0, Math.round((now - refDate) / 86400000));
-  const daysText  = daysSince === 0 ? 'Hoy mismo' : `Han pasado ${daysSince} día${daysSince!==1?'s':''}`;
-  document.getElementById('te-date-display').textContent = fmtDateTime(now);
-  document.getElementById('te-station-sub').textContent  = stationName || 'Depósito';
-  document.getElementById('te-days-info').textContent    = `⛽ Desde ${fmtDate(refueledAt)} — ${daysText} desde el último repostaje`;
-  document.getElementById('te-km').value                 = '';
-  const msgEl = document.getElementById('te-msg');
-  msgEl.className = 'auth-msg'; msgEl.textContent = '';
-  document.getElementById('te-preview').classList.remove('visible');
-  document.getElementById('tank-empty-modal').classList.add('open');
-}
-
-function updateTEPreview() {
-  if (!tankEmptyTarget) return;
-  const km      = parseNum(document.getElementById('te-km').value);
-  const preview = document.getElementById('te-preview');
-  if (!isNaN(km) && tankEmptyTarget.kmAtRefuel && km > tankEmptyTarget.kmAtRefuel) {
-    document.getElementById('te-km-val').textContent = `${Math.round(km - tankEmptyTarget.kmAtRefuel)} km recorridos`;
-    preview.classList.add('visible');
-  } else {
-    preview.classList.remove('visible');
-  }
-}
-function closeTankEmptyModal() { document.getElementById('tank-empty-modal').classList.remove('open'); }
-
-async function saveTankEmpty() {
-  if (!currentUser || !tankEmptyTarget) return;
-  const km    = parseNum(document.getElementById('te-km').value);
-  const msgEl = document.getElementById('te-msg');
-
-  const { error } = await sb
-    .from('refuel_logs')
-    .update({ emptied_at: nowIso(), km_when_empty: isNaN(km) ? null : km })
-    .eq('id', tankEmptyTarget.id)
-    .eq('user_id', currentUser.id);
-
-  if (error) {
-    msgEl.className = 'auth-msg error'; msgEl.textContent = 'Error: ' + error.message; return;
-  }
-  msgEl.className = 'auth-msg success'; msgEl.textContent = '🪫 Depósito marcado como vacío.';
-  setTimeout(() => { closeTankEmptyModal(); loadProfileData(); }, 800);
-}
-
-// ════════════════════════════════════════════════════════════
-//  PRICE ALERTS
-// ════════════════════════════════════════════════════════════
-function openAlertModal(i) {
-  if (!currentUser) { openAuthModal(); return; }
-  alertTarget = filteredStations[i];
-  document.getElementById('alert-station-name-sub').textContent = alertTarget.Rótulo || 'Gasolinera';
-  document.getElementById('alert-fuel').value  = activeFuel;
-  document.getElementById('alert-price').value = '';
-  const msgEl = document.getElementById('alert-msg');
-  msgEl.className = 'auth-msg'; msgEl.textContent = '';
-  document.getElementById('alert-modal').classList.add('open');
-}
-function closeAlertModal() { document.getElementById('alert-modal').classList.remove('open'); }
-
-async function saveAlert() {
-  if (!currentUser || !alertTarget) return;
-  const fuel   = document.getElementById('alert-fuel').value;
-  const target = parseNum(document.getElementById('alert-price').value);
-  const msgEl  = document.getElementById('alert-msg');
-  if (isNaN(target) || target <= 0) {
-    msgEl.className = 'auth-msg error'; msgEl.textContent = 'Introduce un precio válido (ej. 1.400).'; return;
-  }
-  const ideess = getIdeess(alertTarget);
-  const { error } = await sb.from('price_alerts').upsert({
-    user_id:         currentUser.id,
-    ideess,
-    station_name:    alertTarget.Rótulo    || 'Gasolinera',
-    station_address: alertTarget.Dirección || '',
-    fuel_type:       fuel,
-    target_price:    target,
-    is_active:       true
-  }, { onConflict: 'user_id,ideess,fuel_type' });
-  if (error) {
-    msgEl.className = 'auth-msg error'; msgEl.textContent = 'Error: ' + error.message; return;
-  }
-  msgEl.className = 'auth-msg success'; msgEl.textContent = '✅ Alerta activada.';
-  setTimeout(closeAlertModal, 1400);
-}
-
-async function deleteAlert(id) {
-  await sb.from('price_alerts').delete().eq('id', id).eq('user_id', currentUser.id);
-  loadProfileData();
-}
-
-// ════════════════════════════════════════════════════════════
-//  AUTH STATE LISTENER
-// ════════════════════════════════════════════════════════════
-sb.auth.onAuthStateChange(async (event, session) => {
-  try {
-    currentUser = session?.user || null;
-    if (currentUser && event === 'SIGNED_IN') {
-      const authModal = document.getElementById('auth-modal');
-      if (authModal && authModal.classList.contains('open')) closeAuthModal();
-    }
-    updateAuthButton();
-    if (currentUser) {
-      await loadFavorites();
-      if (allStations.length) renderList();
-    } else {
-      favorites.clear();
-      favDataMap.clear();
-      if (allStations.length) renderList();
-    }
-  } catch(err) {
-    console.error('Auth state error:', err);
-  }
-});
-
-// Cerrar modales al clicar fuera
-['auth-modal','refuel-modal','quick-refuel-modal','tank-empty-modal','alert-modal'].forEach(id => {
-  const el = document.getElementById(id);
-  if (el) el.addEventListener('click', e => {
-    if (e.target === e.currentTarget) el.classList.remove('open');
-  });
-});
-
-// Enter en formularios
-document.getElementById('auth-password').addEventListener('keydown', e => { if (e.key === 'Enter') doAuth(); });
-document.getElementById('auth-email').addEventListener('keydown',    e => { if (e.key === 'Enter') doAuth(); });
-document.getElementById('auth-name').addEventListener('keydown',     e => { if (e.key === 'Enter') doAuth(); });
-document.getElementById('qr-station').addEventListener('keydown',    e => { if (e.key === 'Enter') document.getElementById('qr-price').focus(); });
-document.getElementById('refuel-price').addEventListener('keydown',  e => { if (e.key === 'Enter') document.getElementById('refuel-liters').focus(); });
-document.getElementById('refuel-liters').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('refuel-km').focus(); });
-document.getElementById('qr-price').addEventListener('keydown',      e => { if (e.key === 'Enter') document.getElementById('qr-liters').focus(); });
-
-// ════════════════════════════════════════════════════════════
-//  INIT
-// ════════════════════════════════════════════════════════════
-try {
-  initMap();
-  loadProvincias();
-  if (isMobile()) toggleSearch();
-  setTimeout(checkVerificationCallback, 200);
-} catch(err) {
-  console.error('Init error:', err);
-  // Si el init falla, al menos mostramos provincias
-  try { poblarProvincias(PROVINCIAS_FALLBACK); showApiOfflineBanner(); } catch(_) {}
-}
-</script>
+<script src="pepe.js"></script>
+<script src="juice.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
