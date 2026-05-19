@@ -131,19 +131,23 @@ header {
 .search-title-icon { width: 30px; height: 30px; background: var(--green-pale); border-radius: 9px; display: flex; align-items: center; justify-content: center; color: var(--green-1); border: 1px solid var(--border-g); }
 .chevron { font-size: 10px; color: var(--ink-4); transition: transform .3s; margin-left: 2px; }
 
-.locate-panel { padding: 14px; }
+.search-body.collapsed { display: none; }
+.search-body-inner { padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
+.locate-row { display: flex; align-items: center; gap: 10px; }
+.locate-panel { display: contents; }
 .locate-btn {
-  width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;
-  background: var(--green-1); border: none; color: white;
-  font-family: var(--font-body); font-size: 15px; font-weight: 700;
-  padding: 15px 20px; border-radius: 14px; cursor: pointer;
-  transition: all 0.18s ease;
-  box-shadow: 0 2px 8px rgba(30,107,75,0.22);
-  letter-spacing: -0.2px;
+  display: inline-flex; align-items: center; gap: 7px; flex-shrink: 0;
+  background: var(--green-pale); border: 1.5px solid var(--border-g);
+  color: var(--green-1); font-family: var(--font-body);
+  font-size: 13px; font-weight: 700; padding: 9px 16px;
+  border-radius: var(--r-full); cursor: pointer; transition: all 0.18s ease;
+  white-space: nowrap;
 }
-.locate-btn:hover:not(:disabled) { background: #175a3d; box-shadow: 0 4px 16px rgba(30,107,75,0.32); transform: translateY(-1px); }
-.locate-btn:active:not(:disabled) { transform: translateY(0) scale(0.99); box-shadow: 0 1px 4px rgba(30,107,75,0.18); }
+.locate-btn:hover:not(:disabled) { background: var(--green-1); color: white; border-color: var(--green-1); box-shadow: var(--shadow-g); }
+.locate-btn:active:not(:disabled) { transform: scale(0.98); }
 .locate-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+.or-sep { font-size: 11px; font-weight: 700; color: var(--ink-4); flex-shrink: 0; }
+.selects-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .location-status {
   display: flex; align-items: center; gap: 10px;
   padding: 12px 14px; background: var(--green-pale);
@@ -737,7 +741,9 @@ button:active:not(:disabled),
   #map-container.active { display: block; }
   .sidebar.map-active { display: none; }
   .search-panel { padding: 9px 10px 0; }
-  .selects-row  { grid-template-columns: 1fr; gap: 7px; }
+  .selects-row { grid-template-columns: 1fr; gap: 7px; }
+  .locate-row { flex-wrap: wrap; }
+  .or-sep { display: none; }
   .stations-scroll { padding: 8px 6px 90px 8px; }
   .donate-float { bottom: calc(var(--tab-h) + 76px) !important; right: 14px !important; }
   .tab-bar { display: flex; position: fixed; bottom: 0; left: 0; right: 0; height: var(--tab-h); background: var(--glass); backdrop-filter: blur(20px) saturate(180%); border-top: 1px solid var(--border); z-index: 200; padding-bottom: env(safe-area-inset-bottom, 0); }
@@ -926,22 +932,55 @@ button:active:not(:disabled),
 
     <div class="search-panel">
       <div class="search-card" id="search-card">
-        <div id="locate-panel" class="locate-panel">
-          <button class="locate-btn" id="locate-btn" onclick="usarMiUbicacion()">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>
-            </svg>
-            <span id="locate-text">Encontrar gasolineras</span>
-          </button>
-        </div>
-        <div id="location-status" class="location-status" style="display:none">
-          <div class="location-status-dot"></div>
-          <div class="location-status-text">
-            <span id="location-city">Tu ubicación</span>
-            <span class="location-status-sep">·</span>
-            <span id="location-fuel-label">Gasolina 95</span>
+        <div class="search-card-header" onclick="toggleSearch()">
+          <div class="search-title">
+            <div class="search-title-icon">⛽</div>
+            Buscar gasolineras
+            <span id="search-chevron" class="chevron">▼</span>
           </div>
-          <button class="location-change-btn" onclick="resetLocation()">Cambiar</button>
+        </div>
+        <div id="search-body">
+          <div class="search-body-inner">
+            <div class="locate-row">
+              <div id="locate-panel" class="locate-panel">
+                <button class="locate-btn" id="locate-btn" onclick="usarMiUbicacion()">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+                  <span id="locate-text">Ubicarme</span>
+                </button>
+              </div>
+              <span class="or-sep">o busca manualmente:</span>
+            </div>
+            <div class="selects-row">
+              <div class="select-wrap">
+                <span class="select-icon">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
+                </span>
+                <select id="sel-prov" onchange="onProvinciaChange()">
+                  <option value="">Provincia</option>
+                </select>
+              </div>
+              <div class="select-wrap">
+                <span class="select-icon">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/></svg>
+                </span>
+                <select id="sel-mun" disabled>
+                  <option value="">Municipio</option>
+                </select>
+              </div>
+            </div>
+            <button class="btn-search" onclick="buscarPorMunicipio()">
+              🔍 Buscar gasolineras
+            </button>
+          </div>
+          <div id="location-status" class="location-status" style="display:none">
+            <div class="location-status-dot"></div>
+            <div class="location-status-text">
+              <span id="location-city">Tu ubicación</span>
+              <span class="location-status-sep">·</span>
+              <span id="location-fuel-label">Gasolina 95</span>
+            </div>
+            <button class="location-change-btn" onclick="resetLocation()">Cambiar</button>
+          </div>
         </div>
       </div>
     </div>
