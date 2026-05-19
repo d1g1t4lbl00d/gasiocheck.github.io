@@ -540,6 +540,7 @@ function processStations(raw) {
   renderAll();
   document.getElementById('stats-bar').classList.add('visible');
   document.getElementById('filter-bar').classList.add('visible');
+  document.getElementById('fuel-filter')?.classList.remove('chips-collapsed');
   if (!currentUser) document.getElementById('upsell-banner').classList.add('visible');
   // Pepe celebrates
   const prices = filteredStations.map(s => s.prices[activeFuel]).filter(Boolean);
@@ -768,12 +769,20 @@ function resetLocation() {
 
 // ────────── FILTROS / ORDEN ──────────
 function toggleFuel(el) {
+  const chipsEl = document.getElementById('fuel-filter');
+  // Collapsed + tapping active chip → re-expand all
+  if (chipsEl?.classList.contains('chips-collapsed') && el.classList.contains('active')) {
+    chipsEl.classList.remove('chips-collapsed');
+    return;
+  }
   document.querySelectorAll('.fuel-chip').forEach(c => c.classList.remove('active'));
   el.classList.add('active');
   activeFuel = el.dataset.fuel;
   const fuelLabel = document.getElementById('location-fuel-label');
   if (fuelLabel) fuelLabel.textContent = FUEL_MAP[activeFuel]?.label || '';
   if (allStations.length) renderAll();
+  // Collapse non-active chips after brief pause
+  setTimeout(() => chipsEl?.classList.add('chips-collapsed'), 550);
 }
 function setSortMode(mode, btn) {
   sortMode = mode;
