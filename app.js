@@ -177,6 +177,8 @@ const favDataMap = new Map();
 let allStations = [], filteredStations = [], provinciasData = [];
 let autocompleteResults = [];
 let autocompleteTimer = null;
+let autocompleteCtrl = null;
+let autocompleteHighlight = -1;
 let activeFuel = 'gasolina95', sortMode = 'precio';
 let mapInstance = null, markersLayer = null;
 let selectedCard = null, userPos = null;
@@ -384,24 +386,65 @@ async function buscarPorTexto() {
 
 function onSearchTextInput(val) {
   clearTimeout(autocompleteTimer);
+  autocompleteCtrl?.abort();
   const q = val.trim();
   if (q.length < 2) { hideAutocomplete(); return; }
   autocompleteTimer = setTimeout(async () => {
+    autocompleteCtrl = new AbortController();
     try {
       const r = await fetch(
         `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&countrycodes=es&limit=6&accept-language=es`,
-        { headers: { Accept: 'application/json' } }
+        { headers: { Accept: 'application/json' }, signal: autocompleteCtrl.signal }
       );
       if (!r.ok) return;
       const results = await r.json();
       if (!results.length) { hideAutocomplete(); return; }
       autocompleteResults = results;
       showAutocomplete(results);
-    } catch {}
+    } catch(e) {
+      if (e.name !== 'AbortError') hideAutocomplete();
+    }
   }, 320);
 }
 
+function onSearchTextKeydown(e) {
+  const el = document.getElementById('search-suggestions');
+  const visible = el && el.style.display !== 'none';
+  if (e.key === 'Enter') {
+    if (visible && autocompleteHighlight >= 0) {
+      e.preventDefault();
+      selectSuggestion(autocompleteHighlight);
+    } else {
+      buscarPorTexto();
+    }
+    return;
+  }
+  if (!visible) return;
+  const items = el.querySelectorAll('.search-suggestion');
+  if (!items.length) return;
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    setAutocompleteHighlight((autocompleteHighlight + 1) % items.length, items);
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    setAutocompleteHighlight((autocompleteHighlight - 1 + items.length) % items.length, items);
+  } else if (e.key === 'Escape') {
+    hideAutocomplete();
+  }
+}
+
+function setAutocompleteHighlight(idx, items) {
+  items.forEach((item, i) => item.classList.toggle('highlighted', i === idx));
+  autocompleteHighlight = idx;
+  const r = autocompleteResults[idx];
+  if (r) {
+    const input = document.getElementById('search-text');
+    if (input) input.value = r.display_name.split(',')[0].trim();
+  }
+}
+
 function showAutocomplete(results) {
+  autocompleteHighlight = -1;
   let el = document.getElementById('search-suggestions');
   if (!el) {
     el = document.createElement('div');
@@ -425,11 +468,13 @@ function showAutocomplete(results) {
 }
 
 function hideAutocomplete() {
+  autocompleteHighlight = -1;
   const el = document.getElementById('search-suggestions');
   if (el) el.style.display = 'none';
 }
 
 function selectSuggestion(i) {
+  autocompleteHighlight = -1;
   const r = autocompleteResults[i];
   if (!r) return;
   const name = r.display_name.split(',')[0].trim();
@@ -503,7 +548,6 @@ async function getIdProvinciaDesdeCoords(lat, lng) {
       `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=es`,
       { signal: ctrl.signal }
     );
-    clearTimeout(t);
     const d = await r.json();
     const addr = d.address || {};
     const cityName = addr.city || addr.town || addr.village || addr.municipality || addr.county || '';
@@ -516,8 +560,10 @@ async function getIdProvinciaDesdeCoords(lat, lng) {
       });
       if (found) return { id: found.id, cityName };
     }
-  } catch {}
-  clearTimeout(t);
+  } catch {
+  } finally {
+    clearTimeout(t);
+  }
   return null;
 }
 
@@ -1435,7 +1481,7 @@ if (document.readyState === 'loading') {
 // Expose to global for inline handlers
 Object.assign(window, {
   onProvinciaChange, buscarPorMunicipio, buscarPorTexto, buscarPorCoords, usarMiUbicacion, retryLastSearch,
-  onSearchTextInput, hideAutocomplete, selectSuggestion,
+  onSearchTextInput, onSearchTextKeydown, hideAutocomplete, selectSuggestion,
   toggleFuel, setSortMode, toggleSearch, switchTab,
   toggleTooltip, closeTooltip,
   switchAuthTab, openAuthModal, closeAuthModal, doAuth, doLogout, handleAuthBtn,
