@@ -131,80 +131,48 @@ header {
 .search-title-icon { width: 30px; height: 30px; background: var(--green-pale); border-radius: 9px; display: flex; align-items: center; justify-content: center; color: var(--green-1); border: 1px solid var(--border-g); }
 .chevron { font-size: 10px; color: var(--ink-4); transition: transform .3s; margin-left: 2px; }
 
+.locate-panel { padding: 14px; }
 .locate-btn {
-  display: flex; align-items: center; gap: 8px;
-  background: linear-gradient(135deg, #0b4d30, #1E6B4B, #2E8B57, #164d2e);
-  background-size: 250% 250%;
-  border: none; color: white; font-family: var(--font-body);
-  font-size: 12.5px; font-weight: 800; padding: 9px 17px;
-  border-radius: var(--r-full); cursor: pointer;
-  position: relative; overflow: visible;
-  box-shadow: 0 0 0 0 rgba(30,107,75,0.5), 0 4px 14px rgba(30,107,75,0.35);
-  animation: orb-bg 5s ease-in-out infinite, orb-aura-idle 2.8s ease-in-out infinite;
-  transition: transform .2s cubic-bezier(0.34,1.56,0.64,1), filter .2s;
-  white-space: nowrap; letter-spacing: 0.1px;
+  width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;
+  background: var(--green-1); border: none; color: white;
+  font-family: var(--font-body); font-size: 15px; font-weight: 700;
+  padding: 15px 20px; border-radius: 14px; cursor: pointer;
+  transition: all 0.18s ease;
+  box-shadow: 0 2px 8px rgba(30,107,75,0.22);
+  letter-spacing: -0.2px;
 }
-.locate-btn::before {
-  content: '';
-  position: absolute;
-  inset: -4px;
-  border-radius: 100px;
-  background: conic-gradient(from 0deg, rgba(30,107,75,0), rgba(80,200,120,0.5), rgba(30,107,75,0), rgba(80,200,120,0.4), rgba(30,107,75,0));
-  z-index: -1;
-  animation: orb-ring 3s linear infinite;
-  opacity: 0;
-  transition: opacity .3s;
+.locate-btn:hover:not(:disabled) { background: #175a3d; box-shadow: 0 4px 16px rgba(30,107,75,0.32); transform: translateY(-1px); }
+.locate-btn:active:not(:disabled) { transform: translateY(0) scale(0.99); box-shadow: 0 1px 4px rgba(30,107,75,0.18); }
+.locate-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+.location-status {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 14px; background: var(--green-pale);
+  border-top: 1px solid var(--border-g);
 }
-.locate-btn:hover::before { opacity: 1; }
-.locate-btn:hover { transform: translateY(-2px) scale(1.04); filter: brightness(1.1); }
-.locate-btn:active { transform: translateY(1px) scale(0.97); }
-.locate-btn:disabled { opacity:.7; cursor:not-allowed; animation: none; }
-.locate-btn.searching {
-  animation: orb-bg 1.5s ease-in-out infinite, orb-aura-pulse 0.9s ease-in-out infinite;
+.location-status-dot {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--green-1);
+  flex-shrink: 0; box-shadow: 0 0 0 3px rgba(30,107,75,0.18);
 }
-.locate-btn.searching::before { opacity: 1; animation: orb-ring 1.2s linear infinite; }
-.orb-icon {
-  width: 16px; height: 16px; position: relative; flex-shrink: 0;
-  filter: drop-shadow(0 0 4px rgba(255,255,255,0.8));
+.location-status-text {
+  flex: 1; font-size: 13px; font-weight: 600; color: var(--ink);
+  display: flex; align-items: center; gap: 5px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;
 }
-.orb-core {
-  width: 10px; height: 10px; border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, rgba(255,255,255,0.95), rgba(180,255,210,0.5) 50%, rgba(255,255,255,0.15));
-  box-shadow: 0 0 6px rgba(255,255,255,0.9), 0 0 14px rgba(120,255,160,0.5);
-  animation: orb-core-pulse 2s ease-in-out infinite;
-  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+.location-status-sep { color: var(--ink-5); flex-shrink: 0; }
+.location-change-btn {
+  background: white; border: 1px solid var(--border-g); border-radius: var(--r-full);
+  padding: 5px 13px; font-size: 12px; font-weight: 700; color: var(--green-1);
+  cursor: pointer; flex-shrink: 0; font-family: var(--font-body);
+  transition: all .15s ease;
 }
-.orb-ring-inner {
-  width: 16px; height: 16px; border-radius: 50%;
-  border: 1.5px solid rgba(255,255,255,0.35);
-  position: absolute; top: 0; left: 0;
-  animation: orb-core-pulse 2s ease-in-out infinite 0.3s;
+.location-change-btn:hover { background: var(--green-1); color: white; border-color: var(--green-1); }
+.profile-logout-btn {
+  background: none; border: 1px solid rgba(200,68,58,0.35); color: var(--danger);
+  border-radius: var(--r-full); padding: 5px 13px; font-size: 12px; font-weight: 700;
+  cursor: pointer; font-family: var(--font-body); transition: all .15s ease;
 }
-@keyframes orb-bg {
-  0%,100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-}
-@keyframes orb-aura-idle {
-  0%,100% { box-shadow: 0 0 0 0 rgba(30,107,75,0.45), 0 4px 14px rgba(30,107,75,0.3); }
-  50% { box-shadow: 0 0 14px 4px rgba(30,107,75,0.35), 0 6px 20px rgba(30,107,75,0.4); }
-}
-@keyframes orb-aura-pulse {
-  0%,100% { box-shadow: 0 0 0 0 rgba(46,139,87,0.7), 0 4px 14px rgba(30,107,75,0.5); }
-  50% { box-shadow: 0 0 20px 8px rgba(46,139,87,0.25), 0 6px 24px rgba(30,107,75,0.55); }
-}
-@keyframes orb-ring {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-@keyframes orb-core-pulse {
-  0%,100% { transform: translate(-50%,-50%) scale(1); opacity: 1; }
-  50% { transform: translate(-50%,-50%) scale(1.35); opacity: 0.7; }
-}
-
-.search-body { display: grid; grid-template-rows: 1fr; transition: grid-template-rows .32s, opacity .25s; opacity: 1; }
-.search-body.collapsed { grid-template-rows: 0fr; opacity: 0; }
-.search-body-inner { overflow: hidden; padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 9px; }
-.selects-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.profile-logout-btn:hover { background: var(--danger); color: white; border-color: var(--danger); }
+.profile-header-top { display: flex; align-items: center; margin-bottom: 14px; }
 .select-wrap { position: relative; }
 .select-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--green-1); z-index: 1; display: flex; }
 select, input[type="text"], input[type="number"], input[type="password"] {
@@ -957,48 +925,23 @@ button:active:not(:disabled),
     </div>
 
     <div class="search-panel">
-      <div class="search-card">
-        <div class="search-card-header">
-          <div class="search-title" onclick="toggleSearch()">
-            <div class="search-title-icon">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2C7.58 2 4 5.58 4 10c0 5.25 7 12 8 12s8-6.75 8-12c0-4.42-3.58-8-8-8zm0 11a3 3 0 110-6 3 3 0 010 6z" fill="currentColor"/></svg>
-            </div>
-            ¿Dónde repostas?
-            <span class="chevron" id="search-chevron">▾</span>
-          </div>
+      <div class="search-card" id="search-card">
+        <div id="locate-panel" class="locate-panel">
           <button class="locate-btn" id="locate-btn" onclick="usarMiUbicacion()">
-            <span class="orb-icon" aria-hidden="true">
-              <span class="orb-ring-inner"></span>
-              <span class="orb-core"></span>
-            </span>
-            <span id="locate-text">Descubrir</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>
+            </svg>
+            <span id="locate-text">Encontrar gasolineras</span>
           </button>
         </div>
-        <div class="search-body" id="search-body">
-          <div class="search-body-inner">
-            <div class="selects-row">
-              <div class="select-wrap">
-                <span class="select-icon">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 2L3 5v17l6-3 6 3 6-3V2l-6 3-6-3z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 2v17M15 5v17" stroke="currentColor" stroke-width="2"/></svg>
-                </span>
-                <select id="sel-prov" onchange="onProvinciaChange()">
-                  <option value="">Provincia</option>
-                </select>
-              </div>
-              <div class="select-wrap">
-                <span class="select-icon">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 21V10l9-6 9 6v11" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 21v-7h6v7" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
-                </span>
-                <select id="sel-mun" disabled>
-                  <option value="">Municipio</option>
-                </select>
-              </div>
-            </div>
-            <button class="btn-search" onclick="buscarPorMunicipio()">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="white" stroke-width="2.5"/><path d="M21 21l-4.35-4.35" stroke="white" stroke-width="2.5" stroke-linecap="round"/></svg>
-              Buscar gasolineras
-            </button>
+        <div id="location-status" class="location-status" style="display:none">
+          <div class="location-status-dot"></div>
+          <div class="location-status-text">
+            <span id="location-city">Tu ubicación</span>
+            <span class="location-status-sep">·</span>
+            <span id="location-fuel-label">Gasolina 95</span>
           </div>
+          <button class="location-change-btn" onclick="resetLocation()">Cambiar</button>
         </div>
       </div>
     </div>
@@ -1034,7 +977,7 @@ button:active:not(:disabled),
         <div class="state-panel">
           <div class="state-icon-box" style="width:104px;height:104px;border-radius:28px;background:linear-gradient(145deg,#fff,var(--green-pale));border-color:var(--border-g);font-size:48px;color:var(--green-1)">⛽</div>
           <div class="state-title">Listo para ahorrar</div>
-          <div class="state-sub">Pulsa <b style="color:var(--green-1)">Ubicarme</b> o elige una provincia. Pepe te enseñará las gasolineras más baratas cerca de ti.</div>
+          <div class="state-sub">Pulsa <b style="color:var(--green-1)">Encontrar gasolineras</b> y Pepe te enseña las más baratas cerca de ti.</div>
         </div>
       </div>
     </div>
@@ -1046,7 +989,11 @@ button:active:not(:disabled),
 
   <div class="profile-panel" id="profile-panel">
     <div class="profile-header">
-      <button class="profile-close-btn" onclick="closeProfilePanel()">✕</button>
+      <div class="profile-header-top">
+        <button class="profile-close-btn" onclick="closeProfilePanel()">✕</button>
+        <div style="flex:1"></div>
+        <button class="profile-logout-btn" onclick="doLogout()">Cerrar sesión</button>
+      </div>
       <div class="profile-top">
         <div class="profile-avatar-lg" id="profile-avatar-lg">?</div>
         <div>
