@@ -420,7 +420,7 @@ function processStations(raw) {
   document.querySelectorAll('.sort-btn').forEach((b,i) => b.classList.toggle('active', i===0));
   renderAll();
   document.getElementById('stats-bar').classList.add('visible');
-  document.getElementById('sort-row').classList.add('visible');
+  document.getElementById('filter-bar').classList.add('visible');
   if (!currentUser) document.getElementById('upsell-banner').classList.add('visible');
   // Pepe celebrates
   const prices = filteredStations.map(s => s.prices[activeFuel]).filter(Boolean);
@@ -637,7 +637,7 @@ function resetLocation() {
   document.getElementById('location-status').style.display = 'none';
   if (!searchOpen) toggleSearch();
   document.getElementById('stats-bar').classList.remove('visible');
-  document.getElementById('sort-row').classList.remove('visible');
+  document.getElementById('filter-bar')?.classList.remove('visible');
   document.getElementById('upsell-banner')?.classList.remove('visible');
   hideCacheBanner();
   if (markersLayer) markersLayer.clearLayers();
