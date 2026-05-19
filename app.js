@@ -330,16 +330,15 @@ function usarMiUbicacion() {
 
   navigator.geolocation.getCurrentPosition(
     async function(pos) {
-      btn.disabled = false; btn.classList.remove('searching'); document.getElementById('locate-text').textContent = 'Descubrir';
       userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
       if (mapInstance) mapInstance.setView([userPos.lat, userPos.lng], 13);
       showLoading('Identificando tu provincia…');
       try {
-        const idProvincia = await getIdProvinciaDesdeCoords(userPos.lat, userPos.lng);
-        if (!idProvincia) throw new Error('No pude identificar tu provincia. Prueba buscando por municipio.');
+        const result = await getIdProvinciaDesdeCoords(userPos.lat, userPos.lng);
+        if (!result) throw new Error('No pude identificar tu provincia. Prueba buscando por municipio.');
         showLoading('Buscando gasolineras cerca…');
         _lastSearch = usarMiUbicacion;
-        const data = await fetchAPI(`${API_BASE}/EstacionesTerrestresFiltros/FiltroProvincia/${idProvincia}`);
+        const data = await fetchAPI(`${API_BASE}/EstacionesTerrestresFiltros/FiltroProvincia/${result.id}`);
         if (!data || !data.ListaEESSPrecio) throw new Error('Sin datos de la API');
         const nearby = data.ListaEESSPrecio.filter(s => {
           const lat = parseFloat((s.Latitud || '').replace(',','.'));
@@ -348,13 +347,17 @@ function usarMiUbicacion() {
         });
         if (!nearby.length) throw new Error('No hay gasolineras en un radio de 15 km');
         processStations(nearby);
+        showLocationStatus(result.cityName);
         if (isMobile()) switchTab('lista');
       } catch(e) {
+        btn.disabled = false; btn.classList.remove('searching');
+        document.getElementById('locate-text').textContent = 'Ubicarme';
         showError(e.message);
       }
     },
     function(err) {
-      btn.disabled = false; btn.classList.remove('searching'); document.getElementById('locate-text').textContent = 'Descubrir';
+      btn.disabled = false; btn.classList.remove('searching');
+      document.getElementById('locate-text').textContent = 'Ubicarme';
       let msg = 'No pude obtener tu ubicación. Activa la geolocalización 📍';
       if (err.code === 1) msg = 'Permiso denegado. Activa el acceso a la ubicación.';
       if (err.code === 2) msg = 'Sin señal GPS. Inténtalo de nuevo.';
@@ -384,6 +387,7 @@ async function getIdProvinciaDesdeCoords(lat, lng) {
     clearTimeout(t);
     const d = await r.json();
     const addr = d.address || {};
+    const cityName = addr.city || addr.town || addr.village || addr.municipality || addr.county || '';
     const candidatos = [addr.province, addr.state_district, addr.state, addr.county].filter(Boolean);
     for (const c of candidatos) {
       const nc = normProv(c);
@@ -391,7 +395,7 @@ async function getIdProvinciaDesdeCoords(lat, lng) {
         const np = normProv(p.name);
         return np === nc || nc.includes(np) || np.includes(nc);
       });
-      if (found) return found.id;
+      if (found) return { id: found.id, cityName };
     }
   } catch {}
   clearTimeout(t);
@@ -613,11 +617,45 @@ function selectStation(i, scrollToCard=true) {
   }, delay);
 }
 
+// ────────── LOCATION STATUS ──────────
+function showLocationStatus(city) {
+  if (searchOpen) toggleSearch();
+  const status = document.getElementById('location-status');
+  status.style.display = 'flex';
+  document.getElementById('location-city').textContent = city || 'Tu ubicación';
+  document.getElementById('location-fuel-label').textContent = FUEL_MAP[activeFuel]?.label || '';
+}
+
+function resetLocation() {
+  allStations = [];
+  filteredStations = [];
+  userPos = null;
+  const btn = document.getElementById('locate-btn');
+  if (btn) { btn.disabled = false; btn.classList.remove('searching'); }
+  const locateText = document.getElementById('locate-text');
+  if (locateText) locateText.textContent = 'Ubicarme';
+  document.getElementById('location-status').style.display = 'none';
+  if (!searchOpen) toggleSearch();
+  document.getElementById('stats-bar').classList.remove('visible');
+  document.getElementById('sort-row').classList.remove('visible');
+  document.getElementById('upsell-banner')?.classList.remove('visible');
+  hideCacheBanner();
+  if (markersLayer) markersLayer.clearLayers();
+  document.getElementById('stations-scroll').innerHTML = `
+    <div class="state-panel">
+      <div class="state-icon-box" style="width:104px;height:104px;border-radius:28px;background:linear-gradient(145deg,#fff,var(--green-pale));border-color:var(--border-g);font-size:48px;color:var(--green-1)">⛽</div>
+      <div class="state-title">Listo para ahorrar</div>
+      <div class="state-sub">Usa <b style="color:var(--green-1)">Ubicarme</b> o selecciona provincia y municipio.</div>
+    </div>`;
+}
+
 // ────────── FILTROS / ORDEN ──────────
 function toggleFuel(el) {
   document.querySelectorAll('.fuel-chip').forEach(c => c.classList.remove('active'));
   el.classList.add('active');
   activeFuel = el.dataset.fuel;
+  const fuelLabel = document.getElementById('location-fuel-label');
+  if (fuelLabel) fuelLabel.textContent = FUEL_MAP[activeFuel]?.label || '';
   if (allStations.length) renderAll();
 }
 function setSortMode(mode, btn) {
