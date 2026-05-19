@@ -159,7 +159,7 @@ let activeFuel = 'gasolina95', sortMode = 'precio';
 let mapInstance = null, markersLayer = null;
 let selectedCard = null, userPos = null;
 let currentTab = 'lista';
-let searchOpen = false;
+let searchOpen = true;
 let authTab = 'login';
 let tooltipOpen = false;
 
@@ -324,7 +324,7 @@ function usarMiUbicacion() {
     return;
   }
   const btn = document.getElementById('locate-btn');
-  btn.disabled = true; btn.classList.add('searching'); document.getElementById('locate-text').textContent = 'Buscando…';
+  btn.disabled = true; btn.classList.add('searching');
   Pepe.say('Buscando dónde estás… un momentito 📍', 'thinking');
   showLoading('Detectando tu posición…');
 
@@ -351,13 +351,11 @@ function usarMiUbicacion() {
         if (isMobile()) switchTab('lista');
       } catch(e) {
         btn.disabled = false; btn.classList.remove('searching');
-        document.getElementById('locate-text').textContent = 'Ubicarme';
         showError(e.message);
       }
     },
     function(err) {
       btn.disabled = false; btn.classList.remove('searching');
-      document.getElementById('locate-text').textContent = 'Ubicarme';
       let msg = 'No pude obtener tu ubicación. Activa la geolocalización 📍';
       if (err.code === 1) msg = 'Permiso denegado. Activa el acceso a la ubicación.';
       if (err.code === 2) msg = 'Sin señal GPS. Inténtalo de nuevo.';
@@ -632,8 +630,6 @@ function resetLocation() {
   userPos = null;
   const btn = document.getElementById('locate-btn');
   if (btn) { btn.disabled = false; btn.classList.remove('searching'); }
-  const locateText = document.getElementById('locate-text');
-  if (locateText) locateText.textContent = 'Ubicarme';
   document.getElementById('location-status').style.display = 'none';
   if (!searchOpen) toggleSearch();
   document.getElementById('stats-bar').classList.remove('visible');
@@ -699,7 +695,8 @@ function isMobile() { return window.innerWidth <= 768; }
 function toggleSearch() {
   searchOpen = !searchOpen;
   document.getElementById('search-body').classList.toggle('collapsed', !searchOpen);
-  document.getElementById('search-chevron').style.transform = searchOpen ? '' : 'rotate(-90deg)';
+  const chevron = document.getElementById('search-chevron');
+  if (chevron) chevron.style.transform = searchOpen ? '' : 'rotate(-90deg)';
 }
 function switchTab(tab) {
   if (tab === 'perfil' && !currentUser) {

@@ -124,28 +124,24 @@ header {
 .sidebar { width: 410px; flex-shrink: 0; display: flex; flex-direction: column; height: 100%; background: transparent; border-right: 1px solid var(--border); overflow: hidden; }
 
 /* ─── SEARCH PANEL ──────────────────────────────────────── */
-.search-panel { flex-shrink: 0; padding: 12px 13px 0; background: var(--glass); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-2); }
-.search-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); box-shadow: var(--shadow-sm); overflow: hidden; margin-bottom: 12px; }
-.search-card-header { padding: 12px 14px 11px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-2); background: linear-gradient(to right, rgba(167,215,183,0.18), transparent); }
-.search-title { font-family: var(--font-display); font-size: 14.5px; font-weight: 800; color: var(--ink); display: flex; align-items: center; gap: 9px; cursor: pointer; user-select: none; letter-spacing: -0.2px; }
-.search-title-icon { width: 30px; height: 30px; background: var(--green-pale); border-radius: 9px; display: flex; align-items: center; justify-content: center; color: var(--green-1); border: 1px solid var(--border-g); }
-.chevron { font-size: 10px; color: var(--ink-4); transition: transform .3s; margin-left: 2px; }
-
+.search-panel { flex-shrink: 0; padding: 10px 12px; background: var(--glass); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-2); }
+.search-card { background: transparent; border: none; box-shadow: none; overflow: visible; }
 .search-body.collapsed { display: none; }
-.search-body-inner { padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
-.search-row { display: flex; align-items: center; gap: 8px; }
+.search-body-inner { display: flex; flex-direction: column; gap: 7px; }
+.search-row { display: flex; align-items: center; gap: 7px; }
 .locate-panel { display: contents; }
 .locate-btn {
-  display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  width: 38px; height: 38px; padding: 0;
   background: var(--green-pale); border: 1.5px solid var(--border-g);
-  color: var(--green-1); font-family: var(--font-body);
-  font-size: 12px; font-weight: 700; padding: 0 14px; height: 38px;
-  border-radius: var(--r-full); cursor: pointer; transition: all 0.18s ease;
-  white-space: nowrap;
+  color: var(--green-1); border-radius: var(--r-md);
+  cursor: pointer; transition: all 0.18s ease;
 }
 .locate-btn:hover:not(:disabled) { background: var(--green-1); color: white; border-color: var(--green-1); box-shadow: var(--shadow-g); }
 .locate-btn:active:not(:disabled) { transform: scale(0.98); }
 .locate-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+.locate-btn.searching svg { animation: spin 0.9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
 .selects-row { display: flex; gap: 6px; flex: 1; min-width: 0; }
 .selects-row .select-wrap { flex: 1; min-width: 0; }
 .selects-row select { height: 38px; padding: 0 8px 0 30px; font-size: 12px; }
@@ -941,21 +937,13 @@ button:active:not(:disabled),
 
     <div class="search-panel">
       <div class="search-card" id="search-card">
-        <div class="search-card-header" onclick="toggleSearch()">
-          <div class="search-title">
-            <div class="search-title-icon">⛽</div>
-            Buscar gasolineras
-            <span id="search-chevron" class="chevron">▼</span>
-          </div>
-        </div>
-        <div id="search-body" class="collapsed">
+        <div id="search-body">
           <div class="search-body-inner">
-            <!-- Row 1: Ubicarme + Province -->
+            <!-- Row 1: Ubicarme (icon) + Province -->
             <div class="search-row">
               <div id="locate-panel" class="locate-panel">
-                <button class="locate-btn" id="locate-btn" onclick="usarMiUbicacion()">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
-                  <span id="locate-text">Ubicarme</span>
+                <button class="locate-btn" id="locate-btn" onclick="usarMiUbicacion()" title="Usar mi ubicación" aria-label="Usar mi ubicación">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>
                 </button>
               </div>
               <div class="select-wrap" style="flex:1;min-width:0">
