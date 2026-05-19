@@ -132,22 +132,32 @@ header {
 .chevron { font-size: 10px; color: var(--ink-4); transition: transform .3s; margin-left: 2px; }
 
 .search-body.collapsed { display: none; }
-.search-body-inner { padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
-.locate-row { display: flex; align-items: center; gap: 10px; }
+.search-body-inner { padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
+.search-row { display: flex; align-items: center; gap: 8px; }
 .locate-panel { display: contents; }
 .locate-btn {
-  display: inline-flex; align-items: center; gap: 7px; flex-shrink: 0;
+  display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0;
   background: var(--green-pale); border: 1.5px solid var(--border-g);
   color: var(--green-1); font-family: var(--font-body);
-  font-size: 13px; font-weight: 700; padding: 9px 16px;
+  font-size: 12px; font-weight: 700; padding: 0 14px; height: 38px;
   border-radius: var(--r-full); cursor: pointer; transition: all 0.18s ease;
   white-space: nowrap;
 }
 .locate-btn:hover:not(:disabled) { background: var(--green-1); color: white; border-color: var(--green-1); box-shadow: var(--shadow-g); }
 .locate-btn:active:not(:disabled) { transform: scale(0.98); }
 .locate-btn:disabled { opacity: 0.55; cursor: not-allowed; }
-.or-sep { font-size: 11px; font-weight: 700; color: var(--ink-4); flex-shrink: 0; }
-.selects-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.selects-row { display: flex; gap: 6px; flex: 1; min-width: 0; }
+.selects-row .select-wrap { flex: 1; min-width: 0; }
+.selects-row select { height: 38px; padding: 0 8px 0 30px; font-size: 12px; }
+.btn-search-sm {
+  display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0;
+  background: var(--green-1); color: white; border: none;
+  font-family: var(--font-body); font-size: 12px; font-weight: 700;
+  padding: 0 14px; height: 38px; border-radius: var(--r-full);
+  cursor: pointer; transition: all 0.18s; white-space: nowrap;
+  box-shadow: var(--shadow-g);
+}
+.btn-search-sm:hover { background: #175a3d; box-shadow: var(--shadow-g-lg); }
 .location-status {
   display: flex; align-items: center; gap: 10px;
   padding: 12px 14px; background: var(--green-pale);
@@ -741,9 +751,8 @@ button:active:not(:disabled),
   #map-container.active { display: block; }
   .sidebar.map-active { display: none; }
   .search-panel { padding: 9px 10px 0; }
-  .selects-row { grid-template-columns: 1fr; gap: 7px; }
-  .locate-row { flex-wrap: wrap; }
-  .or-sep { display: none; }
+  .search-row { gap: 6px; }
+  .selects-row { gap: 5px; }
   .stations-scroll { padding: 8px 6px 90px 8px; }
   .donate-float { bottom: calc(var(--tab-h) + 76px) !important; right: 14px !important; }
   .tab-bar { display: flex; position: fixed; bottom: 0; left: 0; right: 0; height: var(--tab-h); background: var(--glass); backdrop-filter: blur(20px) saturate(180%); border-top: 1px solid var(--border); z-index: 200; padding-bottom: env(safe-area-inset-bottom, 0); }
@@ -939,38 +948,33 @@ button:active:not(:disabled),
             <span id="search-chevron" class="chevron">▼</span>
           </div>
         </div>
-        <div id="search-body">
+        <div id="search-body" class="collapsed">
           <div class="search-body-inner">
-            <div class="locate-row">
+            <!-- Row 1: Ubicarme + Province -->
+            <div class="search-row">
               <div id="locate-panel" class="locate-panel">
                 <button class="locate-btn" id="locate-btn" onclick="usarMiUbicacion()">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
                   <span id="locate-text">Ubicarme</span>
                 </button>
               </div>
-              <span class="or-sep">o busca manualmente:</span>
-            </div>
-            <div class="selects-row">
-              <div class="select-wrap">
-                <span class="select-icon">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
-                </span>
-                <select id="sel-prov" onchange="onProvinciaChange()">
+              <div class="select-wrap" style="flex:1;min-width:0">
+                <span class="select-icon">📍</span>
+                <select id="sel-prov" onchange="onProvinciaChange()" style="height:38px;padding:0 8px 0 30px;font-size:12px;">
                   <option value="">Provincia</option>
                 </select>
               </div>
-              <div class="select-wrap">
-                <span class="select-icon">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/></svg>
-                </span>
-                <select id="sel-mun" disabled>
+            </div>
+            <!-- Row 2: Municipality + Search -->
+            <div class="search-row">
+              <div class="select-wrap" style="flex:1;min-width:0">
+                <span class="select-icon">🏘️</span>
+                <select id="sel-mun" disabled style="height:38px;padding:0 8px 0 30px;font-size:12px;">
                   <option value="">Municipio</option>
                 </select>
               </div>
+              <button class="btn-search-sm" onclick="buscarPorMunicipio()">🔍 Buscar</button>
             </div>
-            <button class="btn-search" onclick="buscarPorMunicipio()">
-              🔍 Buscar gasolineras
-            </button>
           </div>
           <div id="location-status" class="location-status" style="display:none">
             <div class="location-status-dot"></div>

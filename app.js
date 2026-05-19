@@ -159,7 +159,7 @@ let activeFuel = 'gasolina95', sortMode = 'precio';
 let mapInstance = null, markersLayer = null;
 let selectedCard = null, userPos = null;
 let currentTab = 'lista';
-let searchOpen = true;
+let searchOpen = false;
 let authTab = 'login';
 let tooltipOpen = false;
 
