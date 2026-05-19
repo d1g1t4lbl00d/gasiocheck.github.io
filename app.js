@@ -72,21 +72,27 @@ async function tryVercelProxy(path, timeoutMs = 8000) {
 async function fetchAPI(fullUrl) {
   const path = fullUrl.replace(API_BASE, '').replace(/^\//, '');
 
-  // 1. Server proxy (best — caches in Supabase)
-  const viaProxy = await tryVercelProxy(path, 8000);
+  // 1. Vercel proxy (instant 404 on GitHub Pages, works on Vercel)
+  const viaProxy = await tryVercelProxy(path, 5000);
   if (viaProxy) { apiKnownOffline = false; return viaProxy; }
 
-  // 2. Direct MINETUR (if CORS allows)
+  // 2. Direct MINETUR (blocked by CORS on GitHub Pages but worth a fast try)
   if (!apiKnownOffline) {
-    const direct = await tryUrl(fullUrl, 5000);
+    const direct = await tryUrl(fullUrl, 3000);
     if (direct) { hideCacheBanner(); return direct; }
   }
 
-  // 3. Client-side CORS proxies (last resort)
-  for (const mk of CLIENT_CORS_PROXIES) {
-    const data = await tryUrl(mk(fullUrl), 5000);
-    if (data) { apiKnownOffline = false; hideCacheBanner(); return data; }
-  }
+  // 3. All CORS proxies in parallel — fastest one wins
+  const proxyData = await Promise.any(
+    CLIENT_CORS_PROXIES.map(mk =>
+      tryUrl(mk(fullUrl), 8000).then(d => d ?? Promise.reject('null'))
+    )
+  ).catch(() => null);
+  if (proxyData) { apiKnownOffline = false; hideCacheBanner(); return proxyData; }
+
+  // 4. Supabase cache — direct client-side query as final fallback
+  const cachedData = await trySupabaseCache(path);
+  if (cachedData) return cachedData;
 
   apiKnownOffline = true;
   throw new Error('API_OFFLINE');
@@ -111,6 +117,20 @@ function showCacheBanner(dateStr) {
 
 function hideCacheBanner() {
   document.getElementById('cache-banner')?.remove();
+}
+
+async function trySupabaseCache(path) {
+  try {
+    const r = await fetch(
+      `${SUPABASE_URL}/rest/v1/minetur_cache?cache_key=eq.${encodeURIComponent(path)}&select=payload,updated_at&limit=1`,
+      { headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` } }
+    );
+    if (!r.ok) return null;
+    const rows = await r.json();
+    if (!Array.isArray(rows) || !rows.length) return null;
+    showCacheBanner(rows[0].updated_at);
+    return rows[0].payload;
+  } catch { return null; }
 }
 
 // ────────── HELPERS ──────────
@@ -155,6 +175,8 @@ let tankEmptyTarget = null;
 const favDataMap = new Map();
 
 let allStations = [], filteredStations = [], provinciasData = [];
+let autocompleteResults = [];
+let autocompleteTimer = null;
 let activeFuel = 'gasolina95', sortMode = 'precio';
 let mapInstance = null, markersLayer = null;
 let selectedCard = null, userPos = null;
@@ -318,38 +340,103 @@ async function buscarPorMunicipio() {
   }
 }
 
+async function buscarPorCoords(lat, lng, displayName) {
+  _lastSearch = () => buscarPorCoords(lat, lng, displayName);
+  userPos = { lat, lng };
+  if (mapInstance) mapInstance.setView([lat, lng], 12);
+  showLoading('Buscando en ' + displayName + '…');
+  Pepe.say('Buscando gasolineras en ' + displayName + '… 🐽', 'thinking');
+  try {
+    const result = await getIdProvinciaDesdeCoords(lat, lng);
+    if (!result) throw new Error('No pude identificar la provincia. Prueba con el selector de provincia.');
+    const data = await fetchAPI(`${API_BASE}/EstacionesTerrestresFiltros/FiltroProvincia/${result.id}`);
+    if (!data || !data.ListaEESSPrecio) throw new Error('Sin datos de la API');
+    processStations(data.ListaEESSPrecio);
+    showLocationStatus(result.cityName || displayName);
+    if (isMobile()) switchTab('lista');
+  } catch(e) {
+    showError(e.message);
+  }
+}
+
 async function buscarPorTexto() {
   const q = (document.getElementById('search-text')?.value || '').trim();
   if (!q) {
     Pepe.say('Escribe una ciudad o municipio y pulsa buscar 🔍', 'thinking');
     return;
   }
+  hideAutocomplete();
   _lastSearch = buscarPorTexto;
   showLoading('Buscando «' + q + '»…');
-  Pepe.say('Buscando gasolineras en ' + q + '… 🐽', 'thinking');
   try {
     const r = await fetch(
       `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&countrycodes=es&limit=1&accept-language=es`,
       { headers: { Accept: 'application/json' } }
     );
     const results = await r.json();
-    if (!results || !results.length) throw new Error('No encontré «' + q + '» en España. Prueba con otra ciudad o provincia.');
-    const lat = parseFloat(results[0].lat);
-    const lng = parseFloat(results[0].lon);
-    userPos = { lat, lng };
-    if (mapInstance) mapInstance.setView([lat, lng], 12);
-    showLoading('Identificando provincia…');
-    const result = await getIdProvinciaDesdeCoords(lat, lng);
-    if (!result) throw new Error('No pude identificar la provincia. Prueba seleccionando directamente con el selector de provincia.');
-    showLoading('Cargando gasolineras…');
-    const data = await fetchAPI(`${API_BASE}/EstacionesTerrestresFiltros/FiltroProvincia/${result.id}`);
-    if (!data || !data.ListaEESSPrecio) throw new Error('Sin datos de la API');
-    processStations(data.ListaEESSPrecio);
-    showLocationStatus(result.cityName || q);
-    if (isMobile()) switchTab('lista');
+    if (!results || !results.length) throw new Error('No encontré «' + q + '» en España. Prueba con otra ciudad.');
+    const name = results[0].display_name.split(',')[0].trim();
+    await buscarPorCoords(parseFloat(results[0].lat), parseFloat(results[0].lon), name);
   } catch(e) {
     showError(e.message);
   }
+}
+
+function onSearchTextInput(val) {
+  clearTimeout(autocompleteTimer);
+  const q = val.trim();
+  if (q.length < 2) { hideAutocomplete(); return; }
+  autocompleteTimer = setTimeout(async () => {
+    try {
+      const r = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&countrycodes=es&limit=6&accept-language=es`,
+        { headers: { Accept: 'application/json' } }
+      );
+      if (!r.ok) return;
+      const results = await r.json();
+      if (!results.length) { hideAutocomplete(); return; }
+      autocompleteResults = results;
+      showAutocomplete(results);
+    } catch {}
+  }, 320);
+}
+
+function showAutocomplete(results) {
+  let el = document.getElementById('search-suggestions');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'search-suggestions';
+    el.className = 'search-suggestions';
+    const wrap = document.querySelector('.search-input-wrap');
+    if (!wrap) return;
+    wrap.appendChild(el);
+  }
+  el.innerHTML = results.map((r, i) => {
+    const parts = r.display_name.split(',');
+    const name = parts[0].trim();
+    const region = parts.slice(1, 3).map(s => s.trim()).filter(s => s && s !== 'España').join(', ');
+    return `<div class="search-suggestion" onmousedown="selectSuggestion(${i})">
+      <svg class="suggestion-icon" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      <span class="suggestion-name">${escHtml(name)}</span>
+      ${region ? `<span class="suggestion-region">${escHtml(region)}</span>` : ''}
+    </div>`;
+  }).join('');
+  el.style.display = 'block';
+}
+
+function hideAutocomplete() {
+  const el = document.getElementById('search-suggestions');
+  if (el) el.style.display = 'none';
+}
+
+function selectSuggestion(i) {
+  const r = autocompleteResults[i];
+  if (!r) return;
+  const name = r.display_name.split(',')[0].trim();
+  const input = document.getElementById('search-text');
+  if (input) input.value = name;
+  hideAutocomplete();
+  buscarPorCoords(parseFloat(r.lat), parseFloat(r.lon), name);
 }
 
 function usarMiUbicacion() {
@@ -1338,7 +1425,8 @@ if (document.readyState === 'loading') {
 
 // Expose to global for inline handlers
 Object.assign(window, {
-  onProvinciaChange, buscarPorMunicipio, buscarPorTexto, usarMiUbicacion, retryLastSearch,
+  onProvinciaChange, buscarPorMunicipio, buscarPorTexto, buscarPorCoords, usarMiUbicacion, retryLastSearch,
+  onSearchTextInput, hideAutocomplete, selectSuggestion,
   toggleFuel, setSortMode, toggleSearch, switchTab,
   toggleTooltip, closeTooltip,
   switchAuthTab, openAuthModal, closeAuthModal, doAuth, doLogout, handleAuthBtn,

@@ -142,7 +142,7 @@ header {
 .locate-btn:disabled { opacity: 0.55; cursor: not-allowed; }
 .locate-btn.searching svg { animation: locate-spin 0.9s linear infinite; }
 @keyframes locate-spin { to { transform: rotate(360deg); } }
-.search-input-wrap { flex: 1; min-width: 0; }
+.search-input-wrap { flex: 1; min-width: 0; position: relative; }
 .search-text-input {
   height: 38px !important; padding: 0 10px !important;
   font-size: 12.5px !important; border-radius: var(--r-md) !important;
@@ -175,6 +175,22 @@ header {
   box-shadow: var(--shadow-g);
 }
 .btn-search-sm:hover { background: #175a3d; }
+.search-suggestions {
+  position: absolute; top: calc(100% + 5px); left: 0; right: 0;
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: var(--r-md); box-shadow: var(--shadow-lg);
+  z-index: 200; overflow: hidden; display: none;
+}
+.search-suggestion {
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px 11px; cursor: pointer;
+  border-bottom: 1px solid var(--border-2); transition: background .1s;
+}
+.search-suggestion:last-child { border-bottom: none; }
+.search-suggestion:hover, .search-suggestion:active { background: var(--green-pale); }
+.suggestion-icon { flex-shrink: 0; color: var(--green-1); }
+.suggestion-name { font-size: 12.5px; font-weight: 700; color: var(--ink); flex-shrink: 0; }
+.suggestion-region { font-size: 11px; color: var(--ink-4); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 .location-status {
   display: flex; align-items: center; gap: 10px;
   padding: 9px 12px; background: var(--green-pale);
@@ -970,7 +986,7 @@ button:active:not(:disabled),
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>
               </button>
               <div class="search-input-wrap">
-                <input class="search-text-input" type="text" id="search-text" placeholder="Ciudad o municipio…" autocomplete="off" autocorrect="off" spellcheck="false" onkeydown="if(event.key==='Enter')buscarPorTexto()">
+                <input class="search-text-input" type="text" id="search-text" placeholder="Ciudad o municipio…" autocomplete="off" autocorrect="off" spellcheck="false" onkeydown="if(event.key==='Enter'){buscarPorTexto();}" oninput="onSearchTextInput(this.value)" onblur="setTimeout(hideAutocomplete,180)">
               </div>
               <button class="btn-search-icon" onclick="buscarPorTexto()" title="Buscar" aria-label="Buscar">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
