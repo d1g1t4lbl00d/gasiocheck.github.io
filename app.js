@@ -72,21 +72,27 @@ async function tryVercelProxy(path, timeoutMs = 8000) {
 async function fetchAPI(fullUrl) {
   const path = fullUrl.replace(API_BASE, '').replace(/^\//, '');
 
-  // 1. Server proxy (best — caches in Supabase)
-  const viaProxy = await tryVercelProxy(path, 8000);
+  // 1. Vercel proxy (instant 404 on GitHub Pages, works on Vercel)
+  const viaProxy = await tryVercelProxy(path, 5000);
   if (viaProxy) { apiKnownOffline = false; return viaProxy; }
 
-  // 2. Direct MINETUR (if CORS allows)
+  // 2. Direct MINETUR (blocked by CORS on GitHub Pages but worth a fast try)
   if (!apiKnownOffline) {
-    const direct = await tryUrl(fullUrl, 5000);
+    const direct = await tryUrl(fullUrl, 3000);
     if (direct) { hideCacheBanner(); return direct; }
   }
 
-  // 3. Client-side CORS proxies (last resort)
-  for (const mk of CLIENT_CORS_PROXIES) {
-    const data = await tryUrl(mk(fullUrl), 5000);
-    if (data) { apiKnownOffline = false; hideCacheBanner(); return data; }
-  }
+  // 3. All CORS proxies in parallel — fastest one wins
+  const proxyData = await Promise.any(
+    CLIENT_CORS_PROXIES.map(mk =>
+      tryUrl(mk(fullUrl), 8000).then(d => d ?? Promise.reject('null'))
+    )
+  ).catch(() => null);
+  if (proxyData) { apiKnownOffline = false; hideCacheBanner(); return proxyData; }
+
+  // 4. Supabase cache — direct client-side query as final fallback
+  const cachedData = await trySupabaseCache(path);
+  if (cachedData) return cachedData;
 
   apiKnownOffline = true;
   throw new Error('API_OFFLINE');
@@ -111,6 +117,20 @@ function showCacheBanner(dateStr) {
 
 function hideCacheBanner() {
   document.getElementById('cache-banner')?.remove();
+}
+
+async function trySupabaseCache(path) {
+  try {
+    const r = await fetch(
+      `${SUPABASE_URL}/rest/v1/minetur_cache?cache_key=eq.${encodeURIComponent(path)}&select=payload,updated_at&limit=1`,
+      { headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` } }
+    );
+    if (!r.ok) return null;
+    const rows = await r.json();
+    if (!Array.isArray(rows) || !rows.length) return null;
+    showCacheBanner(rows[0].updated_at);
+    return rows[0].payload;
+  } catch { return null; }
 }
 
 // ────────── HELPERS ──────────
@@ -142,7 +162,7 @@ function haversine(lat1,lng1,lat2,lng2){
 }
 function titleCase(str){
   if(!str) return '';
-  return str.toLowerCase().split(/(\s|[/\-])/g).map(w => w.length>2 ? w[0].toUpperCase()+w.slice(1) : w).join('');
+  return str.toLowerCase().split(/(\s|[\/\-])/g).map(w => w.length>2 ? w[0].toUpperCase()+w.slice(1) : w).join('');
 }
 
 // ────────── STATE ──────────
@@ -155,6 +175,10 @@ let tankEmptyTarget = null;
 const favDataMap = new Map();
 
 let allStations = [], filteredStations = [], provinciasData = [];
+let autocompleteResults = [];
+let autocompleteTimer = null;
+let autocompleteCtrl = null;
+let autocompleteHighlight = -1;
 let activeFuel = 'gasolina95', sortMode = 'precio';
 let mapInstance = null, markersLayer = null;
 let selectedCard = null, userPos = null;
@@ -236,14 +260,14 @@ function makeIcon(level) {
 // ────────── PROVINCIAS ──────────
 function poblarProvincias(list) {
   const sel = document.getElementById('sel-prov');
-  if (sel) sel.innerHTML = '<option value="">Provincia</option>';
+  sel.innerHTML = '<option value="">Provincia</option>';
   provinciasData = [];
   list.forEach(p => {
     const id   = p.id   || p.IDPovincia || p.IDProvincia;
     const name = p.name || p.Provincia;
     if (!id || !name) return;
     provinciasData.push({ id, name });
-    if (sel) sel.appendChild(new Option(titleCase(name), id));
+    sel.appendChild(new Option(titleCase(name), id));
   });
 }
 
@@ -318,14 +342,155 @@ async function buscarPorMunicipio() {
   }
 }
 
+async function buscarPorCoords(lat, lng, displayName) {
+  _lastSearch = () => buscarPorCoords(lat, lng, displayName);
+  userPos = { lat, lng };
+  if (mapInstance) mapInstance.setView([lat, lng], 12);
+  showLoading('Buscando en ' + displayName + '…');
+  Pepe.say('Buscando gasolineras en ' + displayName + '… 🐽', 'thinking');
+  try {
+    const result = await getIdProvinciaDesdeCoords(lat, lng);
+    if (!result) throw new Error('No pude identificar la provincia. Prueba con el selector de provincia.');
+    const data = await fetchAPI(`${API_BASE}/EstacionesTerrestresFiltros/FiltroProvincia/${result.id}`);
+    if (!data || !data.ListaEESSPrecio) throw new Error('Sin datos de la API');
+    processStations(data.ListaEESSPrecio);
+    showLocationStatus(result.cityName || displayName);
+    if (isMobile()) switchTab('lista');
+  } catch(e) {
+    showError(e.message);
+  }
+}
+
+async function buscarPorTexto() {
+  const q = (document.getElementById('search-text')?.value || '').trim();
+  if (!q) {
+    Pepe.say('Escribe una ciudad o municipio y pulsa buscar 🔍', 'thinking');
+    return;
+  }
+  hideAutocomplete();
+  _lastSearch = buscarPorTexto;
+  showLoading('Buscando «' + q + '»…');
+  try {
+    const r = await fetch(
+      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&countrycodes=es&limit=1&accept-language=es`,
+      { headers: { Accept: 'application/json' } }
+    );
+    const results = await r.json();
+    if (!results || !results.length) throw new Error('No encontré «' + q + '» en España. Prueba con otra ciudad.');
+    const name = results[0].display_name.split(',')[0].trim();
+    await buscarPorCoords(parseFloat(results[0].lat), parseFloat(results[0].lon), name);
+  } catch(e) {
+    showError(e.message);
+  }
+}
+
+function onSearchTextInput(val) {
+  clearTimeout(autocompleteTimer);
+  autocompleteCtrl?.abort();
+  const q = val.trim();
+  if (q.length < 2) { hideAutocomplete(); return; }
+  autocompleteTimer = setTimeout(async () => {
+    autocompleteCtrl = new AbortController();
+    try {
+      const r = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&countrycodes=es&limit=6&accept-language=es`,
+        { headers: { Accept: 'application/json' }, signal: autocompleteCtrl.signal }
+      );
+      if (!r.ok) return;
+      const results = await r.json();
+      if (!results.length) { hideAutocomplete(); return; }
+      autocompleteResults = results;
+      showAutocomplete(results);
+    } catch(e) {
+      if (e.name !== 'AbortError') hideAutocomplete();
+    }
+  }, 320);
+}
+
+function onSearchTextKeydown(e) {
+  const el = document.getElementById('search-suggestions');
+  const visible = el && el.style.display !== 'none';
+  if (e.key === 'Enter') {
+    if (visible && autocompleteHighlight >= 0) {
+      e.preventDefault();
+      selectSuggestion(autocompleteHighlight);
+    } else {
+      buscarPorTexto();
+    }
+    return;
+  }
+  if (!visible) return;
+  const items = el.querySelectorAll('.search-suggestion');
+  if (!items.length) return;
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    setAutocompleteHighlight((autocompleteHighlight + 1) % items.length, items);
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    setAutocompleteHighlight((autocompleteHighlight - 1 + items.length) % items.length, items);
+  } else if (e.key === 'Escape') {
+    hideAutocomplete();
+  }
+}
+
+function setAutocompleteHighlight(idx, items) {
+  items.forEach((item, i) => item.classList.toggle('highlighted', i === idx));
+  autocompleteHighlight = idx;
+  const r = autocompleteResults[idx];
+  if (r) {
+    const input = document.getElementById('search-text');
+    if (input) input.value = r.display_name.split(',')[0].trim();
+  }
+}
+
+function showAutocomplete(results) {
+  autocompleteHighlight = -1;
+  let el = document.getElementById('search-suggestions');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'search-suggestions';
+    el.className = 'search-suggestions';
+    const wrap = document.querySelector('.search-input-wrap');
+    if (!wrap) return;
+    wrap.appendChild(el);
+  }
+  el.innerHTML = results.map((r, i) => {
+    const parts = r.display_name.split(',');
+    const name = parts[0].trim();
+    const region = parts.slice(1, 3).map(s => s.trim()).filter(s => s && s !== 'España').join(', ');
+    return `<div class="search-suggestion" onmousedown="selectSuggestion(${i})">
+      <svg class="suggestion-icon" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      <span class="suggestion-name">${escHtml(name)}</span>
+      ${region ? `<span class="suggestion-region">${escHtml(region)}</span>` : ''}
+    </div>`;
+  }).join('');
+  el.style.display = 'block';
+}
+
+function hideAutocomplete() {
+  autocompleteHighlight = -1;
+  const el = document.getElementById('search-suggestions');
+  if (el) el.style.display = 'none';
+}
+
+function selectSuggestion(i) {
+  autocompleteHighlight = -1;
+  const r = autocompleteResults[i];
+  if (!r) return;
+  const name = r.display_name.split(',')[0].trim();
+  const input = document.getElementById('search-text');
+  if (input) input.value = name;
+  hideAutocomplete();
+  buscarPorCoords(parseFloat(r.lat), parseFloat(r.lon), name);
+}
+
 function usarMiUbicacion() {
   if (!navigator.geolocation) {
     Pepe.say('Tu navegador no soporta geolocalización 😕', 'thinking');
     return;
   }
   const btn = document.getElementById('locate-btn');
-  btn.disabled = true;
-  document.getElementById('locate-text').textContent = 'Buscando…';
+  btn.disabled = true; btn.classList.add('searching');
   Pepe.say('Buscando dónde estás… un momentito 📍', 'thinking');
   showLoading('Detectando tu posición…');
 
@@ -336,7 +501,7 @@ function usarMiUbicacion() {
       showLoading('Identificando tu provincia…');
       try {
         const result = await getIdProvinciaDesdeCoords(userPos.lat, userPos.lng);
-        if (!result) throw new Error('No pude identificar tu provincia. Inténtalo de nuevo.');
+        if (!result) throw new Error('No pude identificar tu provincia. Prueba buscando por municipio.');
         showLoading('Buscando gasolineras cerca…');
         _lastSearch = usarMiUbicacion;
         const data = await fetchAPI(`${API_BASE}/EstacionesTerrestresFiltros/FiltroProvincia/${result.id}`);
@@ -351,14 +516,12 @@ function usarMiUbicacion() {
         showLocationStatus(result.cityName);
         if (isMobile()) switchTab('lista');
       } catch(e) {
-        btn.disabled = false;
-        document.getElementById('locate-text').textContent = 'Encontrar gasolineras';
+        btn.disabled = false; btn.classList.remove('searching');
         showError(e.message);
       }
     },
     function(err) {
-      btn.disabled = false;
-      document.getElementById('locate-text').textContent = 'Encontrar gasolineras';
+      btn.disabled = false; btn.classList.remove('searching');
       let msg = 'No pude obtener tu ubicación. Activa la geolocalización 📍';
       if (err.code === 1) msg = 'Permiso denegado. Activa el acceso a la ubicación.';
       if (err.code === 2) msg = 'Sin señal GPS. Inténtalo de nuevo.';
@@ -371,7 +534,7 @@ function usarMiUbicacion() {
 
 function normProv(s){
   return (s||'').toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .normalize('NFD').replace(/[̀-ͯ]/g,'')
     .replace(/\b(provincia|comunidad|comunitat|region|regiao|autonoma)\b/g,'')
     .replace(/\bde\b|\bdel\b|\bla\b|\bles\b|\blos\b|\blas\b/g,'')
     .replace(/\s+/g,' ').trim();
@@ -385,7 +548,6 @@ async function getIdProvinciaDesdeCoords(lat, lng) {
       `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=es`,
       { signal: ctrl.signal }
     );
-    clearTimeout(t);
     const d = await r.json();
     const addr = d.address || {};
     const cityName = addr.city || addr.town || addr.village || addr.municipality || addr.county || '';
@@ -398,8 +560,10 @@ async function getIdProvinciaDesdeCoords(lat, lng) {
       });
       if (found) return { id: found.id, cityName };
     }
-  } catch {}
-  clearTimeout(t);
+  } catch {
+  } finally {
+    clearTimeout(t);
+  }
   return null;
 }
 
@@ -421,7 +585,8 @@ function processStations(raw) {
   document.querySelectorAll('.sort-btn').forEach((b,i) => b.classList.toggle('active', i===0));
   renderAll();
   document.getElementById('stats-bar').classList.add('visible');
-  document.getElementById('sort-row').classList.add('visible');
+  document.getElementById('filter-bar').classList.add('visible');
+  document.getElementById('fuel-filter')?.classList.remove('chips-collapsed');
   if (!currentUser) document.getElementById('upsell-banner').classList.add('visible');
   // Pepe celebrates
   const prices = filteredStations.map(s => s.prices[activeFuel]).filter(Boolean);
@@ -620,7 +785,7 @@ function selectStation(i, scrollToCard=true) {
 
 // ────────── LOCATION STATUS ──────────
 function showLocationStatus(city) {
-  document.getElementById('locate-panel').style.display = 'none';
+  if (searchOpen) toggleSearch();
   const status = document.getElementById('location-status');
   status.style.display = 'flex';
   document.getElementById('location-city').textContent = city || 'Tu ubicación';
@@ -631,13 +796,12 @@ function resetLocation() {
   allStations = [];
   filteredStations = [];
   userPos = null;
-  document.getElementById('locate-panel').style.display = '';
-  document.getElementById('locate-text').textContent = 'Encontrar gasolineras';
   const btn = document.getElementById('locate-btn');
-  btn.disabled = false;
+  if (btn) { btn.disabled = false; btn.classList.remove('searching'); }
   document.getElementById('location-status').style.display = 'none';
+  if (!searchOpen) toggleSearch();
   document.getElementById('stats-bar').classList.remove('visible');
-  document.getElementById('sort-row').classList.remove('visible');
+  document.getElementById('filter-bar')?.classList.remove('visible');
   document.getElementById('upsell-banner')?.classList.remove('visible');
   hideCacheBanner();
   if (markersLayer) markersLayer.clearLayers();
@@ -645,18 +809,26 @@ function resetLocation() {
     <div class="state-panel">
       <div class="state-icon-box" style="width:104px;height:104px;border-radius:28px;background:linear-gradient(145deg,#fff,var(--green-pale));border-color:var(--border-g);font-size:48px;color:var(--green-1)">⛽</div>
       <div class="state-title">Listo para ahorrar</div>
-      <div class="state-sub">Pulsa <b style="color:var(--green-1)">Encontrar gasolineras</b> y Pepe te enseña las más baratas cerca de ti.</div>
+      <div class="state-sub">Usa <b style="color:var(--green-1)">Ubicarme</b> o selecciona provincia y municipio.</div>
     </div>`;
 }
 
 // ────────── FILTROS / ORDEN ──────────
 function toggleFuel(el) {
+  const chipsEl = document.getElementById('fuel-filter');
+  // Collapsed + tapping active chip → re-expand all
+  if (chipsEl?.classList.contains('chips-collapsed') && el.classList.contains('active')) {
+    chipsEl.classList.remove('chips-collapsed');
+    return;
+  }
   document.querySelectorAll('.fuel-chip').forEach(c => c.classList.remove('active'));
   el.classList.add('active');
   activeFuel = el.dataset.fuel;
   const fuelLabel = document.getElementById('location-fuel-label');
   if (fuelLabel) fuelLabel.textContent = FUEL_MAP[activeFuel]?.label || '';
   if (allStations.length) renderAll();
+  // Collapse non-active chips after brief pause
+  setTimeout(() => chipsEl?.classList.add('chips-collapsed'), 550);
 }
 function setSortMode(mode, btn) {
   sortMode = mode;
@@ -699,7 +871,8 @@ function isMobile() { return window.innerWidth <= 768; }
 function toggleSearch() {
   searchOpen = !searchOpen;
   document.getElementById('search-body').classList.toggle('collapsed', !searchOpen);
-  document.getElementById('search-chevron').style.transform = searchOpen ? '' : 'rotate(-90deg)';
+  const chevron = document.getElementById('search-chevron');
+  if (chevron) chevron.style.transform = searchOpen ? '' : 'rotate(-90deg)';
 }
 function switchTab(tab) {
   if (tab === 'perfil' && !currentUser) {
@@ -822,7 +995,7 @@ async function doLogout() {
   favDataMap.clear();
   closeProfilePanel();
   updateAuthButton();
-  resetLocation();
+  if (allStations.length) renderList();
   if (isMobile()) switchTab('lista');
   Pepe.say('¡Hasta luego! Vuelve pronto 👋', 'happy');
 }
@@ -1307,7 +1480,8 @@ if (document.readyState === 'loading') {
 
 // Expose to global for inline handlers
 Object.assign(window, {
-  onProvinciaChange, buscarPorMunicipio, usarMiUbicacion, retryLastSearch,
+  onProvinciaChange, buscarPorMunicipio, buscarPorTexto, buscarPorCoords, usarMiUbicacion, retryLastSearch,
+  onSearchTextInput, onSearchTextKeydown, hideAutocomplete, selectSuggestion,
   toggleFuel, setSortMode, toggleSearch, switchTab,
   toggleTooltip, closeTooltip,
   switchAuthTab, openAuthModal, closeAuthModal, doAuth, doLogout, handleAuthBtn,
