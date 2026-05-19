@@ -318,6 +318,40 @@ async function buscarPorMunicipio() {
   }
 }
 
+async function buscarPorTexto() {
+  const q = (document.getElementById('search-text')?.value || '').trim();
+  if (!q) {
+    Pepe.say('Escribe una ciudad o municipio y pulsa buscar 🔍', 'thinking');
+    return;
+  }
+  _lastSearch = buscarPorTexto;
+  showLoading('Buscando «' + q + '»…');
+  Pepe.say('Buscando gasolineras en ' + q + '… 🐽', 'thinking');
+  try {
+    const r = await fetch(
+      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&countrycodes=es&limit=1&accept-language=es`,
+      { headers: { Accept: 'application/json' } }
+    );
+    const results = await r.json();
+    if (!results || !results.length) throw new Error('No encontré «' + q + '» en España. Prueba con otra ciudad o provincia.');
+    const lat = parseFloat(results[0].lat);
+    const lng = parseFloat(results[0].lon);
+    userPos = { lat, lng };
+    if (mapInstance) mapInstance.setView([lat, lng], 12);
+    showLoading('Identificando provincia…');
+    const result = await getIdProvinciaDesdeCoords(lat, lng);
+    if (!result) throw new Error('No pude identificar la provincia. Prueba seleccionando directamente con el selector de provincia.');
+    showLoading('Cargando gasolineras…');
+    const data = await fetchAPI(`${API_BASE}/EstacionesTerrestresFiltros/FiltroProvincia/${result.id}`);
+    if (!data || !data.ListaEESSPrecio) throw new Error('Sin datos de la API');
+    processStations(data.ListaEESSPrecio);
+    showLocationStatus(result.cityName || q);
+    if (isMobile()) switchTab('lista');
+  } catch(e) {
+    showError(e.message);
+  }
+}
+
 function usarMiUbicacion() {
   if (!navigator.geolocation) {
     Pepe.say('Tu navegador no soporta geolocalización 😕', 'thinking');
@@ -1304,7 +1338,7 @@ if (document.readyState === 'loading') {
 
 // Expose to global for inline handlers
 Object.assign(window, {
-  onProvinciaChange, buscarPorMunicipio, usarMiUbicacion, retryLastSearch,
+  onProvinciaChange, buscarPorMunicipio, buscarPorTexto, usarMiUbicacion, retryLastSearch,
   toggleFuel, setSortMode, toggleSearch, switchTab,
   toggleTooltip, closeTooltip,
   switchAuthTab, openAuthModal, closeAuthModal, doAuth, doLogout, handleAuthBtn,
