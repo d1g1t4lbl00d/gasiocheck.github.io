@@ -484,13 +484,48 @@ function selectSuggestion(i) {
   buscarPorCoords(parseFloat(r.lat), parseFloat(r.lon), name);
 }
 
-function usarMiUbicacion() {
+async function usarMiUbicacion() {
   if (!navigator.geolocation) {
     Pepe.say('Tu navegador no soporta geolocalización 😕', 'thinking');
+    showError('Tu navegador no soporta geolocalización. Prueba a buscar por provincia o municipio.');
+    return;
+  }
+  // Requires HTTPS (or localhost). Some browsers silently fail otherwise.
+  if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+    showError('La ubicación solo funciona en HTTPS. Abre la web por https:// o usa la búsqueda manual.');
     return;
   }
   const btn = document.getElementById('locate-btn');
   btn.disabled = true; btn.classList.add('searching');
+
+  // Pre-flight: check permission state so we can guide the user clearly if blocked.
+  // Without this, a denied state just throws code-1 with no actionable info.
+  let permState = 'prompt';
+  if (navigator.permissions && navigator.permissions.query) {
+    try {
+      const result = await navigator.permissions.query({ name: 'geolocation' });
+      permState = result.state; // 'granted' | 'prompt' | 'denied'
+    } catch(_) { /* some browsers reject; treat as 'prompt' */ }
+  }
+
+  if (permState === 'denied') {
+    btn.disabled = false; btn.classList.remove('searching');
+    Pepe.say('La ubicación está bloqueada para esta web 🔒', 'thinking', 7000);
+    const ua = navigator.userAgent;
+    const isAndroidChrome = /Android/i.test(ua) && /Chrome/i.test(ua);
+    const isIOS = /iPhone|iPad|iPod/i.test(ua);
+    let how;
+    if (isAndroidChrome) {
+      how = 'Toca el candado 🔒 a la izquierda de la URL → Permisos → Ubicación → cambia a Permitir. Después recarga la página.';
+    } else if (isIOS) {
+      how = 'En Ajustes → Safari (o Chrome) → Ubicación: cambia a "Permitir". Después recarga la página.';
+    } else {
+      how = 'Pulsa el icono 🔒 o ⓘ junto a la URL → Permisos → Ubicación → Permitir. Después recarga.';
+    }
+    showError('Has bloqueado la ubicación para esta web. ' + how);
+    return;
+  }
+
   Pepe.say('Buscando dónde estás… un momentito 📍', 'thinking');
   showLoading('Detectando tu posición…');
 
@@ -515,9 +550,8 @@ function usarMiUbicacion() {
       showLocationStatus(result.cityName);
       if (isMobile()) switchTab('lista');
     } catch(e) {
-      showError(e.message);
-    } finally {
       btn.disabled = false; btn.classList.remove('searching');
+      showError(e.message);
     }
   }
 
@@ -534,10 +568,16 @@ function usarMiUbicacion() {
       return;
     }
     btn.disabled = false; btn.classList.remove('searching');
-    let msg = 'No pude obtener tu ubicación. Activa la geolocalización 📍';
-    if (err.code === 1) msg = 'Permiso denegado. Activa el acceso a la ubicación en tu navegador.';
-    if (err.code === 2) msg = 'No se pudo determinar tu posición. Comprueba tu conexión.';
-    if (err.code === 3) msg = 'Tiempo de espera agotado. Comprueba tu señal o busca manualmente.';
+    const ua = navigator.userAgent;
+    const isAndroidChrome = /Android/i.test(ua) && /Chrome/i.test(ua);
+    let msg = 'No pude obtener tu ubicación. Intenta de nuevo o busca por provincia.';
+    if (err.code === 1) {
+      msg = isAndroidChrome
+        ? 'Has bloqueado la ubicación. Toca el candado 🔒 junto a la URL → Permisos → Ubicación → Permitir, y recarga.'
+        : 'Permiso denegado. Activa el acceso a la ubicación en tu navegador y recarga.';
+    }
+    if (err.code === 2) msg = 'No se puede determinar tu posición. Asegúrate de tener la ubicación activada en el sistema (ajustes del móvil → Ubicación) y vuelve a intentarlo.';
+    if (err.code === 3) msg = 'Tiempo de espera agotado. Sal al exterior o conéctate a WiFi y vuelve a intentarlo. Si sigue sin funcionar, busca por provincia.';
     showError(msg);
   }
 
@@ -558,50 +598,30 @@ function normProv(s){
     .replace(/\s+/g,' ').trim();
 }
 
-function _matchProvincia(candidatos) {
-  for (const c of candidatos.filter(Boolean)) {
-    const nc = normProv(c);
-    const found = provinciasData.find(p => {
-      const np = normProv(p.name);
-      return np === nc || nc.includes(np) || np.includes(nc);
-    });
-    if (found) return found;
-  }
-  return null;
-}
-
 async function getIdProvinciaDesdeCoords(lat, lng) {
-  // 1. Nominatim
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), 9000);
   try {
-    const ctrl = new AbortController();
-    const t = setTimeout(() => ctrl.abort(), 7000);
     const r = await fetch(
       `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=es`,
       { signal: ctrl.signal }
     );
-    clearTimeout(t);
     const d = await r.json();
     const addr = d.address || {};
     const cityName = addr.city || addr.town || addr.village || addr.municipality || addr.county || '';
-    const found = _matchProvincia([addr.province, addr.state_district, addr.state, addr.county, addr.region]);
-    if (found) return { id: found.id, cityName };
-  } catch (_) {}
-
-  // 2. BigDataCloud fallback (free, CORS-ready)
-  try {
-    const ctrl2 = new AbortController();
-    const t2 = setTimeout(() => ctrl2.abort(), 7000);
-    const r2 = await fetch(
-      `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=es`,
-      { signal: ctrl2.signal }
-    );
-    clearTimeout(t2);
-    const d2 = await r2.json();
-    const cityName2 = d2.city || d2.locality || d2.principalSubdivision || '';
-    const found2 = _matchProvincia([d2.principalSubdivision, d2.administrativeLevels?.level1long, d2.administrativeLevels?.level2long]);
-    if (found2) return { id: found2.id, cityName: cityName2 };
-  } catch (_) {}
-
+    const candidatos = [addr.province, addr.state_district, addr.state, addr.county].filter(Boolean);
+    for (const c of candidatos) {
+      const nc = normProv(c);
+      const found = provinciasData.find(p => {
+        const np = normProv(p.name);
+        return np === nc || nc.includes(np) || np.includes(nc);
+      });
+      if (found) return { id: found.id, cityName };
+    }
+  } catch {
+  } finally {
+    clearTimeout(t);
+  }
   return null;
 }
 
@@ -1498,24 +1518,22 @@ async function boot() {
 
   // ─── CINEMATIC INTRO CHOREOGRAPHY ──────────────────────────────
   const introOverlay = document.getElementById('intro-overlay');
-  const titleEl = document.getElementById('intro-title-text');
+  const titleEl = document.getElementById('intro-title');
   const counterEl = document.getElementById('intro-counter-val');
   const statusEl = document.getElementById('intro-status');
-  const skipBtn = document.getElementById('intro-skip');
-  let introSkipped = false;
-  let introTimers = [];
-  const addT = (fn, ms) => introTimers.push(setTimeout(fn, ms));
 
-  // Typewriter for the title
+  // Letter-fall for the title: each letter drops in from above with a bounce.
+  // Staggered so the title "writes itself" but with motion instead of just appearing.
   const TITLE = 'IberoFuel';
   if (titleEl) {
-    let i = 0;
-    const typeStep = () => {
-      if (introSkipped || i > TITLE.length) return;
-      titleEl.textContent = TITLE.slice(0, i++);
-      addT(typeStep, 90);
-    };
-    addT(typeStep, 700);
+    titleEl.innerHTML = '';
+    [...TITLE].forEach((ch, i) => {
+      const span = document.createElement('span');
+      span.className = 'letter';
+      span.textContent = ch;
+      span.style.animationDelay = (0.65 + i * 0.07) + 's';
+      titleEl.appendChild(span);
+    });
   }
 
   // Status messages — narrate what's happening behind the scenes
@@ -1523,10 +1541,12 @@ async function boot() {
     { t: 700,  msg: 'Conectando con el Ministerio… 🇪🇸' },
     { t: 1500, msg: 'Escaneando estaciones en toda España…' },
     { t: 2400, msg: 'Pepe está organizando precios… 🐽' },
-    { t: 3000, msg: '¡Listo!' },
+    { t: 3000, msg: '¡Listo!', ready: true },
   ];
-  STATUS_BEATS.forEach(b => addT(() => {
-    if (!introSkipped && statusEl) statusEl.textContent = b.msg;
+  const statusTextEl = statusEl?.querySelector('.intro-status-text');
+  STATUS_BEATS.forEach(b => setTimeout(() => {
+    if (statusTextEl) statusTextEl.textContent = b.msg;
+    if (b.ready && statusEl) statusEl.classList.add('ready');
   }, b.t));
 
   // Counter from 0 → 11,387 (approx. number of gas stations in Spain)
@@ -1536,12 +1556,10 @@ async function boot() {
     const DURATION = 2200;
     const t0 = performance.now() + START;
     const tick = (now) => {
-      if (introSkipped) { counterEl.textContent = TARGET.toLocaleString('es-ES'); return; }
       const elapsed = now - t0;
       if (elapsed < 0) { requestAnimationFrame(tick); return; }
       const p = Math.min(1, elapsed / DURATION);
-      // ease-out cubic
-      const eased = 1 - Math.pow(1 - p, 3);
+      const eased = 1 - Math.pow(1 - p, 3); // ease-out cubic
       const val = Math.round(eased * TARGET);
       counterEl.textContent = val.toLocaleString('es-ES');
       if (p < 1) requestAnimationFrame(tick);
@@ -1549,31 +1567,13 @@ async function boot() {
     requestAnimationFrame(tick);
   }
 
-  // Skip button — collapse intro instantly
-  function skipIntro() {
-    if (introSkipped) return;
-    introSkipped = true;
-    introTimers.forEach(clearTimeout);
-    if (titleEl) titleEl.textContent = TITLE;
-    if (counterEl) counterEl.textContent = '11.387';
-    if (statusEl) statusEl.textContent = '¡Listo!';
-    if (introOverlay) introOverlay.classList.add('skipped');
-    addT(() => introOverlay?.classList.add('gone'), 350);
-    // also fire Pepe greet now if not already
-    addT(() => { try { Pepe.greet(); } catch(_){} }, 400);
-  }
-  skipBtn?.addEventListener('click', skipIntro);
-  skipBtn?.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') skipIntro(); });
-
-  // Remove overlay from DOM after animation completes (matches CSS 3.4s + 0.5s fade)
+  // Remove overlay from DOM after exit animation completes (CSS: 3.2s + 0.7s)
   setTimeout(() => {
-    const overlay = document.getElementById('intro-overlay');
-    if (overlay && !introSkipped) { overlay.classList.add('gone'); }
+    if (introOverlay) introOverlay.classList.add('gone');
   }, 4000);
 
   // Greet AFTER the intro is gone, so Pepe's bubble doesn't fight the overlay
   setTimeout(() => {
-    if (introSkipped) return; // already greeted
     try { Pepe.greet(); } catch(e) { console.error('Pepe.greet failed:', e); }
   }, 4200);
 

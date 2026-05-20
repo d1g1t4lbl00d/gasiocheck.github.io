@@ -446,8 +446,8 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
   display: flex; align-items: center; justify-content: center;
 }
 .pepe-char img {
-  width: 100%; height: 100%; object-fit: cover; object-position: center 18%;
-  border-radius: 50%; display: block;
+  width: 100%; height: 100%; object-fit: cover; border-radius: 50%;
+  display: block;
 }
 .pepe-char:hover { transform: translateY(-3px) scale(1.04); box-shadow: var(--shadow-xl); }
 .pepe-char.mood-idle .pepe-char-inner      { animation: pepe-bob 3.6s ease-in-out infinite; }
@@ -799,7 +799,7 @@ button:active:not(:disabled),
   .station-card:hover { transform: none; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border-color: var(--border); }
   .pepe-anchor { bottom: calc(var(--tab-h) + 14px); right: 14px; }
   .pepe-char { width: 64px; height: 64px; border-width: 2.5px; }
-  .pepe-char img { width: 100%; height: 100%; }
+  .pepe-char img { width: 58px; height: 58px; }
   .pepe-bubble { max-width: 220px; font-size: 12px; }
   .donate-float { display: none; }
 }
@@ -811,10 +811,14 @@ button:active:not(:disabled),
     radial-gradient(ellipse at 50% 38%, #1a3d27 0%, #0c1f15 55%, #04100a 100%);
   display: flex; align-items: center; justify-content: center;
   overflow: hidden;
-  animation: intro-fade-out 0.5s ease 3.4s forwards;
+  animation: intro-exit 0.7s cubic-bezier(0.7,0,0.3,1) 3.2s forwards;
 }
 #intro-overlay.gone { display: none; }
-#intro-overlay.skipped { animation: intro-fade-out 0.35s ease forwards !important; }
+@keyframes intro-exit {
+  0%   { opacity: 1; transform: scale(1); filter: blur(0); }
+  60%  { opacity: 0.8; transform: scale(1.08); filter: blur(2px); }
+  100% { opacity: 0; transform: scale(1.15); filter: blur(6px); visibility: hidden; pointer-events: none; }
+}
 
 /* Animated background grid (perspective floor) */
 .intro-grid {
@@ -838,29 +842,40 @@ button:active:not(:disabled),
   background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.6) 100%);
 }
 
-/* Iris-out closer at the end (like a camera shutter) */
-.intro-iris {
-  position: absolute; inset: 0; pointer-events: none; z-index: 5;
-  background: radial-gradient(circle at 50% 50%,
-    transparent 100%, #04100a 100%);
-  animation: intro-iris-close 0.65s cubic-bezier(0.7,0,0.3,1) 2.9s forwards;
+/* Single scan line that sweeps once */
+.intro-scanline {
+  position: absolute; inset: 0; pointer-events: none; overflow: hidden;
 }
-@keyframes intro-iris-close {
-  0%   { background: radial-gradient(circle at 50% 50%, transparent 100%, #04100a 100%); }
-  60%  { background: radial-gradient(circle at 50% 50%, transparent 18%, #04100a 22%); }
-  100% { background: radial-gradient(circle at 50% 50%, transparent 0%, #04100a 0%); }
+.intro-scanline::before {
+  content: '';
+  position: absolute; left: -10%; right: -10%; height: 80px;
+  top: -100px;
+  background: linear-gradient(180deg,
+    transparent 0%,
+    rgba(120,255,170,0) 30%,
+    rgba(120,255,170,0.35) 50%,
+    rgba(120,255,170,0) 70%,
+    transparent 100%);
+  filter: blur(2px);
+  animation: intro-scan 2.6s cubic-bezier(0.4,0,0.6,1) 0.4s 1 forwards;
+}
+@keyframes intro-scan {
+  0%   { top: -100px; opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { top: 105%; opacity: 0; }
 }
 
 .intro-stage {
   position: relative; z-index: 2;
-  display: flex; flex-direction: column; align-items: center; gap: 22px;
+  display: flex; flex-direction: column; align-items: center; gap: 26px;
   padding: 24px;
 }
 
-/* Pepe gets a sci-fi materializer treatment */
+/* Pepe wrap with HUD brackets and radar */
 .intro-pepe-wrap {
   position: relative;
-  width: 160px; height: 160px;
+  width: 240px; height: 240px;
   display: flex; align-items: center; justify-content: center;
   animation: intro-pepe-float 3s ease-in-out infinite;
 }
@@ -868,6 +883,43 @@ button:active:not(:disabled),
   0%,100% { transform: translateY(0); }
   50%     { transform: translateY(-6px); }
 }
+/* HUD corner brackets (fighter-jet targeting reticle) */
+.intro-hud-bracket {
+  position: absolute; width: 26px; height: 26px;
+  border: 2px solid rgba(120,255,170,0.6);
+  opacity: 0;
+  animation: intro-hud-in 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.4s forwards,
+             intro-hud-pulse 2.4s ease-in-out 1s infinite;
+}
+.intro-hud-bracket.tl { top:  8px; left:  8px; border-right: none; border-bottom: none; }
+.intro-hud-bracket.tr { top:  8px; right: 8px; border-left:  none; border-bottom: none; }
+.intro-hud-bracket.bl { bottom: 8px; left:  8px; border-right: none; border-top:    none; }
+.intro-hud-bracket.br { bottom: 8px; right: 8px; border-left:  none; border-top:    none; }
+@keyframes intro-hud-in {
+  from { opacity: 0; transform: scale(0.4); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes intro-hud-pulse {
+  0%,100% { opacity: 0.7; }
+  50%     { opacity: 1; box-shadow: 0 0 8px rgba(120,255,170,0.4); }
+}
+
+/* Radar sweep - conic gradient that rotates */
+.intro-pepe-radar {
+  position: absolute; width: 200px; height: 200px; border-radius: 50%;
+  background: conic-gradient(from 0deg,
+    rgba(120,255,170,0) 0deg,
+    rgba(120,255,170,0) 270deg,
+    rgba(120,255,170,0.45) 350deg,
+    rgba(120,255,170,0) 360deg);
+  animation: intro-radar-spin 2.2s linear infinite;
+  filter: blur(1px);
+  opacity: 0;
+  animation: intro-radar-fadein 0.6s ease 0.3s forwards, intro-radar-spin 2.2s linear 0.3s infinite;
+}
+@keyframes intro-radar-spin { to { transform: rotate(360deg); } }
+@keyframes intro-radar-fadein { to { opacity: 1; } }
+
 .intro-pepe-halo {
   position: absolute; width: 160px; height: 160px; border-radius: 50%;
   background: radial-gradient(circle, rgba(80,200,120,0.55) 0%, rgba(30,107,75,0) 70%);
@@ -879,8 +931,8 @@ button:active:not(:disabled),
   animation: intro-halo2 2.4s ease-in-out infinite 0.4s;
 }
 .intro-pepe-ring {
-  position: absolute; width: 230px; height: 230px; border-radius: 50%;
-  border: 1px dashed rgba(120,255,170,0.35);
+  position: absolute; width: 175px; height: 175px; border-radius: 50%;
+  border: 1px dashed rgba(120,255,170,0.4);
   animation: intro-ring-spin 9s linear infinite;
 }
 @keyframes intro-ring-spin { to { transform: rotate(360deg); } }
@@ -892,7 +944,7 @@ button:active:not(:disabled),
     0 0 90px rgba(30,107,75,0.35),
     inset 0 0 12px rgba(255,255,255,0.15);
   animation: intro-pepe-in 0.9s cubic-bezier(0.34,1.56,0.64,1) both;
-  object-fit: cover; object-position: center 18%;
+  object-fit: cover;
   position: relative; z-index: 2;
 }
 .intro-pepe-sparkle { position: absolute; inset: 0; pointer-events: none; }
@@ -901,45 +953,51 @@ button:active:not(:disabled),
   background: #c8ffd9; box-shadow: 0 0 10px #80ffaa, 0 0 18px rgba(120,255,170,0.6);
   opacity: 0;
 }
-.intro-pepe-sparkle span:nth-child(1) { top: 8%;  left: 18%; animation: intro-spark 1.6s ease-in-out 0.6s infinite; }
-.intro-pepe-sparkle span:nth-child(2) { top: 22%; right: 8%; animation: intro-spark 1.6s ease-in-out 1.0s infinite; }
-.intro-pepe-sparkle span:nth-child(3) { bottom: 14%; left: 6%; animation: intro-spark 1.6s ease-in-out 1.3s infinite; }
-.intro-pepe-sparkle span:nth-child(4) { bottom: 20%; right: 22%; animation: intro-spark 1.6s ease-in-out 0.9s infinite; }
+.intro-pepe-sparkle span:nth-child(1) { top: 18%;  left: 22%; animation: intro-spark 1.6s ease-in-out 0.6s infinite; }
+.intro-pepe-sparkle span:nth-child(2) { top: 28%; right: 18%; animation: intro-spark 1.6s ease-in-out 1.0s infinite; }
+.intro-pepe-sparkle span:nth-child(3) { bottom: 26%; left: 18%; animation: intro-spark 1.6s ease-in-out 1.3s infinite; }
+.intro-pepe-sparkle span:nth-child(4) { bottom: 30%; right: 26%; animation: intro-spark 1.6s ease-in-out 0.9s infinite; }
 @keyframes intro-spark {
   0%, 100% { transform: scale(0); opacity: 0; }
   40%      { transform: scale(1.2); opacity: 1; }
   60%      { transform: scale(0.9); opacity: 0.8; }
 }
 
-/* Typewriter title */
+/* Title with letter-fall (each letter drops from above with bounce) */
 .intro-title {
   font-family: var(--font-display);
-  font-size: 30px; font-weight: 900; color: white;
-  letter-spacing: -0.5px; text-align: center;
-  text-shadow: 0 2px 20px rgba(80,200,120,0.6);
+  font-size: 42px; font-weight: 900; color: white;
+  letter-spacing: -1px; text-align: center;
+  text-shadow: 0 2px 30px rgba(120,255,170,0.6);
   margin: 0;
-  display: flex; align-items: center; gap: 2px;
-  min-height: 38px;
+  min-height: 50px;
+  display: flex; align-items: center; gap: 1px;
+  line-height: 1;
 }
-.intro-title-caret {
-  display: inline-block; width: 3px; height: 26px;
-  background: #80ffaa; box-shadow: 0 0 10px #80ffaa;
-  animation: intro-caret-blink 0.6s steps(2) infinite;
-  vertical-align: middle;
+.intro-title .letter {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(-40px) rotate(-8deg);
+  animation: intro-letter-fall 0.7s cubic-bezier(0.34,1.7,0.5,1) forwards;
 }
-@keyframes intro-caret-blink { 50% { opacity: 0; } }
+@keyframes intro-letter-fall {
+  0%   { opacity: 0; transform: translateY(-40px) rotate(-8deg); filter: blur(4px); }
+  60%  { opacity: 1; transform: translateY(6px)   rotate(2deg);  filter: blur(0); }
+  85%  {              transform: translateY(-2px) rotate(-1deg); }
+  100% { opacity: 1; transform: translateY(0)    rotate(0);     }
+}
 
 /* Stats area */
 .intro-stats {
-  display: flex; flex-direction: column; align-items: center; gap: 6px;
-  margin-top: 4px;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  margin-top: 2px;
 }
 .intro-counter {
   display: flex; flex-direction: column; align-items: center; gap: 2px;
 }
 .intro-counter-val {
   font-family: var(--font-display);
-  font-size: 44px; font-weight: 900;
+  font-size: 38px; font-weight: 900;
   background: linear-gradient(180deg, #ffffff 0%, #b9ffd4 100%);
   -webkit-background-clip: text; background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -950,41 +1008,43 @@ button:active:not(:disabled),
 }
 .intro-counter-unit {
   font-family: var(--font-body);
-  font-size: 11px; font-weight: 700;
+  font-size: 10px; font-weight: 700;
   color: rgba(180,230,200,0.75);
-  text-transform: uppercase; letter-spacing: 2px;
+  text-transform: uppercase; letter-spacing: 2.5px;
 }
 .intro-status {
   font-family: var(--font-body);
   font-size: 13px; font-weight: 600;
-  color: rgba(200,255,220,0.9);
-  margin-top: 6px; padding: 6px 14px;
-  border: 1px solid rgba(120,255,170,0.25);
+  color: rgba(200,255,220,0.92);
+  margin-top: 4px; padding: 7px 16px;
+  border: 1px solid rgba(120,255,170,0.28);
   border-radius: 100px;
   background: rgba(80,200,120,0.06);
   backdrop-filter: blur(4px);
-  animation: intro-status-pulse 2s ease-in-out infinite;
-  min-height: 28px;
-  display: flex; align-items: center;
+  min-height: 30px;
+  display: flex; align-items: center; gap: 8px;
+  transition: border-color 0.3s ease, background 0.3s ease;
 }
-@keyframes intro-status-pulse {
-  0%,100% { box-shadow: 0 0 0 0 rgba(120,255,170,0); }
-  50%     { box-shadow: 0 0 0 6px rgba(120,255,170,0.10); }
+.intro-status.ready {
+  border-color: rgba(120,255,170,0.6);
+  background: rgba(80,200,120,0.14);
 }
-
-.intro-skip {
-  position: absolute; top: 18px; right: 22px;
-  font-family: var(--font-body);
-  font-size: 12px; font-weight: 600;
-  color: rgba(200,255,220,0.6);
-  padding: 6px 12px; border-radius: 100px;
-  border: 1px solid rgba(120,255,170,0.2);
-  cursor: pointer; user-select: none;
-  transition: all 0.2s ease;
-  background: rgba(0,0,0,0.2);
-  backdrop-filter: blur(4px);
+.intro-status-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #80ffaa; box-shadow: 0 0 8px #80ffaa, 0 0 14px rgba(120,255,170,0.6);
+  animation: intro-dot-pulse 1.1s ease-in-out infinite;
+  flex-shrink: 0;
 }
-.intro-skip:hover, .intro-skip:focus { color: white; border-color: rgba(120,255,170,0.5); outline: none; }
+.intro-status.ready .intro-status-dot {
+  animation: none;
+  background: #b9ffd4;
+  box-shadow: 0 0 14px #80ffaa, 0 0 24px rgba(120,255,170,0.7);
+  transform: scale(1.3);
+}
+@keyframes intro-dot-pulse {
+  0%,100% { opacity: 0.5; transform: scale(0.85); }
+  50%     { opacity: 1;   transform: scale(1.15); }
+}
 
 .intro-stars { position: absolute; inset: 0; pointer-events: none; }
 .intro-star {
@@ -998,9 +1058,6 @@ button:active:not(:disabled),
   100% { transform: translateY(-60px) rotate(180deg) scale(0.5); opacity: 0; }
 }
 
-@keyframes intro-fade-out {
-  to { opacity: 0; visibility: hidden; pointer-events: none; }
-}
 @keyframes intro-pepe-in {
   0%   { transform: scale(0.2) rotate(-20deg); opacity: 0; filter: blur(8px); }
   60%  { transform: scale(1.08) rotate(4deg);  opacity: 1; filter: blur(0); }
@@ -1061,8 +1118,10 @@ button:active:not(:disabled),
 /* Reduced motion: respect user setting */
 @media (prefers-reduced-motion: reduce) {
   #intro-overlay { animation-duration: 0.3s !important; }
-  .intro-grid, .intro-pepe-ring, .intro-pepe-sparkle span,
-  .intro-pepe-halo, .intro-pepe-halo2, .intro-pepe-wrap { animation: none !important; }
+  .intro-grid, .intro-pepe-ring, .intro-pepe-radar, .intro-pepe-sparkle span,
+  .intro-pepe-halo, .intro-pepe-halo2, .intro-pepe-wrap, .intro-hud-bracket,
+  .intro-scanline::before { animation: none !important; }
+  .intro-title .letter { opacity: 1 !important; transform: none !important; animation: none !important; }
   .station-card, .station-card.is-winner { animation: card-reveal .25s ease both !important; }
 }
 </style>
@@ -1075,12 +1134,17 @@ button:active:not(:disabled),
   <div class="intro-grid"></div>
   <div class="intro-vignette"></div>
   <div class="intro-stars" id="intro-stars"></div>
-
-  <!-- iris mask (closes at the end like a camera) -->
-  <div class="intro-iris" aria-hidden="true"></div>
+  <div class="intro-scanline"></div>
 
   <div class="intro-stage">
     <div class="intro-pepe-wrap">
+      <!-- HUD targeting brackets -->
+      <div class="intro-hud-bracket tl"></div>
+      <div class="intro-hud-bracket tr"></div>
+      <div class="intro-hud-bracket bl"></div>
+      <div class="intro-hud-bracket br"></div>
+      <!-- Radar sweep -->
+      <div class="intro-pepe-radar"></div>
       <div class="intro-pepe-halo"></div>
       <div class="intro-pepe-halo2"></div>
       <div class="intro-pepe-ring"></div>
@@ -1088,19 +1152,18 @@ button:active:not(:disabled),
       <div class="intro-pepe-sparkle"><span></span><span></span><span></span><span></span></div>
     </div>
 
-    <h1 class="intro-title">
-      <span class="intro-title-text" id="intro-title-text"></span><span class="intro-title-caret"></span>
-    </h1>
+    <h1 class="intro-title" id="intro-title" aria-label="IberoFuel"></h1>
 
     <div class="intro-stats">
       <div class="intro-counter">
         <span class="intro-counter-val" id="intro-counter-val">0</span>
         <span class="intro-counter-unit">gasolineras vigiladas</span>
       </div>
-      <div class="intro-status" id="intro-status">Despertando a Pepe…</div>
+      <div class="intro-status" id="intro-status">
+        <span class="intro-status-dot"></span>
+        <span class="intro-status-text">Despertando a Pepe…</span>
+      </div>
     </div>
-
-    <div class="intro-skip" id="intro-skip" tabindex="0" role="button" aria-label="Saltar intro">Saltar ▸</div>
   </div>
 </div>
 
