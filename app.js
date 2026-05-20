@@ -515,8 +515,9 @@ function usarMiUbicacion() {
       showLocationStatus(result.cityName);
       if (isMobile()) switchTab('lista');
     } catch(e) {
-      btn.disabled = false; btn.classList.remove('searching');
       showError(e.message);
+    } finally {
+      btn.disabled = false; btn.classList.remove('searching');
     }
   }
 
@@ -557,30 +558,50 @@ function normProv(s){
     .replace(/\s+/g,' ').trim();
 }
 
+function _matchProvincia(candidatos) {
+  for (const c of candidatos.filter(Boolean)) {
+    const nc = normProv(c);
+    const found = provinciasData.find(p => {
+      const np = normProv(p.name);
+      return np === nc || nc.includes(np) || np.includes(nc);
+    });
+    if (found) return found;
+  }
+  return null;
+}
+
 async function getIdProvinciaDesdeCoords(lat, lng) {
-  const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), 9000);
+  // 1. Nominatim
   try {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 7000);
     const r = await fetch(
       `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=es`,
       { signal: ctrl.signal }
     );
+    clearTimeout(t);
     const d = await r.json();
     const addr = d.address || {};
     const cityName = addr.city || addr.town || addr.village || addr.municipality || addr.county || '';
-    const candidatos = [addr.province, addr.state_district, addr.state, addr.county].filter(Boolean);
-    for (const c of candidatos) {
-      const nc = normProv(c);
-      const found = provinciasData.find(p => {
-        const np = normProv(p.name);
-        return np === nc || nc.includes(np) || np.includes(nc);
-      });
-      if (found) return { id: found.id, cityName };
-    }
-  } catch {
-  } finally {
-    clearTimeout(t);
-  }
+    const found = _matchProvincia([addr.province, addr.state_district, addr.state, addr.county, addr.region]);
+    if (found) return { id: found.id, cityName };
+  } catch (_) {}
+
+  // 2. BigDataCloud fallback (free, CORS-ready)
+  try {
+    const ctrl2 = new AbortController();
+    const t2 = setTimeout(() => ctrl2.abort(), 7000);
+    const r2 = await fetch(
+      `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=es`,
+      { signal: ctrl2.signal }
+    );
+    clearTimeout(t2);
+    const d2 = await r2.json();
+    const cityName2 = d2.city || d2.locality || d2.principalSubdivision || '';
+    const found2 = _matchProvincia([d2.principalSubdivision, d2.administrativeLevels?.level1long, d2.administrativeLevels?.level2long]);
+    if (found2) return { id: found2.id, cityName: cityName2 };
+  } catch (_) {}
+
   return null;
 }
 
@@ -736,6 +757,32 @@ function renderList() {
   scroll.innerHTML = '';
   scroll.appendChild(frag);
   scroll.scrollTop = 0;
+
+  // ─── Winner price "slot machine" effect ─────────────────────
+  // Animate the cheapest station's price from a teaser (9.999) down to real value,
+  // synced with the winner-arrive bounce. Only on the *first* fresh render.
+  const winnerPriceEl = scroll.querySelector('.station-card.is-winner .price-val');
+  if (winnerPriceEl && !winnerPriceEl.dataset.animated) {
+    const target = parseFloat(winnerPriceEl.textContent.replace(',', '.'));
+    if (!isNaN(target) && target > 0) {
+      winnerPriceEl.dataset.animated = '1';
+      const start = Math.max(target + 0.4, 2.000);
+      const t0 = performance.now() + 350;
+      const duration = 900;
+      const tick = (now) => {
+        const elapsed = now - t0;
+        if (elapsed < 0) { winnerPriceEl.textContent = start.toFixed(3); requestAnimationFrame(tick); return; }
+        const p = Math.min(1, elapsed / duration);
+        // ease-out quart for "settling" feel
+        const eased = 1 - Math.pow(1 - p, 4);
+        const v = start - (start - target) * eased;
+        winnerPriceEl.textContent = v.toFixed(3);
+        if (p < 1) requestAnimationFrame(tick);
+        else winnerPriceEl.textContent = target.toFixed(3);
+      };
+      requestAnimationFrame(tick);
+    }
+  }
 }
 
 function renderMarkers() {
@@ -1448,16 +1495,87 @@ async function boot() {
       introStars.appendChild(s);
     }
   }
-  // Remove overlay from DOM after animation completes
+
+  // ─── CINEMATIC INTRO CHOREOGRAPHY ──────────────────────────────
+  const introOverlay = document.getElementById('intro-overlay');
+  const titleEl = document.getElementById('intro-title-text');
+  const counterEl = document.getElementById('intro-counter-val');
+  const statusEl = document.getElementById('intro-status');
+  const skipBtn = document.getElementById('intro-skip');
+  let introSkipped = false;
+  let introTimers = [];
+  const addT = (fn, ms) => introTimers.push(setTimeout(fn, ms));
+
+  // Typewriter for the title
+  const TITLE = 'IberoFuel';
+  if (titleEl) {
+    let i = 0;
+    const typeStep = () => {
+      if (introSkipped || i > TITLE.length) return;
+      titleEl.textContent = TITLE.slice(0, i++);
+      addT(typeStep, 90);
+    };
+    addT(typeStep, 700);
+  }
+
+  // Status messages — narrate what's happening behind the scenes
+  const STATUS_BEATS = [
+    { t: 700,  msg: 'Conectando con el Ministerio… 🇪🇸' },
+    { t: 1500, msg: 'Escaneando estaciones en toda España…' },
+    { t: 2400, msg: 'Pepe está organizando precios… 🐽' },
+    { t: 3000, msg: '¡Listo!' },
+  ];
+  STATUS_BEATS.forEach(b => addT(() => {
+    if (!introSkipped && statusEl) statusEl.textContent = b.msg;
+  }, b.t));
+
+  // Counter from 0 → 11,387 (approx. number of gas stations in Spain)
+  if (counterEl) {
+    const TARGET = 11387;
+    const START = 600;
+    const DURATION = 2200;
+    const t0 = performance.now() + START;
+    const tick = (now) => {
+      if (introSkipped) { counterEl.textContent = TARGET.toLocaleString('es-ES'); return; }
+      const elapsed = now - t0;
+      if (elapsed < 0) { requestAnimationFrame(tick); return; }
+      const p = Math.min(1, elapsed / DURATION);
+      // ease-out cubic
+      const eased = 1 - Math.pow(1 - p, 3);
+      const val = Math.round(eased * TARGET);
+      counterEl.textContent = val.toLocaleString('es-ES');
+      if (p < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }
+
+  // Skip button — collapse intro instantly
+  function skipIntro() {
+    if (introSkipped) return;
+    introSkipped = true;
+    introTimers.forEach(clearTimeout);
+    if (titleEl) titleEl.textContent = TITLE;
+    if (counterEl) counterEl.textContent = '11.387';
+    if (statusEl) statusEl.textContent = '¡Listo!';
+    if (introOverlay) introOverlay.classList.add('skipped');
+    addT(() => introOverlay?.classList.add('gone'), 350);
+    // also fire Pepe greet now if not already
+    addT(() => { try { Pepe.greet(); } catch(_){} }, 400);
+  }
+  skipBtn?.addEventListener('click', skipIntro);
+  skipBtn?.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') skipIntro(); });
+
+  // Remove overlay from DOM after animation completes (matches CSS 3.4s + 0.5s fade)
   setTimeout(() => {
     const overlay = document.getElementById('intro-overlay');
-    if (overlay) { overlay.classList.add('gone'); }
-  }, 3800);
+    if (overlay && !introSkipped) { overlay.classList.add('gone'); }
+  }, 4000);
 
-  // Greet first — never let other errors block Pepe
+  // Greet AFTER the intro is gone, so Pepe's bubble doesn't fight the overlay
   setTimeout(() => {
+    if (introSkipped) return; // already greeted
     try { Pepe.greet(); } catch(e) { console.error('Pepe.greet failed:', e); }
-  }, 600);
+  }, 4200);
 
   try { checkVerificationCallback(); } catch(e) { console.warn('verify check:', e); }
   try { initMap(); } catch(e) { console.warn('map init:', e); }
@@ -1470,18 +1588,23 @@ async function boot() {
         currentUser = session.user;
         await loadFavorites();
         updateAuthButton();
+        // Si las gasolineras ya están renderizadas (la geolocalización es ahora más rápida
+        // que la restauración de sesión), re-renderiza para mostrar los botones de favorito/repostar/alerta.
+        if (allStations.length) renderList();
       }
       sb.auth.onAuthStateChange(async (event, session) => {
         if (event === 'SIGNED_IN') {
           currentUser = session.user;
           await loadFavorites();
           updateAuthButton();
+          if (allStations.length) renderList();
           closeAuthModal();
           Pepe.say(`¡Hola ${(currentUser.user_metadata?.display_name||'amigo').split(' ')[0]}! Ya estamos listos 🐽`, 'happy', 5000);
         } else if (event === 'SIGNED_OUT') {
           currentUser = null;
           favorites.clear();
           updateAuthButton();
+          if (allStations.length) renderList();
         }
       });
     } catch(e) { console.warn('auth init:', e); }
