@@ -515,8 +515,9 @@ function usarMiUbicacion() {
       showLocationStatus(result.cityName);
       if (isMobile()) switchTab('lista');
     } catch(e) {
-      btn.disabled = false; btn.classList.remove('searching');
       showError(e.message);
+    } finally {
+      btn.disabled = false; btn.classList.remove('searching');
     }
   }
 
@@ -557,30 +558,50 @@ function normProv(s){
     .replace(/\s+/g,' ').trim();
 }
 
+function _matchProvincia(candidatos) {
+  for (const c of candidatos.filter(Boolean)) {
+    const nc = normProv(c);
+    const found = provinciasData.find(p => {
+      const np = normProv(p.name);
+      return np === nc || nc.includes(np) || np.includes(nc);
+    });
+    if (found) return found;
+  }
+  return null;
+}
+
 async function getIdProvinciaDesdeCoords(lat, lng) {
-  const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), 9000);
+  // 1. Nominatim
   try {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 7000);
     const r = await fetch(
       `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=es`,
       { signal: ctrl.signal }
     );
+    clearTimeout(t);
     const d = await r.json();
     const addr = d.address || {};
     const cityName = addr.city || addr.town || addr.village || addr.municipality || addr.county || '';
-    const candidatos = [addr.province, addr.state_district, addr.state, addr.county].filter(Boolean);
-    for (const c of candidatos) {
-      const nc = normProv(c);
-      const found = provinciasData.find(p => {
-        const np = normProv(p.name);
-        return np === nc || nc.includes(np) || np.includes(nc);
-      });
-      if (found) return { id: found.id, cityName };
-    }
-  } catch {
-  } finally {
-    clearTimeout(t);
-  }
+    const found = _matchProvincia([addr.province, addr.state_district, addr.state, addr.county, addr.region]);
+    if (found) return { id: found.id, cityName };
+  } catch (_) {}
+
+  // 2. BigDataCloud fallback (free, CORS-ready)
+  try {
+    const ctrl2 = new AbortController();
+    const t2 = setTimeout(() => ctrl2.abort(), 7000);
+    const r2 = await fetch(
+      `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=es`,
+      { signal: ctrl2.signal }
+    );
+    clearTimeout(t2);
+    const d2 = await r2.json();
+    const cityName2 = d2.city || d2.locality || d2.principalSubdivision || '';
+    const found2 = _matchProvincia([d2.principalSubdivision, d2.administrativeLevels?.level1long, d2.administrativeLevels?.level2long]);
+    if (found2) return { id: found2.id, cityName: cityName2 };
+  } catch (_) {}
+
   return null;
 }
 
