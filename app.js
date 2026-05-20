@@ -535,7 +535,7 @@ async function usarMiUbicacion() {
     showLoading('Identificando tu provincia…');
     try {
       const result = await getIdProvinciaDesdeCoords(userPos.lat, userPos.lng);
-      if (!result) throw new Error('No pude identificar tu provincia. Prueba buscando por municipio.');
+      if (!result) throw new Error(`No pude identificar tu provincia automáticamente (lat ${userPos.lat.toFixed(3)}, lng ${userPos.lng.toFixed(3)}). Búscala manualmente arriba.`);
       showLoading('Buscando gasolineras cerca…');
       _lastSearch = usarMiUbicacion;
       const data = await fetchAPI(`${API_BASE}/EstacionesTerrestresFiltros/FiltroProvincia/${result.id}`);
@@ -590,38 +590,152 @@ async function usarMiUbicacion() {
   );
 }
 
+// Bilingual aliases — Nominatim may return either the regional form ("Bizkaia",
+// "A Coruña") or the Spanish form ("Vizcaya", "La Coruña"). The Ministerio uses
+// the OFFICIAL form (mostly the regional one). Map every variant to a single
+// canonical key so both sides normalize to the same string.
+const PROVINCE_ALIASES = {
+  // Vizcaya / Bizkaia  → 'bizkaia' (Ministerio: BIZKAIA)
+  'vizcaya': 'bizkaia',
+  // Guipúzcoa / Gipuzkoa → 'gipuzkoa'
+  'guipuzcoa': 'gipuzkoa',
+  // Álava / Araba → 'alava' (Ministerio: ÁLAVA)
+  'araba': 'alava',
+  'araba alava': 'alava',
+  // A Coruña / La Coruña → 'coruna' (Ministerio: CORUÑA (A) → 'coruna a')
+  'a coruna': 'coruna',
+  'coruna a': 'coruna',
+  // Ourense / Orense → 'ourense'
+  'orense': 'ourense',
+  // Lleida / Lérida → 'lleida'
+  'lerida': 'lleida',
+  // Girona / Gerona → 'girona'
+  'gerona': 'girona',
+  // Baleares / Balears → 'balears' (Ministerio: BALEARS (ILLES) → 'balears illes')
+  'balears illes': 'balears',
+  'illes balears': 'balears',
+  'baleares': 'balears',
+  'islas baleares': 'balears',
+  // Castellón / Castelló → 'castellon' (Ministerio: CASTELLÓN/CASTELLÓ → 'castellon castello')
+  'castellon castello': 'castellon',
+  'castello': 'castellon',
+  // Alicante / Alacant → 'alicante' (Ministerio: ALICANTE/ALACANT → 'alicante alacant')
+  'alicante alacant': 'alicante',
+  'alacant': 'alicante',
+  // Valencia / València → 'valencia' (Ministerio: 'valencia valencia')
+  'valencia valencia': 'valencia',
+  // Asturias variants
+  'asturies': 'asturias',
+  'principado asturias': 'asturias',
+  'principat asturies': 'asturias',
+  // CCAA → provincia (when Nominatim only returns the autonomous community)
+  'comunidad madrid': 'madrid',
+  'comunitat madrid': 'madrid',
+  'comunidad foral navarra': 'navarra',
+  'comunitat foral navarra': 'navarra',
+  'region murcia': 'murcia',
+  // Las Palmas (Ministerio: PALMAS (LAS) → 'palmas')
+  'las palmas': 'palmas',
+  'palmas gran canaria': 'palmas',
+};
+
 function normProv(s){
-  return (s||'').toLowerCase()
-    .normalize('NFD').replace(/[̀-ͯ]/g,'')
-    .replace(/\b(provincia|comunidad|comunitat|region|regiao|autonoma)\b/g,'')
+  let v = (s||'').toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')   // strip diacritics
+    .replace(/\b(provincia|provincie|comunidad|comunitat|region|regiao|autonoma|autonoma)\b/g,'')
     .replace(/\bde\b|\bdel\b|\bla\b|\bles\b|\blos\b|\blas\b/g,'')
+    .replace(/[\/\-,]/g,' ')
     .replace(/\s+/g,' ').trim();
+  // Resolve alias if any
+  if (PROVINCE_ALIASES[v]) v = PROVINCE_ALIASES[v];
+  return v;
 }
 
-async function getIdProvinciaDesdeCoords(lat, lng) {
+// Fallback reverse-geocoder. BigDataCloud is free and has no rate limit for the
+// client-side endpoint, and returns Spanish admin levels reliably.
+async function reverseGeoBigDataCloud(lat, lng) {
   const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), 9000);
+  const t = setTimeout(() => ctrl.abort(), 7000);
   try {
     const r = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=es`,
+      `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=es`,
       { signal: ctrl.signal }
     );
     const d = await r.json();
-    const addr = d.address || {};
-    const cityName = addr.city || addr.town || addr.village || addr.municipality || addr.county || '';
-    const candidatos = [addr.province, addr.state_district, addr.state, addr.county].filter(Boolean);
-    for (const c of candidatos) {
+    // localityInfo.administrative contains an ordered list of admin divisions.
+    // For Spain: order 4 = comunidad autónoma, order 6 = provincia, order 8 = municipio.
+    const admins = (d.localityInfo && d.localityInfo.administrative) || [];
+    const candidates = [];
+    // Province first (order 6), then any other admin level as fallback
+    const province = admins.find(a => a.order === 6 || a.adminLevel === 6);
+    if (province) candidates.push(province.name);
+    // Also include principalSubdivision (CCAA) as fallback
+    if (d.principalSubdivision) candidates.push(d.principalSubdivision);
+    admins.forEach(a => a.name && candidates.push(a.name));
+    const cityName = d.city || d.locality || d.localityInfo?.informative?.[0]?.name || '';
+    return { candidates, cityName };
+  } catch(e) {
+    console.warn('[BigDataCloud reverse-geo failed]', e);
+    return { candidates: [], cityName: '' };
+  } finally {
+    clearTimeout(t);
+  }
+}
+
+async function getIdProvinciaDesdeCoords(lat, lng) {
+  // Helper: try matching a list of candidate strings against provinciasData
+  const tryMatch = (candidates, cityName) => {
+    for (const c of candidates) {
+      if (!c) continue;
       const nc = normProv(c);
+      if (!nc) continue;
       const found = provinciasData.find(p => {
         const np = normProv(p.name);
         return np === nc || nc.includes(np) || np.includes(nc);
       });
       if (found) return { id: found.id, cityName };
     }
-  } catch {
+    return null;
+  };
+
+  // 1) Try Nominatim first
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), 9000);
+  let nominatimCandidates = [];
+  let nominatimCity = '';
+  try {
+    const r = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=es&zoom=10`,
+      { signal: ctrl.signal }
+    );
+    if (r.ok) {
+      const d = await r.json();
+      const addr = d.address || {};
+      nominatimCity = addr.city || addr.town || addr.village || addr.municipality || addr.county || '';
+      nominatimCandidates = [addr.province, addr.state_district, addr.state, addr.county, addr.region].filter(Boolean);
+    } else {
+      console.warn('[Nominatim] HTTP', r.status);
+    }
+  } catch(e) {
+    console.warn('[Nominatim failed]', e);
   } finally {
     clearTimeout(t);
   }
+  let match = tryMatch(nominatimCandidates, nominatimCity);
+  if (match) return match;
+
+  // 2) Fallback to BigDataCloud (no rate limits, works when Nominatim is down or rate-limited)
+  console.info('[reverse-geo] Nominatim did not resolve a province, falling back to BigDataCloud…');
+  const bdc = await reverseGeoBigDataCloud(lat, lng);
+  match = tryMatch(bdc.candidates, bdc.cityName || nominatimCity);
+  if (match) return match;
+
+  // 3) Total failure — log diagnostic info for debugging
+  console.error('[reverse-geo] Could not match any province from these candidates:', {
+    nominatim: nominatimCandidates,
+    bigDataCloud: bdc.candidates,
+    knownProvinces: provinciasData.map(p => p.name).slice(0,5) + '…'
+  });
   return null;
 }
 
