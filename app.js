@@ -494,41 +494,58 @@ function usarMiUbicacion() {
   Pepe.say('Buscando dónde estás… un momentito 📍', 'thinking');
   showLoading('Detectando tu posición…');
 
-  navigator.geolocation.getCurrentPosition(
-    async function(pos) {
-      userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-      if (mapInstance) mapInstance.setView([userPos.lat, userPos.lng], 13);
-      showLoading('Identificando tu provincia…');
-      try {
-        const result = await getIdProvinciaDesdeCoords(userPos.lat, userPos.lng);
-        if (!result) throw new Error('No pude identificar tu provincia. Prueba buscando por municipio.');
-        showLoading('Buscando gasolineras cerca…');
-        _lastSearch = usarMiUbicacion;
-        const data = await fetchAPI(`${API_BASE}/EstacionesTerrestresFiltros/FiltroProvincia/${result.id}`);
-        if (!data || !data.ListaEESSPrecio) throw new Error('Sin datos de la API');
-        const nearby = data.ListaEESSPrecio.filter(s => {
-          const lat = parseFloat((s.Latitud || '').replace(',','.'));
-          const lng = parseFloat((s['Longitud (WGS84)'] || s.Longitud || '').replace(',','.'));
-          return !isNaN(lat) && !isNaN(lng) && haversine(userPos.lat, userPos.lng, lat, lng) <= 15;
-        });
-        if (!nearby.length) throw new Error('No hay gasolineras en un radio de 15 km');
-        processStations(nearby);
-        showLocationStatus(result.cityName);
-        if (isMobile()) switchTab('lista');
-      } catch(e) {
-        btn.disabled = false; btn.classList.remove('searching');
-        showError(e.message);
-      }
-    },
-    function(err) {
+  async function procesarPosicion(pos) {
+    userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+    if (mapInstance) mapInstance.setView([userPos.lat, userPos.lng], 13);
+    showLoading('Identificando tu provincia…');
+    try {
+      const result = await getIdProvinciaDesdeCoords(userPos.lat, userPos.lng);
+      if (!result) throw new Error('No pude identificar tu provincia. Prueba buscando por municipio.');
+      showLoading('Buscando gasolineras cerca…');
+      _lastSearch = usarMiUbicacion;
+      const data = await fetchAPI(`${API_BASE}/EstacionesTerrestresFiltros/FiltroProvincia/${result.id}`);
+      if (!data || !data.ListaEESSPrecio) throw new Error('Sin datos de la API');
+      const nearby = data.ListaEESSPrecio.filter(s => {
+        const lat = parseFloat((s.Latitud || '').replace(',','.'));
+        const lng = parseFloat((s['Longitud (WGS84)'] || s.Longitud || '').replace(',','.'));
+        return !isNaN(lat) && !isNaN(lng) && haversine(userPos.lat, userPos.lng, lat, lng) <= 15;
+      });
+      if (!nearby.length) throw new Error('No hay gasolineras en un radio de 15 km');
+      processStations(nearby);
+      showLocationStatus(result.cityName);
+      if (isMobile()) switchTab('lista');
+    } catch(e) {
       btn.disabled = false; btn.classList.remove('searching');
-      let msg = 'No pude obtener tu ubicación. Activa la geolocalización 📍';
-      if (err.code === 1) msg = 'Permiso denegado. Activa el acceso a la ubicación.';
-      if (err.code === 2) msg = 'Sin señal GPS. Inténtalo de nuevo.';
-      if (err.code === 3) msg = 'Tiempo de espera agotado.';
-      showError(msg);
-    },
-    { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+      showError(e.message);
+    }
+  }
+
+  function manejarErrorGeo(err, esReintento) {
+    if (err.code === 3 && !esReintento) {
+      // Timeout con alta precisión → reintentar con red (más rápido y fiable)
+      Pepe.say('Tardó demasiado con GPS, reintentando con red… 📶', 'thinking');
+      showLoading('Reintentando con localización por red…');
+      navigator.geolocation.getCurrentPosition(
+        procesarPosicion,
+        function(err2) { manejarErrorGeo(err2, true); },
+        { enableHighAccuracy: false, timeout: 12000, maximumAge: 60000 }
+      );
+      return;
+    }
+    btn.disabled = false; btn.classList.remove('searching');
+    let msg = 'No pude obtener tu ubicación. Activa la geolocalización 📍';
+    if (err.code === 1) msg = 'Permiso denegado. Activa el acceso a la ubicación en tu navegador.';
+    if (err.code === 2) msg = 'No se pudo determinar tu posición. Comprueba tu conexión.';
+    if (err.code === 3) msg = 'Tiempo de espera agotado. Comprueba tu señal o busca manualmente.';
+    showError(msg);
+  }
+
+  // Primero intentamos sin alta precisión: usa WiFi/red, es más rápido y funciona en interior.
+  // Es más que suficiente para detectar la provincia.
+  navigator.geolocation.getCurrentPosition(
+    procesarPosicion,
+    function(err) { manejarErrorGeo(err, false); },
+    { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }
   );
 }
 
@@ -542,7 +559,7 @@ function normProv(s){
 
 async function getIdProvinciaDesdeCoords(lat, lng) {
   const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), 6000);
+  const t = setTimeout(() => ctrl.abort(), 9000);
   try {
     const r = await fetch(
       `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=es`,
