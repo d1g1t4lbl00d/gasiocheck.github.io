@@ -804,74 +804,207 @@ button:active:not(:disabled),
   .donate-float { display: none; }
 }
 /* ─── INTRO OVERLAY ─────────────────────────────────────────── */
+/* ─── CINEMATIC INTRO ─────────────────────────────────────────── */
 #intro-overlay {
   position: fixed; inset: 0; z-index: 99999;
-  background: radial-gradient(ellipse at 50% 60%, #1a3d27 0%, #0d2018 50%, #050e0a 100%);
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 28px; overflow: hidden;
-  animation: intro-fade-out 0.7s cubic-bezier(0.4,0,0.2,1) 3s forwards;
-  pointer-events: auto;
+  background:
+    radial-gradient(ellipse at 50% 38%, #1a3d27 0%, #0c1f15 55%, #04100a 100%);
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+  animation: intro-fade-out 0.5s ease 3.4s forwards;
 }
 #intro-overlay.gone { display: none; }
+#intro-overlay.skipped { animation: intro-fade-out 0.35s ease forwards !important; }
+
+/* Animated background grid (perspective floor) */
+.intro-grid {
+  position: absolute; inset: -2% -2% 30% -2%;
+  background-image:
+    linear-gradient(rgba(80,200,120,0.10) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(80,200,120,0.10) 1px, transparent 1px);
+  background-size: 38px 38px;
+  transform: perspective(600px) rotateX(62deg) translateY(20%);
+  transform-origin: center 60%;
+  mask-image: radial-gradient(ellipse at center 40%, #000 35%, transparent 75%);
+  animation: intro-grid-pan 6s linear infinite;
+  opacity: 0.55;
+}
+@keyframes intro-grid-pan {
+  from { background-position: 0 0, 0 0; }
+  to   { background-position: 0 38px, 0 38px; }
+}
+.intro-vignette {
+  position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.6) 100%);
+}
+
+/* Iris-out closer at the end (like a camera shutter) */
+.intro-iris {
+  position: absolute; inset: 0; pointer-events: none; z-index: 5;
+  background: radial-gradient(circle at 50% 50%,
+    transparent 100%, #04100a 100%);
+  animation: intro-iris-close 0.65s cubic-bezier(0.7,0,0.3,1) 2.9s forwards;
+}
+@keyframes intro-iris-close {
+  0%   { background: radial-gradient(circle at 50% 50%, transparent 100%, #04100a 100%); }
+  60%  { background: radial-gradient(circle at 50% 50%, transparent 18%, #04100a 22%); }
+  100% { background: radial-gradient(circle at 50% 50%, transparent 0%, #04100a 0%); }
+}
+
+.intro-stage {
+  position: relative; z-index: 2;
+  display: flex; flex-direction: column; align-items: center; gap: 22px;
+  padding: 24px;
+}
+
+/* Pepe gets a sci-fi materializer treatment */
 .intro-pepe-wrap {
-  position: relative; display: flex; align-items: center; justify-content: center;
+  position: relative;
+  width: 160px; height: 160px;
+  display: flex; align-items: center; justify-content: center;
+  animation: intro-pepe-float 3s ease-in-out infinite;
+}
+@keyframes intro-pepe-float {
+  0%,100% { transform: translateY(0); }
+  50%     { transform: translateY(-6px); }
 }
 .intro-pepe-halo {
   position: absolute; width: 160px; height: 160px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(30,107,75,0.5) 0%, rgba(30,107,75,0) 70%);
+  background: radial-gradient(circle, rgba(80,200,120,0.55) 0%, rgba(30,107,75,0) 70%);
   animation: intro-halo 2s ease-in-out infinite;
 }
 .intro-pepe-halo2 {
   position: absolute; width: 200px; height: 200px; border-radius: 50%;
-  border: 2px solid rgba(80,200,120,0.2);
+  border: 2px solid rgba(80,200,120,0.25);
   animation: intro-halo2 2.4s ease-in-out infinite 0.4s;
 }
+.intro-pepe-ring {
+  position: absolute; width: 230px; height: 230px; border-radius: 50%;
+  border: 1px dashed rgba(120,255,170,0.35);
+  animation: intro-ring-spin 9s linear infinite;
+}
+@keyframes intro-ring-spin { to { transform: rotate(360deg); } }
 .intro-pepe-img {
   width: 130px; height: 130px; border-radius: 50%;
-  border: 3px solid rgba(80,200,120,0.4);
-  box-shadow: 0 0 40px rgba(30,107,75,0.6), 0 0 80px rgba(30,107,75,0.25);
-  animation: intro-pepe-in 0.8s cubic-bezier(0.34,1.56,0.64,1) both;
+  border: 3px solid rgba(120,255,170,0.55);
+  box-shadow:
+    0 0 40px rgba(80,200,120,0.55),
+    0 0 90px rgba(30,107,75,0.35),
+    inset 0 0 12px rgba(255,255,255,0.15);
+  animation: intro-pepe-in 0.9s cubic-bezier(0.34,1.56,0.64,1) both;
   object-fit: cover;
+  position: relative; z-index: 2;
 }
+.intro-pepe-sparkle { position: absolute; inset: 0; pointer-events: none; }
+.intro-pepe-sparkle span {
+  position: absolute; width: 6px; height: 6px; border-radius: 50%;
+  background: #c8ffd9; box-shadow: 0 0 10px #80ffaa, 0 0 18px rgba(120,255,170,0.6);
+  opacity: 0;
+}
+.intro-pepe-sparkle span:nth-child(1) { top: 8%;  left: 18%; animation: intro-spark 1.6s ease-in-out 0.6s infinite; }
+.intro-pepe-sparkle span:nth-child(2) { top: 22%; right: 8%; animation: intro-spark 1.6s ease-in-out 1.0s infinite; }
+.intro-pepe-sparkle span:nth-child(3) { bottom: 14%; left: 6%; animation: intro-spark 1.6s ease-in-out 1.3s infinite; }
+.intro-pepe-sparkle span:nth-child(4) { bottom: 20%; right: 22%; animation: intro-spark 1.6s ease-in-out 0.9s infinite; }
+@keyframes intro-spark {
+  0%, 100% { transform: scale(0); opacity: 0; }
+  40%      { transform: scale(1.2); opacity: 1; }
+  60%      { transform: scale(0.9); opacity: 0.8; }
+}
+
+/* Typewriter title */
 .intro-title {
   font-family: var(--font-display);
-  font-size: 22px; font-weight: 900; color: white;
+  font-size: 30px; font-weight: 900; color: white;
   letter-spacing: -0.5px; text-align: center;
-  animation: intro-text-in 0.5s ease 0.5s both;
-  text-shadow: 0 2px 20px rgba(30,107,75,0.8);
+  text-shadow: 0 2px 20px rgba(80,200,120,0.6);
+  margin: 0;
+  display: flex; align-items: center; gap: 2px;
+  min-height: 38px;
 }
-.intro-sub {
-  display: flex; align-items: center; gap: 4px;
-  font-family: var(--font-body); font-size: 14px; font-weight: 600;
-  color: rgba(180,230,200,0.85);
-  animation: intro-text-in 0.5s ease 0.7s both;
+.intro-title-caret {
+  display: inline-block; width: 3px; height: 26px;
+  background: #80ffaa; box-shadow: 0 0 10px #80ffaa;
+  animation: intro-caret-blink 0.6s steps(2) infinite;
+  vertical-align: middle;
 }
-.intro-dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: rgba(80,200,120,0.8);
-  animation: intro-dot-bounce 1.2s ease-in-out infinite;
-  display: inline-block;
+@keyframes intro-caret-blink { 50% { opacity: 0; } }
+
+/* Stats area */
+.intro-stats {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  margin-top: 4px;
 }
-.intro-dot:nth-child(2) { animation-delay: 0.2s; }
-.intro-dot:nth-child(3) { animation-delay: 0.4s; }
-.intro-stars {
-  position: absolute; inset: 0; pointer-events: none;
+.intro-counter {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
 }
+.intro-counter-val {
+  font-family: var(--font-display);
+  font-size: 44px; font-weight: 900;
+  background: linear-gradient(180deg, #ffffff 0%, #b9ffd4 100%);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -1px;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 30px rgba(120,255,170,0.35);
+  line-height: 1;
+}
+.intro-counter-unit {
+  font-family: var(--font-body);
+  font-size: 11px; font-weight: 700;
+  color: rgba(180,230,200,0.75);
+  text-transform: uppercase; letter-spacing: 2px;
+}
+.intro-status {
+  font-family: var(--font-body);
+  font-size: 13px; font-weight: 600;
+  color: rgba(200,255,220,0.9);
+  margin-top: 6px; padding: 6px 14px;
+  border: 1px solid rgba(120,255,170,0.25);
+  border-radius: 100px;
+  background: rgba(80,200,120,0.06);
+  backdrop-filter: blur(4px);
+  animation: intro-status-pulse 2s ease-in-out infinite;
+  min-height: 28px;
+  display: flex; align-items: center;
+}
+@keyframes intro-status-pulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(120,255,170,0); }
+  50%     { box-shadow: 0 0 0 6px rgba(120,255,170,0.10); }
+}
+
+.intro-skip {
+  position: absolute; top: 18px; right: 22px;
+  font-family: var(--font-body);
+  font-size: 12px; font-weight: 600;
+  color: rgba(200,255,220,0.6);
+  padding: 6px 12px; border-radius: 100px;
+  border: 1px solid rgba(120,255,170,0.2);
+  cursor: pointer; user-select: none;
+  transition: all 0.2s ease;
+  background: rgba(0,0,0,0.2);
+  backdrop-filter: blur(4px);
+}
+.intro-skip:hover, .intro-skip:focus { color: white; border-color: rgba(120,255,170,0.5); outline: none; }
+
+.intro-stars { position: absolute; inset: 0; pointer-events: none; }
 .intro-star {
-  position: absolute; color: rgba(120,255,160,0.6);
-  font-size: 14px;
+  position: absolute; color: rgba(120,255,160,0.6); font-size: 14px;
   animation: intro-star-float 3s ease-in-out infinite;
 }
+@keyframes intro-star-float {
+  0% { transform: translateY(0) rotate(0deg) scale(1); opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 0.6; }
+  100% { transform: translateY(-60px) rotate(180deg) scale(0.5); opacity: 0; }
+}
+
 @keyframes intro-fade-out {
   to { opacity: 0; visibility: hidden; pointer-events: none; }
 }
 @keyframes intro-pepe-in {
-  from { transform: scale(0.2) rotate(-20deg); opacity: 0; }
-  to { transform: scale(1) rotate(0deg); opacity: 1; }
-}
-@keyframes intro-text-in {
-  from { opacity: 0; transform: translateY(14px); }
-  to { opacity: 1; transform: translateY(0); }
+  0%   { transform: scale(0.2) rotate(-20deg); opacity: 0; filter: blur(8px); }
+  60%  { transform: scale(1.08) rotate(4deg);  opacity: 1; filter: blur(0); }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; filter: blur(0); }
 }
 @keyframes intro-halo {
   0%,100% { transform: scale(1); opacity: 0.7; }
@@ -881,34 +1014,93 @@ button:active:not(:disabled),
   0%,100% { transform: scale(1); opacity: 0.4; }
   50% { transform: scale(1.12); opacity: 0.9; }
 }
-@keyframes intro-dot-bounce {
-  0%,80%,100% { transform: translateY(0); }
-  40% { transform: translateY(-8px); }
+
+/* ─── CINEMATIC CARD FLY-IN (overrides plain card-reveal) ──────── */
+@keyframes card-fly-in {
+  0%   { opacity: 0; transform: translateY(-40px) scale(0.9) rotate(-2deg); }
+  60%  { opacity: 1; transform: translateY(6px)   scale(1.02) rotate(0.5deg); }
+  100% { opacity: 1; transform: translateY(0)     scale(1)    rotate(0); }
 }
-@keyframes intro-star-float {
-  0% { transform: translateY(0) rotate(0deg) scale(1); opacity: 0; }
-  20% { opacity: 1; }
-  80% { opacity: 0.6; }
-  100% { transform: translateY(-60px) rotate(180deg) scale(0.5); opacity: 0; }
+@keyframes winner-arrive {
+  0%   { opacity: 0; transform: scale(0.4) translateY(-60px); filter: blur(6px); }
+  55%  { opacity: 1; transform: scale(1.06) translateY(8px);   filter: blur(0); }
+  78%  {              transform: scale(0.98) translateY(-2px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+.station-card {
+  animation: card-fly-in 0.55s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+.station-card.is-winner {
+  animation: winner-arrive 0.85s cubic-bezier(0.34,1.6,0.5,1) both;
+}
+.station-card.is-winner .winner-band {
+  animation: winner-band-pop 0.5s cubic-bezier(0.34,1.7,0.5,1) 0.55s both;
+}
+@keyframes winner-band-pop {
+  0%   { opacity: 0; transform: scale(0.4) rotate(-8deg); }
+  60%  { opacity: 1; transform: scale(1.15) rotate(2deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0); }
+}
+/* Sparkle burst around the winner price right after it lands */
+.station-card.is-winner .price-display::after {
+  content: '';
+  position: absolute; inset: -8px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,215,0,0.35) 0%, transparent 60%);
+  opacity: 0;
+  animation: winner-glow 1.2s ease 0.6s both;
+  pointer-events: none;
+}
+.station-card.is-winner .price-display { position: relative; }
+@keyframes winner-glow {
+  0%   { opacity: 0; transform: scale(0.6); }
+  40%  { opacity: 1; transform: scale(1.1); }
+  100% { opacity: 0; transform: scale(1.4); }
+}
+
+/* Reduced motion: respect user setting */
+@media (prefers-reduced-motion: reduce) {
+  #intro-overlay { animation-duration: 0.3s !important; }
+  .intro-grid, .intro-pepe-ring, .intro-pepe-sparkle span,
+  .intro-pepe-halo, .intro-pepe-halo2, .intro-pepe-wrap { animation: none !important; }
+  .station-card, .station-card.is-winner { animation: card-reveal .25s ease both !important; }
 }
 </style>
 </head>
 <body>
 
-<!-- ─── INTRO OVERLAY ─── -->
-<div id="intro-overlay">
+<!-- ─── INTRO OVERLAY (cinematic) ─── -->
+<div id="intro-overlay" role="dialog" aria-label="Cargando IberoFuel">
+  <!-- ambient grid -->
+  <div class="intro-grid"></div>
+  <div class="intro-vignette"></div>
   <div class="intro-stars" id="intro-stars"></div>
-  <div class="intro-pepe-wrap">
-    <div class="intro-pepe-halo"></div>
-    <div class="intro-pepe-halo2"></div>
-    <img class="intro-pepe-img" src="assets/pepe-head.png" alt="Pepe">
-  </div>
-  <div class="intro-title">IberoFuel</div>
-  <div class="intro-sub">
-    Cargando gasolineras
-    <span class="intro-dot"></span>
-    <span class="intro-dot"></span>
-    <span class="intro-dot"></span>
+
+  <!-- iris mask (closes at the end like a camera) -->
+  <div class="intro-iris" aria-hidden="true"></div>
+
+  <div class="intro-stage">
+    <div class="intro-pepe-wrap">
+      <div class="intro-pepe-halo"></div>
+      <div class="intro-pepe-halo2"></div>
+      <div class="intro-pepe-ring"></div>
+      <img class="intro-pepe-img" src="assets/pepe-head.png" alt="Pepe">
+      <div class="intro-pepe-sparkle"><span></span><span></span><span></span><span></span></div>
+    </div>
+
+    <h1 class="intro-title">
+      <span class="intro-title-text" id="intro-title-text"></span><span class="intro-title-caret"></span>
+    </h1>
+
+    <div class="intro-stats">
+      <div class="intro-counter">
+        <span class="intro-counter-val" id="intro-counter-val">0</span>
+        <span class="intro-counter-unit">gasolineras vigiladas</span>
+      </div>
+      <div class="intro-status" id="intro-status">Despertando a Pepe…</div>
+    </div>
+
+    <div class="intro-skip" id="intro-skip" tabindex="0" role="button" aria-label="Saltar intro">Saltar ▸</div>
   </div>
 </div>
 
