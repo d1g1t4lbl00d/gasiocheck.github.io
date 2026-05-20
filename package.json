@@ -1,6 +1,7 @@
 {
   "type": "module",
   "dependencies": {
+    "@vercel/analytics": "^2.0.1",
     "xlsx": "0.18.5"
   }
 }
