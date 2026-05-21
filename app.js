@@ -1204,7 +1204,10 @@ function showAuthMsg(msg, type='error') {
   el.className = `auth-msg ${type}`; el.textContent = msg;
 }
 async function doAuth() {
-  if (!sb) { showAuthMsg('Conexión no disponible.'); return; }
+  if (!sb) {
+    showAuthMsg('Conexión no disponible. Recarga la página e inténtalo de nuevo.');
+    return;
+  }
   const email = document.getElementById('auth-email').value.trim();
   const pass  = document.getElementById('auth-password').value;
   const name  = document.getElementById('auth-name').value.trim();
@@ -1213,16 +1216,28 @@ async function doAuth() {
   btn.disabled = true;
   btn.textContent = authTab === 'login' ? 'Entrando…' : 'Creando cuenta…';
   clearAuthMsg();
+
+  // Timeout de 15s para que el botón nunca quede bloqueado indefinidamente
+  const timeout = new Promise((_, reject) =>
+    setTimeout(() => reject(new Error('TIMEOUT')), 15000)
+  );
+
   try {
     if (authTab === 'login') {
-      const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+      const { error } = await Promise.race([
+        sb.auth.signInWithPassword({ email, password: pass }),
+        timeout,
+      ]);
       if (error) throw error;
     } else {
       const redirectTo = window.location.origin + window.location.pathname;
-      const { data, error } = await sb.auth.signUp({
-        email, password: pass,
-        options: { emailRedirectTo: redirectTo, data: { display_name: name || email.split('@')[0] } }
-      });
+      const { data, error } = await Promise.race([
+        sb.auth.signUp({
+          email, password: pass,
+          options: { emailRedirectTo: redirectTo, data: { display_name: name || email.split('@')[0] } }
+        }),
+        timeout,
+      ]);
       if (error) throw error;
       if (data.user && !data.session) {
         showAuthMsg('¡Revisa tu email para confirmar la cuenta!', 'success');
@@ -1231,7 +1246,10 @@ async function doAuth() {
       }
     }
   } catch (err) {
-    showAuthMsg(translateAuthError(err.message));
+    const msg = err.message === 'TIMEOUT'
+      ? 'No se pudo conectar con el servidor. Revisa tu conexión y recarga la página.'
+      : translateAuthError(err.message || String(err));
+    showAuthMsg(msg);
   } finally {
     btn.disabled = false;
     btn.textContent = authTab === 'login' ? 'Entrar' : 'Crear cuenta';
