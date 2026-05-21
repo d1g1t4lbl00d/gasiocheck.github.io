@@ -2,10 +2,6 @@
    IberoFuel — App logic
    ════════════════════════════════════════════════════════════ */
 
-// ────────── VERCEL WEB ANALYTICS ──────────
-import { inject } from '@vercel/analytics';
-inject();
-
 // ────────── PROVINCIAS FALLBACK ──────────
 const PROVINCIAS_FALLBACK = [
   {id:'1',name:'ÁLAVA'},{id:'2',name:'ALBACETE'},{id:'3',name:'ALICANTE/ALACANT'},
