@@ -2,7 +2,7 @@
    IberoFuel Service Worker — network-first, cache fallback
    ════════════════════════════════════════════════════════════ */
 
-const CACHE = 'iberofuel-v1';
+const CACHE = 'iberofuel-v2';
 const SHELL = [
   '/',
   '/index.html',
@@ -21,6 +21,7 @@ self.addEventListener('install', e => {
   self.skipWaiting();
   e.waitUntil(
     caches.open(CACHE).then(c => c.addAll(SHELL.map(u => new Request(u, { cache: 'reload' }))))
+      .catch(() => {})
   );
 });
 
@@ -35,22 +36,11 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
 
-  // Never intercept Supabase, MINETUR, PrecioIL, analytics calls
-  if (
-    url.hostname.includes('supabase.co') ||
-    url.hostname.includes('minetur.gob.es') ||
-    url.hostname.includes('precioil.es') ||
-    url.hostname.includes('nominatim') ||
-    url.hostname.includes('bigdatacloud') ||
-    url.hostname.includes('allorigins') ||
-    url.hostname.includes('corsproxy') ||
-    url.hostname.includes('codetabs') ||
-    url.hostname.includes('leaflet') ||
-    url.hostname.includes('googleapis') ||
-    url.hostname.includes('vercel-insights')
-  ) return;
+  // Only handle same-origin requests — let all external CDN/API calls
+  // (Supabase, leaflet, fonts, PrecioIL, MINETUR, etc.) go straight to network.
+  if (url.origin !== self.location.origin) return;
 
-  // Network-first for HTML (always fresh)
+  // Network-first for navigation (always serve fresh HTML)
   if (e.request.mode === 'navigate') {
     e.respondWith(
       fetch(e.request).catch(() => caches.match('/index.html'))
@@ -58,7 +48,7 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  // Cache-first for static assets, network-first fallback
+  // Network-first for same-origin assets, cache as fallback when offline
   e.respondWith(
     caches.open(CACHE).then(async cache => {
       try {
@@ -66,7 +56,8 @@ self.addEventListener('fetch', e => {
         if (networkRes.ok) cache.put(e.request, networkRes.clone());
         return networkRes;
       } catch {
-        return cache.match(e.request);
+        const cached = await cache.match(e.request);
+        return cached ?? new Response('Offline', { status: 503 });
       }
     })
   );
