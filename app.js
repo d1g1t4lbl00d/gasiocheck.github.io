@@ -1275,8 +1275,8 @@ function translateAuthError(msg) {
   if (msg.includes('Email not confirmed'))     return 'Confirma tu email primero.';
   return msg;
 }
-async function doLogout() {
-  try { if (sb) await sb.auth.signOut(); } catch(_){}
+function doLogout() {
+  // Limpiar estado inmediatamente — no esperar a Supabase
   currentUser = null;
   favorites.clear();
   favDataMap.clear();
@@ -1285,6 +1285,7 @@ async function doLogout() {
   if (allStations.length) renderList();
   if (isMobile()) switchTab('lista');
   Pepe.say('¡Hasta luego! Vuelve pronto 👋', 'happy');
+  if (sb) sb.auth.signOut().catch(()=>{});
 }
 function handleAuthBtn() {
   if (currentUser) {
@@ -1343,10 +1344,16 @@ async function loadProfileData() {
   if (!currentUser || !sb) return;
   const scroll = document.getElementById('profile-scroll');
   scroll.innerHTML = '<div style="text-align:center;padding:24px;"><div class="spinner" style="margin:0 auto"></div></div>';
-  try {
+  const load = async () => {
     if      (profileTab === 'historial')  await renderHistorial(scroll);
     else if (profileTab === 'favoritas')  await renderFavoritas(scroll);
     else if (profileTab === 'alertas')    await renderAlertas(scroll);
+  };
+  try {
+    await Promise.race([
+      load(),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Tiempo de espera agotado. Recarga la página.')), 10000)),
+    ]);
   } catch(err) {
     scroll.innerHTML = `<div class="empty-state"><div class="empty-state-icon">⚠️</div>Error al cargar datos.<br><span style="font-size:11px;color:var(--danger)">${escHtml(err.message)}</span></div>`;
   }
