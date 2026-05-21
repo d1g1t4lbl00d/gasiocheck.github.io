@@ -12,7 +12,7 @@ env:
 jobs:
   refresh:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
 
     steps:
       - uses: actions/checkout@v4
@@ -27,3 +27,11 @@ jobs:
 
       - name: Refresh fuel cache
         run: python scripts/refresh_cache.py
+
+      - name: Check price alerts and send emails
+        if: always()
+        env:
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
+        run: python scripts/check_alerts.py
