@@ -43,6 +43,61 @@ const CLIENT_CORS_PROXIES = [
 ];
 let apiKnownOffline = false;
 
+// ────────── PRECIOIL API ──────────
+const PRECIOIL_BASE = 'https://api.precioil.es';
+const PRECIOIL_KEY  = 'pk_live_ariw0DFEmwHiFTNlX8dZSBXDI3bNhyI-gysXv9XkNy4';
+
+function poiToStation(s) {
+  const c = v => (v != null && String(v).trim() !== '') ? String(v).replace('.', ',') : '';
+  return {
+    'IDEESS':                             String(s.idEstacion || ''),
+    'Rótulo':                             s.nombreEstacion || s.marca || '',
+    'Tipo Vía':                           '',
+    'Dirección':                          s.direccion || '',
+    'Municipio':                          s.localidad || '',
+    'IDMunicipio':                        String(s.idMunicipio || ''),
+    'IDProvincia':                        String(s.idProvincia || ''),
+    'Provincia':                          s.provincia || '',
+    'Latitud':                            c(s.latitud),
+    'Longitud (WGS84)':                   c(s.longitud),
+    'Precio Gasolina 95 E5':              c(s.Gasolina95),
+    'Precio Gasolina 98 E5':              c(s.Gasolina98),
+    'Precio Gasóleo A':                   c(s.Diesel),
+    'Precio Gasóleo B':                   c(s.DieselB),
+    'Precio Gasóleo Premium':             c(s.DieselPremium),
+    'Precio Gases licuados del petróleo': c(s.GLP),
+    'Precio Gas Natural Comprimido':      c(s.GNC),
+    'Precio Gas Natural Licuado':         c(s.GNL),
+    'Precio Hidrógeno':                   c(s.Hidrogeno),
+    'Horario':                            s.horario || '',
+    'Rem. Autoservicio':                  '',
+    'Tipo Servicio':                      s.tipoVenta || '',
+  };
+}
+
+async function fetchPrecioIL(path, timeoutMs = 8000) {
+  // PrecioIL only supports municipality-level station queries
+  const m = path.match(/^EstacionesTerrestres\/FiltroMunicipio\/(\d+)/);
+  if (!m) return null;
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), timeoutMs);
+  try {
+    const r = await fetch(`${PRECIOIL_BASE}/estaciones/municipio/${m[1]}`, {
+      signal: ctrl.signal,
+      headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${PRECIOIL_KEY}` },
+    });
+    clearTimeout(t);
+    if (!r.ok) return null;
+    const arr = await r.json().catch(() => null);
+    if (!Array.isArray(arr) || !arr.length) return null;
+    return {
+      ListaEESSPrecio: arr.map(poiToStation),
+      Fecha: new Date().toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+      ResultadoConsulta: 'OK',
+    };
+  } catch { clearTimeout(t); return null; }
+}
+
 async function tryUrl(url, timeoutMs = 6000) {
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), timeoutMs);
@@ -80,13 +135,17 @@ async function fetchAPI(fullUrl) {
   const viaProxy = await tryVercelProxy(path, 5000);
   if (viaProxy) { apiKnownOffline = false; return viaProxy; }
 
-  // 2. Direct MINETUR (blocked by CORS on GitHub Pages but worth a fast try)
+  // 2. PrecioIL API — municipality searches (paid, has CORS, no province endpoint)
+  const viaPrecioIL = await fetchPrecioIL(path);
+  if (viaPrecioIL) { apiKnownOffline = false; hideCacheBanner(); return viaPrecioIL; }
+
+  // 3. Direct MINETUR (blocked by CORS on GitHub Pages but worth a fast try)
   if (!apiKnownOffline) {
     const direct = await tryUrl(fullUrl, 3000);
     if (direct) { hideCacheBanner(); return direct; }
   }
 
-  // 3. All CORS proxies in parallel — fastest one wins
+  // 4. All CORS proxies in parallel — fastest one wins
   const proxyData = await Promise.any(
     CLIENT_CORS_PROXIES.map(mk =>
       tryUrl(mk(fullUrl), 8000).then(d => d ?? Promise.reject('null'))
@@ -94,7 +153,7 @@ async function fetchAPI(fullUrl) {
   ).catch(() => null);
   if (proxyData) { apiKnownOffline = false; hideCacheBanner(); return proxyData; }
 
-  // 4. Supabase cache — direct client-side query as final fallback
+  // 5. Supabase cache — direct client-side query as final fallback
   const cachedData = await trySupabaseCache(path);
   if (cachedData) return cachedData;
 
