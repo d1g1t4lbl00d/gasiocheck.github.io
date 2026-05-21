@@ -1227,11 +1227,20 @@ async function doAuth() {
 
   try {
     if (authTab === 'login') {
-      const { error } = await Promise.race([
+      const { data, error } = await Promise.race([
         sb.auth.signInWithPassword({ email, password: pass }),
         timeout,
       ]);
       if (error) throw error;
+      // Handle login directly — don't rely solely on onAuthStateChange firing in time
+      if (data?.session?.user) {
+        currentUser = data.session.user;
+        await loadFavorites();
+        updateAuthButton();
+        if (allStations.length) renderList();
+        closeAuthModal();
+        try { Pepe.say(`¡Hola ${(currentUser.user_metadata?.display_name||'amigo').split(' ')[0]}! Ya estamos listos 🐽`, 'happy', 5000); } catch(_){}
+      }
     } else {
       const redirectTo = window.location.origin + window.location.pathname;
       const { data, error } = await Promise.race([
@@ -1792,31 +1801,31 @@ async function boot() {
   try { loadProvincias(); } catch(e) { console.warn('provincias:', e); }
 
   if (sb) {
+    // Register listener FIRST — before getSession — so we never miss a SIGNED_IN event
+    // even if the user logs in while getSession() is still in-flight.
+    sb.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN') {
+        currentUser = session.user;
+        await loadFavorites();
+        updateAuthButton();
+        if (allStations.length) renderList();
+        closeAuthModal();
+        try { Pepe.say(`¡Hola ${(currentUser.user_metadata?.display_name||'amigo').split(' ')[0]}! Ya estamos listos 🐽`, 'happy', 5000); } catch(_){}
+      } else if (event === 'SIGNED_OUT') {
+        currentUser = null;
+        favorites.clear();
+        updateAuthButton();
+        if (allStations.length) renderList();
+      }
+    });
     try {
       const { data: { session } } = await sb.auth.getSession();
       if (session?.user) {
         currentUser = session.user;
         await loadFavorites();
         updateAuthButton();
-        // Si las gasolineras ya están renderizadas (la geolocalización es ahora más rápida
-        // que la restauración de sesión), re-renderiza para mostrar los botones de favorito/repostar/alerta.
         if (allStations.length) renderList();
       }
-      sb.auth.onAuthStateChange(async (event, session) => {
-        if (event === 'SIGNED_IN') {
-          currentUser = session.user;
-          await loadFavorites();
-          updateAuthButton();
-          if (allStations.length) renderList();
-          closeAuthModal();
-          Pepe.say(`¡Hola ${(currentUser.user_metadata?.display_name||'amigo').split(' ')[0]}! Ya estamos listos 🐽`, 'happy', 5000);
-        } else if (event === 'SIGNED_OUT') {
-          currentUser = null;
-          favorites.clear();
-          updateAuthButton();
-          if (allStations.length) renderList();
-        }
-      });
     } catch(e) { console.warn('auth init:', e); }
   }
 }
