@@ -7,8 +7,13 @@ y escribe en la tabla minetur_cache de Supabase.
 import sys
 import json
 import unicodedata
+import urllib3
 from datetime import datetime, timezone
 import requests
+
+# geoportalgasolineras.es serves a broken SSL chain (missing intermediate cert).
+# verify=False is intentional here — this is a public government XLS download.
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 import xlrd
 
 XLS_URL = 'https://geoportalgasolineras.es/resources/files/preciosEESS_es.xls'
@@ -150,6 +155,7 @@ def main():
         XLS_URL,
         headers={'User-Agent': 'Mozilla/5.0 (compatible; IberoFuel/1.0)'},
         timeout=120,
+        verify=False,
     )
     resp.raise_for_status()
     print(f'  Descargado: {len(resp.content):,} bytes')
