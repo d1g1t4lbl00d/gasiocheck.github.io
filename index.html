@@ -1410,7 +1410,7 @@ button:active:not(:disabled),
       </div>
       <div class="field-group">
         <label class="field-label" for="auth-password">Contraseña</label>
-        <input class="field-input" type="password" id="auth-password" placeholder="••••••••" autocomplete="current-password">
+        <input class="field-input" type="password" id="auth-password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doAuth()">
       </div>
       <div class="auth-msg" id="auth-msg"></div>
       <button class="btn-auth-submit" id="auth-submit-btn" onclick="doAuth()">Entrar</button>
