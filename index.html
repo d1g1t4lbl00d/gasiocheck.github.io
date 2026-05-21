@@ -6,8 +6,13 @@
 <title>IberoFuel — Encuentra tu gasolinera, ahorra siempre</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="alternate icon" type="image/png" href="favicon.png">
-<link rel="apple-touch-icon" href="favicon.png">
+<link rel="apple-touch-icon" href="assets/icon-192.png">
+<link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#1E6B4B">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="IberoFuel">
 <meta name="description" content="IberoFuel — Encuentra las gasolineras más baratas cerca de ti. Datos oficiales del Ministerio en tiempo real. Pepe te ayuda a ahorrar.">
 <meta property="og:title" content="IberoFuel — Combustible inteligente">
 <meta property="og:description" content="Encuentra tu gasolinera, ahorra siempre. Pepe el cerdito te guía.">
@@ -1583,5 +1588,12 @@ button:active:not(:disabled),
 <script src="pepe.js"></script>
 <script src="juice.js"></script>
 <script src="app.js"></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
+}
+</script>
 </body>
 </html>
