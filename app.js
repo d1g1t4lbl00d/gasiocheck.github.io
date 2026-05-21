@@ -1689,10 +1689,11 @@ async function boot() {
   // Remove overlay: listen for animationend so pointer-events drop instantly
   // (CSS fill-mode pointer-events is unreliable on mobile/Safari)
   if (introOverlay) {
-    introOverlay.addEventListener('animationend', () => {
+    introOverlay.addEventListener('animationend', (e) => {
+      if (e.animationName !== 'intro-exit') return;
       introOverlay.style.pointerEvents = 'none';
-      setTimeout(() => introOverlay.classList.add('gone'), 50);
-    }, { once: true });
+      introOverlay.classList.add('gone');
+    });
     // Click anywhere on intro skips it immediately
     introOverlay.addEventListener('click', () => {
       introOverlay.style.pointerEvents = 'none';
