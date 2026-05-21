@@ -1232,13 +1232,14 @@ async function doAuth() {
         timeout,
       ]);
       if (error) throw error;
-      // Cerrar el modal directamente aquí, sin depender solo de onAuthStateChange
+      // Handle login directly — don't rely solely on onAuthStateChange firing in time
       if (data?.session?.user) {
         currentUser = data.session.user;
-        closeAuthModal();
+        await loadFavorites();
         updateAuthButton();
+        if (allStations.length) renderList();
+        closeAuthModal();
         try { Pepe.say(`¡Hola ${(currentUser.user_metadata?.display_name||'amigo').split(' ')[0]}! Ya estamos listos 🐽`, 'happy', 5000); } catch(_){}
-        loadFavorites().then(() => { if (allStations.length) renderList(); }).catch(()=>{});
       }
     } else {
       const redirectTo = window.location.origin + window.location.pathname;
@@ -1275,8 +1276,8 @@ function translateAuthError(msg) {
   if (msg.includes('Email not confirmed'))     return 'Confirma tu email primero.';
   return msg;
 }
-async function doLogout() {
-  try { if (sb) await sb.auth.signOut(); } catch(_){}
+function doLogout() {
+  // Limpiar estado inmediatamente — no esperar a Supabase
   currentUser = null;
   favorites.clear();
   favDataMap.clear();
@@ -1285,6 +1286,7 @@ async function doLogout() {
   if (allStations.length) renderList();
   if (isMobile()) switchTab('lista');
   Pepe.say('¡Hasta luego! Vuelve pronto 👋', 'happy');
+  if (sb) sb.auth.signOut().catch(()=>{});
 }
 function handleAuthBtn() {
   if (currentUser) {
@@ -1343,10 +1345,16 @@ async function loadProfileData() {
   if (!currentUser || !sb) return;
   const scroll = document.getElementById('profile-scroll');
   scroll.innerHTML = '<div style="text-align:center;padding:24px;"><div class="spinner" style="margin:0 auto"></div></div>';
-  try {
+  const load = async () => {
     if      (profileTab === 'historial')  await renderHistorial(scroll);
     else if (profileTab === 'favoritas')  await renderFavoritas(scroll);
     else if (profileTab === 'alertas')    await renderAlertas(scroll);
+  };
+  try {
+    await Promise.race([
+      load(),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Tiempo de espera agotado. Recarga la página.')), 10000)),
+    ]);
   } catch(err) {
     scroll.innerHTML = `<div class="empty-state"><div class="empty-state-icon">⚠️</div>Error al cargar datos.<br><span style="font-size:11px;color:var(--danger)">${escHtml(err.message)}</span></div>`;
   }
@@ -1800,15 +1808,16 @@ async function boot() {
   try { loadProvincias(); } catch(e) { console.warn('provincias:', e); }
 
   if (sb) {
-    // Registrar ANTES de getSession para no perder el evento SIGNED_IN si el usuario
-    // hace login mientras getSession() todavía está en vuelo.
-    sb.auth.onAuthStateChange((event, session) => {
+    // Register listener FIRST — before getSession — so we never miss a SIGNED_IN event
+    // even if the user logs in while getSession() is still in-flight.
+    sb.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN') {
         currentUser = session.user;
-        closeAuthModal();                          // cerrar modal PRIMERO, sin esperar
+        await loadFavorites();
         updateAuthButton();
+        if (allStations.length) renderList();
+        closeAuthModal();
         try { Pepe.say(`¡Hola ${(currentUser.user_metadata?.display_name||'amigo').split(' ')[0]}! Ya estamos listos 🐽`, 'happy', 5000); } catch(_){}
-        loadFavorites().then(() => { if (allStations.length) renderList(); }).catch(()=>{});
       } else if (event === 'SIGNED_OUT') {
         currentUser = null;
         favorites.clear();
@@ -1820,9 +1829,9 @@ async function boot() {
       const { data: { session } } = await sb.auth.getSession();
       if (session?.user) {
         currentUser = session.user;
+        await loadFavorites();
         updateAuthButton();
         if (allStations.length) renderList();
-        loadFavorites().catch(()=>{});
       }
     } catch(e) { console.warn('auth init:', e); }
   }
