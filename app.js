@@ -550,8 +550,9 @@ async function usarMiUbicacion() {
       showLocationStatus(result.cityName);
       if (isMobile()) switchTab('lista');
     } catch(e) {
-      btn.disabled = false; btn.classList.remove('searching');
       showError(e.message);
+    } finally {
+      btn.disabled = false; btn.classList.remove('searching');
     }
   }
 
@@ -1681,10 +1682,24 @@ async function boot() {
     requestAnimationFrame(tick);
   }
 
-  // Remove overlay from DOM after exit animation completes (CSS: 3.2s + 0.7s)
-  setTimeout(() => {
-    if (introOverlay) introOverlay.classList.add('gone');
-  }, 4000);
+  // Remove overlay: listen for animationend so pointer-events drop instantly
+  // (CSS fill-mode pointer-events is unreliable on mobile/Safari)
+  if (introOverlay) {
+    introOverlay.addEventListener('animationend', () => {
+      introOverlay.style.pointerEvents = 'none';
+      setTimeout(() => introOverlay.classList.add('gone'), 50);
+    }, { once: true });
+    // Click anywhere on intro skips it immediately
+    introOverlay.addEventListener('click', () => {
+      introOverlay.style.pointerEvents = 'none';
+      introOverlay.classList.add('gone');
+    }, { once: true });
+    // Hard fallback in case animationend never fires
+    setTimeout(() => {
+      introOverlay.style.pointerEvents = 'none';
+      introOverlay.classList.add('gone');
+    }, 4200);
+  }
 
   // Greet AFTER the intro is gone, so Pepe's bubble doesn't fight the overlay
   setTimeout(() => {
