@@ -2,7 +2,7 @@
    IberoFuel Service Worker — network-first, cache fallback
    ════════════════════════════════════════════════════════════ */
 
-const CACHE = 'iberofuel-v2';
+const CACHE = 'iberofuel-v3';
 const SHELL = [
   '/',
   '/index.html',

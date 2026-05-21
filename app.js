@@ -1188,6 +1188,9 @@ function switchAuthTab(tab) {
 }
 function openAuthModal() {
   document.getElementById('auth-modal').classList.add('open');
+  const btn = document.getElementById('auth-submit-btn');
+  if (btn) { btn.disabled = false; btn.textContent = authTab === 'login' ? 'Entrar' : 'Crear cuenta'; }
+  clearAuthMsg();
   setTimeout(() => document.getElementById('auth-email').focus(), 100);
 }
 function closeAuthModal() {
