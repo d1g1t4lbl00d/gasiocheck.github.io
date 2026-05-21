@@ -1232,14 +1232,13 @@ async function doAuth() {
         timeout,
       ]);
       if (error) throw error;
-      // Handle login directly — don't rely solely on onAuthStateChange firing in time
+      // Cerrar el modal directamente aquí, sin depender solo de onAuthStateChange
       if (data?.session?.user) {
         currentUser = data.session.user;
-        await loadFavorites();
-        updateAuthButton();
-        if (allStations.length) renderList();
         closeAuthModal();
+        updateAuthButton();
         try { Pepe.say(`¡Hola ${(currentUser.user_metadata?.display_name||'amigo').split(' ')[0]}! Ya estamos listos 🐽`, 'happy', 5000); } catch(_){}
+        loadFavorites().then(() => { if (allStations.length) renderList(); }).catch(()=>{});
       }
     } else {
       const redirectTo = window.location.origin + window.location.pathname;
@@ -1801,16 +1800,15 @@ async function boot() {
   try { loadProvincias(); } catch(e) { console.warn('provincias:', e); }
 
   if (sb) {
-    // Register listener FIRST — before getSession — so we never miss a SIGNED_IN event
-    // even if the user logs in while getSession() is still in-flight.
-    sb.auth.onAuthStateChange(async (event, session) => {
+    // Registrar ANTES de getSession para no perder el evento SIGNED_IN si el usuario
+    // hace login mientras getSession() todavía está en vuelo.
+    sb.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN') {
         currentUser = session.user;
-        await loadFavorites();
+        closeAuthModal();                          // cerrar modal PRIMERO, sin esperar
         updateAuthButton();
-        if (allStations.length) renderList();
-        closeAuthModal();
         try { Pepe.say(`¡Hola ${(currentUser.user_metadata?.display_name||'amigo').split(' ')[0]}! Ya estamos listos 🐽`, 'happy', 5000); } catch(_){}
+        loadFavorites().then(() => { if (allStations.length) renderList(); }).catch(()=>{});
       } else if (event === 'SIGNED_OUT') {
         currentUser = null;
         favorites.clear();
@@ -1822,9 +1820,9 @@ async function boot() {
       const { data: { session } } = await sb.auth.getSession();
       if (session?.user) {
         currentUser = session.user;
-        await loadFavorites();
         updateAuthButton();
         if (allStations.length) renderList();
+        loadFavorites().catch(()=>{});
       }
     } catch(e) { console.warn('auth init:', e); }
   }
