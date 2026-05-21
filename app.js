@@ -1680,11 +1680,11 @@ async function saveAlert() {
   const price = parseNum(document.getElementById('alert-price').value);
   const msgEl = document.getElementById('alert-msg');
   if (isNaN(price) || price <= 0) { msgEl.className='auth-msg error'; msgEl.textContent='Precio válido.'; return; }
-  const { error } = await sb.from('price_alerts').insert({
+  const { error } = await sb.from('price_alerts').upsert({
     user_id: currentUser.id, ideess: getIdeess(alertTarget),
     station_name: alertTarget.Rótulo || 'Gasolinera',
     fuel_type: fuel, target_price: price, is_active: true
-  });
+  }, { onConflict: 'user_id,ideess,fuel_type' });
   if (error) { msgEl.className='auth-msg error'; msgEl.textContent=error.message; return; }
   msgEl.className = 'auth-msg success'; msgEl.textContent = '¡Alerta activada!';
   setTimeout(() => { closeAlertModal(); Pepe.say('Te aviso cuando baje de ese precio 🔔', 'happy'); }, 600);
