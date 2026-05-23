@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://iberofuel.com/sitemap.xml
