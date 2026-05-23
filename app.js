@@ -28,7 +28,7 @@ const SUPABASE_URL  = 'https://gwycdrnwkzmoxbxcqxih.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd3eWNkcm53a3ptb3hieGNxeGloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwMzgyNDEsImV4cCI6MjA5NDYxNDI0MX0.fTm-TesEgil6NjaiiCspZdjMCX6PxAclFhlPs6PNngc';
 const sb = (window.supabase && typeof window.supabase.createClient === 'function')
   ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
-      auth: { lock: (_n, _t, fn) => fn() },
+      auth: { lock: (_n, _t, fn) => fn(), autoRefreshToken: false },
     })
   : null;
 
@@ -1237,11 +1237,10 @@ async function doAuth() {
       // Handle login directly — don't rely solely on onAuthStateChange firing in time
       if (data?.session?.user) {
         currentUser = data.session.user;
-        await loadFavorites();
-        updateAuthButton();
-        if (allStations.length) renderList();
         closeAuthModal();
+        updateAuthButton();
         try { Pepe.say(`¡Hola ${(currentUser.user_metadata?.display_name||'amigo').split(' ')[0]}! Ya estamos listos 🐽`, 'happy', 5000); } catch(_){}
+        loadFavorites().then(() => { if (allStations.length) renderList(); }).catch(() => {});
       }
     } else {
       const redirectTo = window.location.origin + window.location.pathname;
