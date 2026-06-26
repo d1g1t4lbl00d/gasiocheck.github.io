@@ -50,6 +50,33 @@ def sb_get(path, key=None):
 def get_active_alerts():
     return sb_get('price_alerts?select=*&is_active=eq.true')
 
+def build_price_index():
+    """
+    Descarga TODOS los payloads de provincia UNA sola vez y construye un índice
+    IDEESS → estación. Evita releer ~7 MB de caché por cada alerta (egress).
+    """
+    headers = {
+        'apikey': SB_SERVICE,
+        'Authorization': f'Bearer {SB_SERVICE}',
+        'Accept': 'application/json',
+    }
+    r = requests.get(
+        f'{SB_URL}/rest/v1/minetur_cache'
+        f'?select=payload'
+        f'&cache_key=like.EstacionesTerrestresFiltros/FiltroProvincia/*',
+        headers=headers, timeout=60
+    )
+    if not r.ok:
+        return {}
+    index = {}
+    for row in r.json():
+        payload = row.get('payload') or {}
+        for st in (payload.get('ListaEESSPrecio') or []):
+            key = str(st.get('IDEESS', '')).strip()
+            if key:
+                index[key] = st
+    return index
+
 def get_user_email(user_id):
     """Usa la API de admin de Supabase para obtener el email del usuario."""
     headers = {
@@ -62,34 +89,14 @@ def get_user_email(user_id):
         return None
     return r.json().get('email')
 
-def get_station_price(ideess, fuel_key):
-    """
-    Busca el precio actual de una estación (por IDEESS) en la caché de Supabase.
-    Itera sobre los registros de provincias hasta encontrar la estación.
-    """
-    headers = {
-        'apikey': SB_SERVICE,
-        'Authorization': f'Bearer {SB_SERVICE}',
-        'Accept': 'application/json',
-    }
-    # Traer solo las claves de provincia
-    r = requests.get(
-        f'{SB_URL}/rest/v1/minetur_cache'
-        f'?select=payload'
-        f'&cache_key=like.EstacionesTerrestresFiltros/FiltroProvincia/*',
-        headers=headers, timeout=60
-    )
-    if not r.ok:
+def get_station_price(index, ideess, fuel_key):
+    """Busca el precio actual de una estación en el índice ya construido."""
+    st = index.get(str(ideess).strip())
+    if not st:
         return None
-
-    for row in r.json():
-        payload = row.get('payload') or {}
-        stations = payload.get('ListaEESSPrecio') or []
-        for st in stations:
-            if str(st.get('IDEESS', '')).strip() == str(ideess).strip():
-                raw = st.get(fuel_key, '').strip()
-                if raw:
-                    return float(raw.replace(',', '.'))
+    raw = st.get(fuel_key, '').strip()
+    if raw:
+        return float(raw.replace(',', '.'))
     return None
 
 def send_email(to_email, station_name, fuel_label, current_price, target_price):
@@ -143,8 +150,10 @@ def send_email(to_email, station_name, fuel_label, current_price, target_price):
 
 def main():
     if not SB_SERVICE:
-        print('ERROR: Falta SUPABASE_SERVICE_KEY', file=sys.stderr)
-        sys.exit(1)
+        # La función de alertas por email es opcional. Si no se han configurado
+        # los secrets, se omite sin marcar el workflow como fallido.
+        print('AVISO: SUPABASE_SERVICE_KEY no configurado — se omite la comprobación de alertas.')
+        return
     if not RESEND_KEY:
         print('AVISO: Falta RESEND_API_KEY — se omite envío de emails')
 
@@ -155,6 +164,10 @@ def main():
     if not alerts:
         print('  Sin alertas. Nada que hacer.')
         return
+
+    # Índice de precios construido una sola vez (no por alerta) para minimizar egress
+    price_index = build_price_index()
+    print(f'  Estaciones indexadas: {len(price_index)}')
 
     triggered = 0
     errors = 0
@@ -173,7 +186,7 @@ def main():
             print(f'  ⚠ Tipo de combustible desconocido: {fuel_type}')
             continue
 
-        current = get_station_price(ideess, fuel_key)
+        current = get_station_price(price_index, ideess, fuel_key)
         if current is None:
             print(f'  ? No se encontró precio para IDEESS={ideess}')
             continue
