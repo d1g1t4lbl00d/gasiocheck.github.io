@@ -6,6 +6,7 @@
 <title>PERKYMAFIA OS</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
 body{width:100vw;height:100vh;overflow:hidden;font-family:Arial,sans-serif;font-size:12px;background:#000;color:#000;user-select:none}
 :root{--c0:#c0c0c0;--c1:#fff;--c2:#808080;--navy:#000080;--desk:#008080;--text:#000}
 
@@ -477,7 +478,7 @@ function showScreen(id){
 }
 
 // ===== BOOT =====
-let _bootDone=false;
+let _bootDone=false,_deskReady=false;
 function boot(){
   const lines=['Iniciando PERKYMAFIA OS v2.0...','Cargando módulos de audio...','Conectando con la base de datos...','Inicializando gestor de temas...','Cargando interfaz de usuario...','Sistema listo.'];
   const bl=$('boot-lines'),bar=$('boot-bar');
@@ -489,8 +490,8 @@ function boot(){
       setTimeout(step,300+Math.random()*200);
     } else {
       _bootDone=true;
-      // Si onAuthStateChange ya cargó al usuario durante el boot, va al desktop
-      if(CU){showScreen('scr-desktop');return;}
+      // Si loadUserData ya terminó durante el boot, va directo al escritorio
+      if(_deskReady){showScreen('scr-desktop');return;}
       showScreen('scr-auth');
     }
   }
@@ -577,6 +578,7 @@ async function loadUserData(user){
     ]);
     setupDesktop();
     setupRealtime();
+    _deskReady=true;
     if(_bootDone)showScreen('scr-desktop');
   }catch(e){
     console.error('loadUserData error:',e);
@@ -599,7 +601,7 @@ SB.auth.onAuthStateChange(async(ev,sess)=>{
     errEl.style.color='#000080';
     errEl.innerHTML='🔑 Introduce tu nueva contraseña abajo:<br><input type="password" id="new-pwd" placeholder="Nueva contraseña" style="width:100%;margin-top:4px;padding:3px;border:2px solid #808080"><br><button class="abtn" style="margin-top:4px" onclick="confirmNewPwd()">Guardar contraseña</button>';
   } else if(ev==='SIGNED_OUT'){
-    CU=null;CP=null;cleanupRealtime();showScreen('scr-auth');showLogin();
+    CU=null;CP=null;_deskReady=false;cleanupRealtime();showScreen('scr-auth');showLogin();
   }
 });
 
