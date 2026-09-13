@@ -334,6 +334,10 @@ body{width:100vw;height:100vh;overflow:hidden;font-family:Arial,sans-serif;font-
 ::-webkit-scrollbar-thumb{background:var(--c0);border:2px solid;border-color:#fff #808080 #808080 #fff}
 ::-webkit-scrollbar-button{background:var(--c0);border:1px solid #808080;display:block;height:16px;width:16px}
 
+/* GRIDS */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+
 /* ESTADO COLORS */
 .e-Idea{background:#e8e8e8;color:#333;border-color:#999}
 .e-Grabando{background:#fff3cd;color:#856404;border-color:#856404}
@@ -341,6 +345,81 @@ body{width:100vw;height:100vh;overflow:hidden;font-family:Arial,sans-serif;font-
 .e-Masterizado{background:#d4edda;color:#155724;border-color:#155724}
 .e-Listo{background:#d1ecf1;color:#0c5460;border-color:#0c5460}
 .e-Publicado{background:#000080;color:#fff;border-color:#000080}
+
+/* ===== MÓVIL ===== */
+@media (max-width:700px){
+  /* Las ventanas dejan de flotar: siempre a pantalla completa */
+  .rwin,.rwin.maximized{left:0!important;top:0!important;width:100vw!important;
+    height:calc(100vh - 36px)!important;min-width:0;min-height:0;box-shadow:none}
+  .rwin-grip{display:none}
+  .rwin-title{padding:7px 5px;font-size:13px}
+  .wbtn{width:28px;height:24px;font-size:13px}
+
+  /* Barra de tareas más alta para el dedo */
+  #scr-desktop{inset:0 0 36px 0}
+  #taskbar{height:36px;gap:3px}
+  #btn-start{height:30px;padding:2px 10px;font-size:13px}
+  #tb-sep{height:30px}
+  .tb-btn{height:30px;max-width:88px;font-size:11px}
+  #taskbar-tray{height:30px;gap:8px}
+  #notif-bell{font-size:17px}
+
+  /* Iconos del escritorio */
+  #desktop-bg{gap:2px;padding:6px}
+  .desk-icon{width:24vw;max-width:88px;padding:7px 2px;font-size:11px}
+  .desk-icon .di{font-size:28px}
+  .desk-icon:hover{background:none;border-color:transparent}
+
+  /* Los layouts a dos columnas se apilan */
+  .grid2,.grid3{grid-template-columns:1fr;gap:8px}
+  .agenda-main,.notes-app,.sprint-main{flex-direction:column}
+  .agenda-cal,.notes-list,.sprint-left{width:100%;border-right:none;border-bottom:2px solid #808080}
+  .notes-list{max-height:34vh}
+  .sprint-left{max-height:30vh}
+  .notes-ed{min-height:45vh}
+
+  /* Rejillas más estrechas */
+  .stat-tiles,.kpi-grid{grid-template-columns:repeat(2,1fr)}
+  .sprint-stage-grid{grid-template-columns:repeat(2,1fr)}
+  .wp-grid{grid-template-columns:repeat(3,1fr)}
+  .bar-lbl{width:78px}
+
+  /* Modales a ancho completo */
+  .modal-win{width:100%;max-width:100%;max-height:100%}
+  .modal-body{padding:10px}
+  #mtab-content{max-height:none!important}
+
+  /* 16px en los campos evita que iOS haga zoom al enfocarlos */
+  .rinp,.rsel,.chat-in input,.auth-body input,
+  .modal-body input,.modal-body select,.modal-body textarea{font-size:16px;height:auto;padding:6px}
+  .rbtn{padding:7px 10px;font-size:12px}
+  .win-tb{gap:5px;padding:6px}
+
+  /* Pestañas desplazables en horizontal en vez de amontonarse */
+  .pkm-tabs,.mtabs{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch}
+  .pkm-tab,.mtab{white-space:nowrap;flex-shrink:0;padding:7px 12px}
+
+  /* Menú de inicio a lo ancho */
+  #start-menu{width:86vw;bottom:36px}
+  .sm-item{padding:10px 12px;font-size:13px}
+  .ctx-item{padding:9px 18px}
+
+  .auth-win{width:92vw}
+  /* Cada fase en una sola línea: casilla + nombre + responsable */
+  .stage-row{flex-wrap:nowrap;gap:8px;padding:8px 0}
+  .stage-row input[type=checkbox]{width:20px;height:20px}
+  .stage-name{width:auto;min-width:68px;flex-shrink:0}
+  .stage-assign{flex:1;min-width:0}
+  .stage-assign select{font-size:13px;padding:5px}
+  .stage-row>span:last-child{display:none}
+  .panel-task{flex-wrap:wrap}
+
+  /* Las tablas anchas se desplazan en lugar de romper el layout */
+  .rtable{min-width:560px}
+  .pkm-content,.admin-app{overflow-x:auto}
+  .kanban-wrap{height:auto;padding:6px}
+  .k-col{min-width:150px;max-width:170px}
+}
 </style>
 </head>
 <body>
@@ -677,29 +756,34 @@ function setupRealtime(){
 function cleanupRealtime(){if(chatSub)SB.removeChannel(chatSub);}
 
 // ===== WINDOW MANAGER =====
+const isMobile=()=>window.matchMedia('(max-width:700px)').matches;
+
 function mkWin(id,title,icon,w,h,html){
   if(wins[id]){
     if(wins[id].minimized)unmin(id);
     focusWin(id);return;
   }
+  const mob=isMobile();
   const wc=$('wins-container');
   const x=40+Object.keys(wins).length*20,y=30+Object.keys(wins).length*18;
   const div=document.createElement('div');
-  div.className='rwin';div.id='win-'+id;
-  div.style.cssText=`left:${Math.min(x,200)}px;top:${Math.min(y,100)}px;width:${w}px;height:${h}px;z-index:${++zTop}`;
+  div.className='rwin'+(mob?' maximized':'');div.id='win-'+id;
+  div.style.cssText=mob?`z-index:${++zTop}`
+    :`left:${Math.min(x,200)}px;top:${Math.min(y,100)}px;width:${w}px;height:${h}px;z-index:${++zTop}`;
   div.innerHTML=`
     <div class="rwin-title" id="wt-${id}">
       <span>${icon} ${esc(title)}</span>
       <button class="wbtn" onclick="minWin('${id}')" title="Minimizar">_</button>
-      <button class="wbtn" onclick="maxWin('${id}')" title="Max/Restaurar">□</button>
+      ${mob?'':`<button class="wbtn" onclick="maxWin('${id}')" title="Max/Restaurar">□</button>`}
       <button class="wbtn" onclick="closeWin('${id}')" title="Cerrar">✕</button>
     </div>
     <div class="rwin-body" id="wb-${id}">${html}</div>
-    <div class="rwin-grip" id="wg-${id}"></div>`;
+    ${mob?'':`<div class="rwin-grip" id="wg-${id}"></div>`}`;
   wc.appendChild(div);
-  wins[id]={el:div,title:title,icon:icon,minimized:false,maximized:false};
-  makeDrag($('wt-'+id),div);
-  makeResize($('wg-'+id),div);
+  wins[id]={el:div,title:title,icon:icon,minimized:false,maximized:mob};
+  // En móvil las ventanas van siempre a pantalla completa: arrastrar y
+  // redimensionar no aplican, y makeDrag/makeResize sólo escuchan ratón.
+  if(!mob){makeDrag($('wt-'+id),div);makeResize($('wg-'+id),div);}
   focusWin(id);
   tbRefresh();
 }
@@ -923,8 +1007,9 @@ function setupDesktop(){
   apps.push({id:'actividad',icon:'📡',label:'Actividad',fn:'openActividad()'});
   apps.push({id:'sprint',icon:'🚀',label:'Sprint',fn:'openSprint()'});
   if(CP&&CP.role==='admin')apps.push({id:'admin',icon:'👥',label:'Usuarios',fn:'openAdmin()'});
+  // En móvil se abre con un toque: el doble toque lo captura el navegador como zoom.
   bg.innerHTML=apps.map(a=>`
-    <div class="desk-icon" ondblclick="${a.fn}" onclick="selIcon(this)" oncontextmenu="event.preventDefault()">
+    <div class="desk-icon" ondblclick="${a.fn}" onclick="selIcon(this);if(isMobile())${a.fn}" oncontextmenu="event.preventDefault()">
       <span class="di">${a.icon}</span>${a.label.replace('\n','<br>')}
     </div>`).join('');
   bg.addEventListener('contextmenu',e=>{e.preventDefault();showCtxMenu(e.clientX,e.clientY);});
@@ -991,7 +1076,11 @@ function filteredSongs(){
 function renderTemas(){
   const c=$('pkm-content');if(!c)return;
   if(pkmTab==='tabla')c.innerHTML=renderTable();
-  else if(pkmTab==='kanban'){c.innerHTML='<div class="kanban-wrap" id="kanban-inner"></div>';renderKanban();}
+  else if(pkmTab==='kanban'){
+    c.innerHTML=(isMobile()?'<div style="padding:6px 8px;font-size:10px;color:#555;background:#e8e8e8;border-bottom:1px solid #999">Toca un tema para abrirlo y cambiarle el estado. Desliza para ver más columnas.</div>':'')
+      +'<div class="kanban-wrap" id="kanban-inner"></div>';
+    renderKanban();
+  }
   else if(pkmTab==='timeline'){c.innerHTML='<div class="timeline-wrap">'+renderTimeline()+'</div>';}
   else if(pkmTab==='stats')c.innerHTML=renderStatsTab();
 }
@@ -1029,7 +1118,8 @@ function renderKanban(){
           <div class="k-card" draggable="true"
             ondragstart="dragKanban(event,'${s.id}')"
             ondragend="document.querySelectorAll('.k-col').forEach(c=>c.classList.remove('drag-over'))"
-            ondblclick="openSongModal('${s.id}')">
+            ondblclick="openSongModal('${s.id}')"
+            onclick="if(isMobile())openSongModal('${s.id}')">
             <div class="k-card-t">${esc(s.titulo)}</div>
             <div class="k-card-a">${esc((s.artistas||[]).join(', '))}</div>
             ${(()=>{const p=songProgress(s);return p>0?`<div class="prog-mini" title="${p}% producción"><div class="prog-mini-fill" style="width:${p}%"></div></div>`:'';})()}
@@ -1089,7 +1179,7 @@ function renderStatsTab(){
       <div class="stat-tile"><div class="stat-num">${enProg}</div><div class="stat-lbl">En progreso</div></div>
       <div class="stat-tile"><div class="stat-num">${artists.length}</div><div class="stat-lbl">Artistas</div></div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    <div class="grid2">
       <div>
         <div class="ss"><h3>Por estado</h3><div class="bar-chart">${bars}</div></div>
       </div>
@@ -1617,7 +1707,7 @@ function renderStatsApp(){
       <div class="kpi"><div class="kpi-n">${enProg}</div><div class="kpi-l">En progreso</div></div>
       <div class="kpi"><div class="kpi-n">${profiles.length}</div><div class="kpi-l">Miembros</div></div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+    <div class="grid3">
       <div class="ss"><h3>Por estado</h3><div class="bar-chart">${bars}</div></div>
       <div class="ss"><h3>Top artistas</h3><div class="bar-chart">${aBars||'<div style="color:#666;font-size:11px">Sin datos</div>'}</div></div>
       <div class="ss"><h3>Temas por mes</h3><div class="bar-chart">${mBars||'<div style="color:#666;font-size:11px">Sin datos</div>'}</div></div>
@@ -1769,7 +1859,7 @@ function renderMiPanel(){
   const misEvts=events.filter(e=>e.user_id===CU.id&&new Date(e.event_date)>=hoy).slice(0,5);
 
   c.innerHTML=`
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    <div class="grid2">
       <div>
         <div class="panel-section">
           <h3>⚡ Mis tareas pendientes (${misTareas.length})</h3>
