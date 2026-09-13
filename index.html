@@ -353,12 +353,13 @@ body{width:100vw;height:100vh;overflow:hidden;font-family:Arial,sans-serif;font-
     <div class="auth-title">🎵 PERKYMAFIA OS — Iniciar sesión</div>
     <div class="auth-body">
       <label>Email</label>
-      <input type="email" id="l-email" placeholder="tu@email.com">
+      <input type="email" id="l-email" placeholder="tu@email.com" autocomplete="email">
       <label>Contraseña</label>
-      <input type="password" id="l-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
-      <div style="display:flex;gap:8px;margin-top:4px">
-        <button class="abtn" onclick="doLogin()">Entrar</button>
+      <input type="password" id="l-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()" autocomplete="current-password">
+      <div style="display:flex;gap:8px;margin-top:4px;flex-wrap:wrap">
+        <button class="abtn" onclick="doLogin()" id="btn-login">Entrar</button>
         <button class="abtn" onclick="showReg()">Registrarse</button>
+        <button class="abtn" onclick="doResetPwd()" style="font-size:10px">¿Olvidé contraseña?</button>
       </div>
       <div class="auth-err" id="l-err"></div>
     </div>
@@ -367,11 +368,11 @@ body{width:100vw;height:100vh;overflow:hidden;font-family:Arial,sans-serif;font-
     <div class="auth-title">🎵 PERKYMAFIA OS — Crear cuenta</div>
     <div class="auth-body">
       <label>Nombre artístico</label>
-      <input type="text" id="r-nombre" placeholder="Tu alias / nombre">
+      <input type="text" id="r-nombre" placeholder="Tu alias / nombre" autocomplete="name">
       <label>Email</label>
-      <input type="email" id="r-email" placeholder="tu@email.com">
+      <input type="email" id="r-email" placeholder="tu@email.com" autocomplete="email">
       <label>Contraseña</label>
-      <input type="password" id="r-pass" placeholder="Mínimo 6 caracteres" onkeydown="if(event.key==='Enter')doRegister()">
+      <input type="password" id="r-pass" placeholder="Mínimo 6 caracteres" onkeydown="if(event.key==='Enter')doRegister()" autocomplete="new-password">
       <div style="display:flex;gap:8px;margin-top:4px">
         <button class="abtn" onclick="doRegister()">Crear cuenta</button>
         <button class="abtn" onclick="showLogin()">Volver</button>
@@ -480,7 +481,23 @@ function boot(){
       bar.style.width=(i/lines.length*100)+'%';
       setTimeout(step,300+Math.random()*200);
     } else {
-      setTimeout(()=>showScreen('scr-auth'),400);
+      setTimeout(async()=>{
+        // Intenta restaurar sesión guardada antes de mostrar login
+        try{
+          const{data:{session}}=await Promise.race([
+            SB.auth.getSession(),
+            new Promise((_,r)=>setTimeout(()=>r(new Error('timeout')),5000))
+          ]);
+          if(session){
+            showScreen('scr-auth');
+            const errEl=$('l-err');
+            errEl.style.color='#555';errEl.textContent='Sesión encontrada, cargando...';
+            await loadUserData(session.user);
+            return;
+          }
+        }catch(e){}
+        showScreen('scr-auth');
+      },400);
     }
   }
   setTimeout(step,400);
@@ -494,13 +511,27 @@ async function doLogin(){
   const email=$('l-email').value.trim(),pass=$('l-pass').value;
   const errEl=$('l-err');errEl.textContent='';errEl.style.color='red';
   if(!email||!pass){errEl.textContent='Completa todos los campos';return;}
+  const btn=$('btn-login');if(btn)btn.disabled=true;
   errEl.style.color='#555';errEl.textContent='Conectando con Supabase...';
-  const tout=new Promise((_,r)=>setTimeout(()=>r(new Error('Sin respuesta de Supabase. Recarga la página e inténtalo de nuevo.')),15000));
+  const tout=new Promise((_,r)=>setTimeout(()=>r(new Error('⏱️ Sin respuesta (30s). Comprueba tu conexión e inténtalo de nuevo.')),30000));
   try{
     const res=await Promise.race([SB.auth.signInWithPassword({email,password:pass}),tout]);
-    if(res.error){errEl.style.color='red';errEl.textContent=res.error.message;}
-    else{errEl.style.color='green';errEl.textContent='✅ Login OK. Cargando...';}
-  }catch(e){errEl.style.color='red';errEl.textContent=e.message;}
+    if(res.error){
+      errEl.style.color='red';
+      const msg=res.error.message;
+      if(msg.includes('Invalid login')||msg.includes('invalid_credentials')){
+        errEl.textContent='❌ Email o contraseña incorrectos. ¿Olvidaste la contraseña?';
+      } else if(msg.includes('Email not confirmed')){
+        errEl.textContent='⚠️ Confirma tu email primero (revisa tu bandeja de entrada).';
+      } else {
+        errEl.textContent='❌ '+msg;
+      }
+    } else {
+      errEl.style.color='green';errEl.textContent='✅ Entrando...';
+    }
+  }catch(e){
+    errEl.style.color='red';errEl.textContent=e.message;
+  }finally{if(btn)btn.disabled=false;}
 }
 
 async function doRegister(){
@@ -509,11 +540,24 @@ async function doRegister(){
   if(!nombre||!email||!pass){errEl.textContent='Completa todos los campos';return;}
   if(pass.length<6){errEl.textContent='Contraseña mínimo 6 caracteres';return;}
   errEl.style.color='#555';errEl.textContent='Creando cuenta...';
+  const tout=new Promise((_,r)=>setTimeout(()=>r(new Error('⏱️ Sin respuesta. Comprueba tu conexión.')),30000));
   try{
-    const{error}=await SB.auth.signUp({email,password:pass,options:{data:{nombre}}});
-    if(error){errEl.style.color='red';errEl.textContent=error.message;return;}
-    errEl.style.color='green';errEl.textContent='✅ Cuenta creada. Ahora inicia sesión.';
-    setTimeout(showLogin,2000);
+    const{error}=await Promise.race([SB.auth.signUp({email,password:pass,options:{data:{nombre}}}),tout]);
+    if(error){errEl.style.color='red';errEl.textContent='❌ '+error.message;return;}
+    errEl.style.color='green';errEl.textContent='✅ Cuenta creada. Ya puedes iniciar sesión.';
+    setTimeout(()=>{showLogin();$('l-email').value=email;},1500);
+  }catch(e){errEl.style.color='red';errEl.textContent=e.message;}
+}
+
+async function doResetPwd(){
+  const email=$('l-email').value.trim();
+  const errEl=$('l-err');
+  if(!email){errEl.style.color='red';errEl.textContent='Escribe tu email primero';return;}
+  errEl.style.color='#555';errEl.textContent='Enviando enlace de recuperación...';
+  try{
+    const{error}=await SB.auth.resetPasswordForEmail(email,{redirectTo:window.location.href});
+    if(error){errEl.style.color='red';errEl.textContent='❌ '+error.message;}
+    else{errEl.style.color='green';errEl.textContent='📧 ¡Revisa tu email! Te hemos enviado un enlace para restablecer la contraseña.';}
   }catch(e){errEl.style.color='red';errEl.textContent='Error: '+e.message;}
 }
 
@@ -549,12 +593,30 @@ async function loadUserData(user){
 }
 
 SB.auth.onAuthStateChange(async(ev,sess)=>{
-  if(ev==='SIGNED_IN'&&sess){await loadUserData(sess.user);}
-  else if(ev==='SIGNED_OUT'){CU=null;CP=null;cleanupRealtime();showScreen('scr-auth');showLogin();}
+  if((ev==='SIGNED_IN'||ev==='INITIAL_SESSION'||ev==='TOKEN_REFRESHED')&&sess){
+    await loadUserData(sess.user);
+  } else if(ev==='PASSWORD_RECOVERY'&&sess){
+    // Usuario viene del enlace de reset de contraseña
+    showScreen('scr-auth');showLogin();
+    const errEl=$('l-err');
+    errEl.style.color='#000080';
+    errEl.innerHTML='🔑 Introduce tu nueva contraseña abajo:<br><input type="password" id="new-pwd" placeholder="Nueva contraseña" style="width:100%;margin-top:4px;padding:3px;border:2px solid #808080"><br><button class="abtn" style="margin-top:4px" onclick="confirmNewPwd()">Guardar contraseña</button>';
+  } else if(ev==='SIGNED_OUT'){
+    CU=null;CP=null;cleanupRealtime();showScreen('scr-auth');showLogin();
+  }
 });
 
+async function confirmNewPwd(){
+  const pwd=($('new-pwd')||{}).value;
+  if(!pwd||pwd.length<6){return;}
+  const{error}=await SB.auth.updateUser({password:pwd});
+  const errEl=$('l-err');
+  if(error){errEl.style.color='red';errEl.textContent='❌ '+error.message;}
+  else{errEl.style.color='green';errEl.textContent='✅ Contraseña actualizada. Iniciando sesión...';}
+}
+
 // ===== DATA =====
-async function loadSongs(){const{data}=await SB.from('songs').select('*').order('created_at',{ascending:false});songs=data||[];}
+async function loadSongs(){const{data}=await SB.from('songs').select('*').order('updated_at',{ascending:false,nullsFirst:false});songs=data||[];}
 async function loadArtists(){const{data}=await SB.from('artists').select('*').order('nombre');artists=data||[];}
 async function loadProfiles(){
   const{data}=await SB.from('profiles').select('*').order('nombre');
@@ -952,18 +1014,18 @@ async function dropKanban(e,estado){
   const id=e.dataTransfer.getData('songId');if(!id)return;
   const s=songs.find(x=>x.id===id);if(!s||s.estado===estado)return;
   const prev=s.estado;s.estado=estado;
-  const hist=[...(s.historial||[]),{date:new Date().toISOString(),estado,prev,user:CP.nombre||CP.email}];
+  const hist=[...(s.historial||[]),{date:new Date().toISOString(),estado,prev,user:CP?(CP.artist_name||CP.nombre||CP.email):''}];
   await SB.from('songs').update({estado,historial:hist,updated_at:new Date().toISOString()}).eq('id',id);
   s.historial=hist;renderTemas();
   logActivity('estado_cambio',id,s.titulo,{from:prev,to:estado});
 }
 
 function renderTimeline(){
-  const fs=[...songs].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+  const fs=[...songs].sort((a,b)=>new Date(b.creado||b.updated_at)-new Date(a.creado||a.updated_at));
   if(!fs.length)return '<div style="padding:20px;color:#666">Sin temas.</div>';
   return fs.map(s=>{
     const hist=s.historial||[];
-    const entries=[{date:s.created_at,estado:'Idea',first:true},...hist];
+    const entries=[{date:s.creado||s.updated_at,estado:'Idea',first:true},...hist];
     return `<div class="tl-song">
       <div class="tl-song-title">🎵 ${esc(s.titulo)} <span style="color:#888;font-weight:normal;font-size:10px">${esc((s.artistas||[]).join(', '))}</span></div>
       <div class="tl-entries">${entries.map(h=>`
@@ -1193,17 +1255,27 @@ async function saveSong(id){
   const s=curSong;const isNew=!id;
   const data={
     titulo:s.titulo||'Sin título',artistas:s.artistas||[],estado:s.estado||'Idea',
+    prioridad:s.prioridad||'Media',
     bpm:s.bpm||null,tonalidad:s.tonalidad||'',genero:s.genero||'',notas:s.notas||'',
-    checklist:s.checklist||[],spotify:s.spotify||'',soundcloud:s.soundcloud||'',
+    responsable:CP?CP.artist_name||CP.nombre||'':'',
+    checklist:s.checklist||[],spotify:s.spotify||null,soundcloud:s.soundcloud||null,
     historial:s.historial||[],links:s.links||[],tareas:s.tareas||[],comentarios:s.comentarios||[],
+    production_stages:s.production_stages||[],
     updated_at:new Date().toISOString()
   };
-  if(isNew){data.user_id=CU.id;data.created_at=new Date().toISOString();}
-  const q=isNew?SB.from('songs').insert(data):SB.from('songs').update(data).eq('id',id);
-  const{error,data:saved}=await q.select().single();
-  if(error){notify('Error','No se pudo guardar','err');return;}
+  if(isNew){data.creado=new Date().toISOString();}
+  let error;
+  if(isNew){
+    const res=await SB.from('songs').insert(data).select('id').single();
+    error=res.error;
+    if(!error&&res.data)logActivity('tema_nuevo',res.data.id,data.titulo,{});
+  } else {
+    const res=await SB.from('songs').update(data).eq('id',id);
+    error=res.error;
+    logActivity('edicion',id,data.titulo,{});
+  }
+  if(error){notify('Error','No se pudo guardar: '+error.message,'err');return;}
   await loadSongs();closeModal();renderTemas();
-  if(isNew)logActivity('tema_nuevo','',data.titulo||'',{});
   notify('Guardado','Tema guardado correctamente','ok');
 }
 
@@ -1454,7 +1526,7 @@ async function autoSaveNote(){
   if(!selNoteId)return;
   const title=($('ne-title')||{value:''}).value;
   const content=($('ne-content')||{value:''}).value;
-  const{error}=await SB.from('notes').update({title,content,updated_at:new Date().toISOString()}).eq('id',selNoteId).eq('user_id',CU.id);
+  const{error}=await SB.from('notes').update({title,content,updated_at:new Date().toISOString()}).eq('id',selNoteId);
   if(!error){
     const n=notes.find(x=>x.id===selNoteId);
     if(n){n.title=title;n.content=content;n.updated_at=new Date().toISOString();}
@@ -1500,7 +1572,7 @@ function renderStatsApp(){
   const aBars=topA.map(([n,c])=>`<div class="bar-row"><span class="bar-lbl">${esc(n)}</span><div class="bar-track"><div class="bar-fill" style="width:${Math.round(c/maxA*100)}%;background:#006633"></div></div><span class="bar-val">${c}</span></div>`).join('');
 
   // Monthly
-  const mmap={};songs.forEach(s=>{if(!s.created_at)return;const d=new Date(s.created_at);const k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');mmap[k]=(mmap[k]||0)+1;});
+  const mmap={};songs.forEach(s=>{const dt=s.creado||s.updated_at;if(!dt)return;const d=new Date(dt);const k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');mmap[k]=(mmap[k]||0)+1;});
   const mkeys=Object.keys(mmap).sort().slice(-6);
   const maxM=Math.max(...mkeys.map(k=>mmap[k]),1);
   const mBars=mkeys.map(k=>`<div class="bar-row"><span class="bar-lbl">${k}</span><div class="bar-track"><div class="bar-fill" style="width:${Math.round(mmap[k]/maxM*100)}%;background:#800040"></div></div><span class="bar-val">${mmap[k]}</span></div>`).join('');
@@ -1527,7 +1599,7 @@ function renderStatsApp(){
     </div>`;
 }
 
-async function refreshStats(){await loadSongs();await loadProfiles();renderStatsApp();notify('Stats','Datos actualizados','ok');}
+async function refreshStats(){await loadSongs();await loadProfiles().catch(()=>{});renderStatsApp();notify('Stats','Datos actualizados','ok');}
 
 // ===========================
 // ===== APP: PROFILE =========
