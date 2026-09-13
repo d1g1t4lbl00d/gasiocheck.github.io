@@ -517,19 +517,34 @@ async function doRegister(){
 }
 
 async function loadUserData(user){
-  CU=user;
-  const{data:p}=await SB.from('profiles').select('*').eq('id',user.id).single();
-  if(!p){showScreen('scr-pending');return;}
-  if(p.email==='asarap08@gmail.com'&&(!p.approved||p.role!=='admin')){
-    await SB.from('profiles').update({approved:true,role:'admin'}).eq('id',user.id);
-    p.approved=true;p.role='admin';
+  try{
+    CU=user;
+    const{data:p,error:pe}=await SB.from('profiles').select('*').eq('id',user.id).single();
+    if(pe||!p){showScreen('scr-pending');return;}
+    if(p.email==='asarap08@gmail.com'&&(!p.approved||p.role!=='admin')){
+      await SB.from('profiles').update({approved:true,role:'admin'}).eq('id',user.id);
+      p.approved=true;p.role='admin';
+    }
+    CP=p;
+    if(!p.approved){showScreen('scr-pending');return;}
+    await Promise.all([
+      loadSongs().catch(()=>{}),
+      loadArtists().catch(()=>{}),
+      loadProfiles().catch(()=>{}),
+      loadMessages().catch(()=>{}),
+      loadNotes().catch(()=>{}),
+      loadEvents().catch(()=>{}),
+      loadActivityLog().catch(()=>{})
+    ]);
+    setupDesktop();
+    setupRealtime();
+    showScreen('scr-desktop');
+  }catch(e){
+    console.error('loadUserData error:',e);
+    showScreen('scr-auth');
+    const errEl=$('l-err');
+    if(errEl){errEl.style.color='red';errEl.textContent='Error al cargar: '+e.message;}
   }
-  CP=p;
-  if(!p.approved){showScreen('scr-pending');return;}
-  await Promise.all([loadSongs(),loadArtists(),loadProfiles(),loadMessages(),loadNotes(),loadEvents(),loadActivityLog()]);
-  setupDesktop();
-  setupRealtime();
-  showScreen('scr-desktop');
 }
 
 SB.auth.onAuthStateChange(async(ev,sess)=>{
