@@ -932,6 +932,7 @@ async function dropKanban(e,estado){
   const hist=[...(s.historial||[]),{date:new Date().toISOString(),estado,prev,user:CP.nombre||CP.email}];
   await SB.from('songs').update({estado,historial:hist,updated_at:new Date().toISOString()}).eq('id',id);
   s.historial=hist;renderTemas();
+  logActivity('estado_cambio',id,s.titulo,{from:prev,to:estado});
 }
 
 function renderTimeline(){
@@ -1161,6 +1162,7 @@ function addComment(){
   const nc={id:gid(),user_id:CU.id,nombre:CP.artist_name||CP.nombre||CP.email,texto:txt,created_at:new Date().toISOString()};
   curSong.comentarios=[...(curSong.comentarios||[]),nc];
   $('com-text').value='';renderMTabContent(curSong.id);
+  logActivity('comentario',curSong.id||'',curSong.titulo,{});
 }
 function removeCom(cid){curSong.comentarios=(curSong.comentarios||[]).filter(c=>c.id!==cid);renderMTabContent(curSong.id);}
 
@@ -1175,9 +1177,10 @@ async function saveSong(id){
   };
   if(isNew){data.user_id=CU.id;data.created_at=new Date().toISOString();}
   const q=isNew?SB.from('songs').insert(data):SB.from('songs').update(data).eq('id',id);
-  const{error}=await q;
+  const{error,data:saved}=await q.select().single();
   if(error){notify('Error','No se pudo guardar','err');return;}
   await loadSongs();closeModal();renderTemas();
+  if(isNew)logActivity('tema_nuevo','',data.titulo||'',{});
   notify('Guardado','Tema guardado correctamente','ok');
 }
 
@@ -1617,30 +1620,6 @@ async function logActivity(action,song_id,song_titulo,detail){
   try{await SB.from('activity_log').insert({user_id:CU.id,action,song_id:song_id||null,song_titulo,detail});}catch(e){}
 }
 
-// Patch saveSong to log
-const _origSaveSong=saveSong;
-async function saveSong(id){
-  const isNew=!id;
-  await _origSaveSong(id);
-  if(isNew)logActivity('tema_nuevo','',curSong.titulo||'',{});
-}
-
-// Patch dropKanban to log
-const _origDrop=dropKanban;
-async function dropKanban(e,estado){
-  const id=e.dataTransfer.getData('songId');
-  const s=songs.find(x=>x.id===id);
-  const prev=s?s.estado:'';
-  await _origDrop(e,estado);
-  if(id&&prev!==estado)logActivity('estado_cambio',id,s?s.titulo:'',{from:prev,to:estado});
-}
-
-// Patch addComment to log
-const _origAddComment=addComment;
-function addComment(){
-  _origAddComment();
-  if(curSong)logActivity('comentario',curSong.id||'',curSong.titulo,{});
-}
 
 // ===========================
 // ===== APP: MI PANEL ========
