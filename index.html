@@ -25,8 +25,12 @@ body{width:100vw;height:100vh;overflow:hidden;font-family:Arial,sans-serif;font-
 .auth-body label{display:block;font-size:11px;margin-bottom:2px}
 .auth-body input{width:100%;padding:3px 4px;margin-bottom:8px;border:2px solid;border-color:#808080 #fff #fff #808080;background:#fff;font-size:12px}
 .auth-body input:focus{outline:1px dotted #000}
-.abtn{background:var(--c0);border:2px solid;border-color:#fff #808080 #808080 #fff;padding:3px 14px;font-size:12px;cursor:pointer}
-.abtn:active{border-color:#808080 #fff #fff #808080}
+.abtn{background:var(--c0);border:2px solid;border-color:#fff #808080 #808080 #fff;padding:4px 14px;font-size:12px;cursor:pointer;font-family:Arial;min-height:26px}
+.abtn:active:not(:disabled){border-color:#808080 #fff #fff #808080}
+.abtn:disabled{color:#808080;text-shadow:1px 1px 0 #fff;cursor:default}
+.auth-actions{display:flex;gap:8px;margin-top:10px}
+.auth-actions .abtn{flex:1;padding:4px 4px}
+.abtn-alt{width:100%;margin-top:6px;font-size:11px;color:#333}
 .auth-err{color:red;font-size:11px;margin-top:6px;min-height:14px}
 
 /* PENDING */
@@ -357,11 +361,11 @@ body{width:100vw;height:100vh;overflow:hidden;font-family:Arial,sans-serif;font-
       <input type="email" id="l-email" placeholder="tu@email.com" autocomplete="email">
       <label>Contraseña</label>
       <input type="password" id="l-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()" autocomplete="current-password">
-      <div style="display:flex;gap:8px;margin-top:4px;flex-wrap:wrap">
+      <div class="auth-actions">
         <button class="abtn" onclick="doLogin()" id="btn-login">Entrar</button>
         <button class="abtn" onclick="showReg()">Registrarse</button>
-        <button class="abtn" onclick="doResetPwd()" style="font-size:10px">¿Olvidé contraseña?</button>
       </div>
+      <button class="abtn abtn-alt" onclick="doResetPwd()">¿Olvidé mi contraseña?</button>
       <div class="auth-err" id="l-err"></div>
     </div>
   </div>
@@ -374,7 +378,7 @@ body{width:100vw;height:100vh;overflow:hidden;font-family:Arial,sans-serif;font-
       <input type="email" id="r-email" placeholder="tu@email.com" autocomplete="email">
       <label>Contraseña</label>
       <input type="password" id="r-pass" placeholder="Mínimo 6 caracteres" onkeydown="if(event.key==='Enter')doRegister()" autocomplete="new-password">
-      <div style="display:flex;gap:8px;margin-top:4px">
+      <div class="auth-actions">
         <button class="abtn" onclick="doRegister()">Crear cuenta</button>
         <button class="abtn" onclick="showLogin()">Volver</button>
       </div>
@@ -556,18 +560,45 @@ async function doResetPwd(){
   }catch(e){errEl.style.color='red';errEl.textContent='Error: '+e.message;}
 }
 
+// Resuelve al valor de `fallback` si la promesa tarda más de `ms` o falla,
+// para que una consulta lenta nunca deje la carga colgada.
+function withTimeout(p,ms,fallback){
+  return Promise.race([
+    Promise.resolve(p).catch(()=>fallback),
+    new Promise(res=>setTimeout(()=>res(fallback),ms))
+  ]);
+}
+
+let _loadSeq=0;
 async function loadUserData(user){
+  const seq=++_loadSeq;
   try{
     CU=user;
-    const{data:p,error:pe}=await SB.from('profiles').select('*').eq('id',user.id).single();
-    if(pe||!p){showScreen('scr-pending');return;}
+    const setMsg=t=>{const e=$('l-err');if(e){e.style.color='#555';e.textContent=t;}};
+    setMsg('Cargando perfil...');
+
+    const res=await withTimeout(SB.from('profiles').select('*').eq('id',user.id).single(),12000,null);
+    if(seq!==_loadSeq)return;
+
+    let p=res&&res.data?res.data:null;
+    if(!p){
+      // PGRST116 = la consulta llegó y no hay perfil: cuenta pendiente de aprobación.
+      if(res&&res.error&&res.error.code==='PGRST116'){showScreen('scr-pending');return;}
+      // Cualquier otro caso es fallo de red: la sesión ya está verificada, seguimos con sus datos.
+      const md=user.user_metadata||{};
+      p={id:user.id,email:user.email,nombre:md.nombre||md.display_name||user.email,
+         artist_name:'',role:'miembro',approved:true,bio:'',instagram:'',twitter:''};
+    }
+
     if(p.email==='asarap08@gmail.com'&&(!p.approved||p.role!=='admin')){
-      await SB.from('profiles').update({approved:true,role:'admin'}).eq('id',user.id);
       p.approved=true;p.role='admin';
+      SB.from('profiles').update({approved:true,role:'admin'}).eq('id',user.id).then(()=>{},()=>{});
     }
     CP=p;
     if(!p.approved){showScreen('scr-pending');return;}
-    await Promise.all([
+
+    setMsg('Cargando datos...');
+    await withTimeout(Promise.all([
       loadSongs().catch(()=>{}),
       loadArtists().catch(()=>{}),
       loadProfiles().catch(()=>{}),
@@ -575,12 +606,15 @@ async function loadUserData(user){
       loadNotes().catch(()=>{}),
       loadEvents().catch(()=>{}),
       loadActivityLog().catch(()=>{})
-    ]);
+    ]),15000,null);
+    if(seq!==_loadSeq)return;
+
     setupDesktop();
     setupRealtime();
     _deskReady=true;
     if(_bootDone)showScreen('scr-desktop');
   }catch(e){
+    if(seq!==_loadSeq)return;
     console.error('loadUserData error:',e);
     showScreen('scr-auth');
     const errEl=$('l-err');
@@ -588,12 +622,9 @@ async function loadUserData(user){
   }
 }
 
-let _loadingUser=false;
 SB.auth.onAuthStateChange(async(ev,sess)=>{
   if((ev==='SIGNED_IN'||ev==='INITIAL_SESSION'||ev==='TOKEN_REFRESHED')&&sess){
-    if(_loadingUser)return;
-    _loadingUser=true;
-    try{await loadUserData(sess.user);}finally{_loadingUser=false;}
+    await loadUserData(sess.user);
   } else if(ev==='PASSWORD_RECOVERY'&&sess){
     // Usuario viene del enlace de reset de contraseña
     showScreen('scr-auth');showLogin();
