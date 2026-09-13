@@ -1875,12 +1875,21 @@ function openMiPanel(){
 }
 function renderMiPanel(){
   const c=$('mipanel-inner');if(!c)return;
-  // Mis tareas pendientes
+  // Mis pendientes: tareas sueltas y fases de producción asignadas a mí
   const misTareas=[];
-  songs.forEach(s=>(s.tareas||[]).forEach(t=>{if(t.assignee_id===CU.id&&!t.done)misTareas.push({song:s,task:t});}));
+  songs.forEach(s=>{
+    (s.tareas||[]).forEach(t=>{
+      if(t.assignee_id===CU.id&&!t.done)misTareas.push({song:s,texto:t.texto,tab:'tareas',icono:'📋'});
+    });
+    (s.production_stages||[]).forEach(st=>{
+      if(st.assignee_id===CU.id&&!st.done)misTareas.push({song:s,texto:st.name,tab:'produccion',icono:'⚙️'});
+    });
+  });
   // Mis temas
   const miNombre=(CP.artist_name||CP.nombre||'').toLowerCase();
-  const misTemas=songs.filter(s=>s.user_id===CU.id||(s.artistas||[]).some(a=>a.toLowerCase()===miNombre));
+  const misTemas=songs.filter(s=>
+    (s.responsable||'').toLowerCase()===miNombre||
+    (s.artistas||[]).some(a=>a.toLowerCase()===miNombre));
   // Sprint activo
   const sprintSongs=songs.filter(s=>s.in_sprint);
   // Mis eventos próximos
@@ -1892,10 +1901,10 @@ function renderMiPanel(){
       <div>
         <div class="panel-section">
           <h3>⚡ Mis tareas pendientes (${misTareas.length})</h3>
-          ${misTareas.length?misTareas.map(({song:s,task:t})=>`
-            <div class="panel-task" onclick="openSongModal('${s.id}');switchMTab('tareas','${s.id}')">
+          ${misTareas.length?misTareas.map(({song:s,texto,tab,icono})=>`
+            <div class="panel-task" onclick="openSongModal('${s.id}');switchMTab('${tab}','${s.id}')">
               <span class="pt-song">${esc(s.titulo)}</span>
-              <span class="pt-task">${esc(t.texto)}</span>
+              <span class="pt-task">${icono} ${esc(texto)}</span>
               <span class="pt-badge e-${s.estado.replace(/ /g,'_')}" style="background:${ECOLORS[s.estado]};color:${ETCOLORS[s.estado]};border-color:${ETCOLORS[s.estado]}">${esc(s.estado)}</span>
             </div>`).join(''):'<div class="panel-empty">✅ Sin tareas pendientes</div>'}
         </div>
