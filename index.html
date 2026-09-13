@@ -5,226 +5,267 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Desktop OS</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      width: 100vw; height: 100vh; overflow: hidden;
-      background: #008080;
-      font-family: 'MS Sans Serif', Tahoma, 'Segoe UI', sans-serif;
-      font-size: 11px;
-      user-select: none;
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      width:100vw;height:100vh;overflow:hidden;
+      background:#008080;
+      font-family:'MS Sans Serif',Tahoma,'Segoe UI',sans-serif;
+      font-size:11px;user-select:none;
+    }
+    #desktop{width:100%;height:calc(100% - 28px);position:relative;overflow:hidden}
+
+    /* Desktop icons */
+    .d-icon{
+      position:absolute;width:80px;
+      display:flex;flex-direction:column;align-items:center;
+      padding:6px 4px;cursor:pointer;text-align:center;
+      border:1px solid transparent;border-radius:2px;
+      color:#fff;text-shadow:1px 1px 2px #000;
+    }
+    .d-icon:hover{background:rgba(0,0,128,.35);border-color:rgba(255,255,255,.5)}
+    .d-icon.sel{background:rgba(0,0,128,.6);border-color:rgba(255,255,255,.9)}
+    .d-icon-img{font-size:34px;line-height:1}
+    .d-icon-label{margin-top:4px;font-size:11px;line-height:1.25;word-break:break-word}
+
+    /* 3-D button */
+    .btn3d{
+      background:#c0c0c0;
+      border:2px solid;border-color:#fff #808080 #808080 #fff;
+      font-family:inherit;font-size:11px;cursor:pointer;
+      padding:2px 10px;height:23px;
+      display:inline-flex;align-items:center;gap:5px;
+      white-space:nowrap;outline:none;flex-shrink:0;
+    }
+    .btn3d:active,.btn3d.pressed{
+      border-color:#808080 #fff #fff #808080;
+      padding-left:12px;padding-top:3px;
     }
 
-    /* ── Desktop ── */
-    #desktop {
-      width: 100%; height: calc(100% - 28px);
-      position: relative; overflow: hidden;
+    /* Taskbar */
+    #taskbar{
+      position:fixed;bottom:0;left:0;right:0;height:28px;
+      background:#c0c0c0;border-top:2px solid #fff;
+      display:flex;align-items:center;gap:2px;padding:2px 3px;
+      z-index:9000;
+    }
+    .tb-sep{width:2px;height:20px;border-left:1px solid #808080;border-right:1px solid #fff;margin:0 1px;flex-shrink:0}
+    #tb-wins{flex:1;display:flex;align-items:center;gap:2px;overflow:hidden;min-width:0}
+    .tb-btn{
+      max-width:160px;min-width:80px;height:22px;padding:0 6px;
+      font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+      text-align:left;display:flex;align-items:center;gap:5px;
+      font-family:inherit;cursor:pointer;flex-shrink:0;
+    }
+    .tb-btn .tb-ico{font-size:13px;flex-shrink:0}
+    #tray{
+      height:22px;padding:0 8px;
+      border:1px solid;border-color:#808080 #fff #fff #808080;
+      display:flex;align-items:center;gap:6px;
+      font-size:11px;flex-shrink:0;
     }
 
-    /* ── Desktop icons ── */
-    .d-icon {
-      position: absolute; width: 76px;
-      display: flex; flex-direction: column; align-items: center;
-      padding: 6px 4px; cursor: pointer; text-align: center;
-      border: 1px solid transparent; border-radius: 2px;
-      color: #fff; text-shadow: 1px 1px 2px #000;
+    /* Start menu */
+    #smenu{
+      position:fixed;bottom:28px;left:0;
+      width:210px;background:#c0c0c0;
+      border:2px solid;border-color:#fff #808080 #808080 #fff;
+      box-shadow:2px 2px 6px rgba(0,0,0,.5);
+      display:none;flex-direction:column;z-index:9500;
     }
-    .d-icon:hover  { background: rgba(0,0,128,.35); border-color: rgba(255,255,255,.5); }
-    .d-icon.sel    { background: rgba(0,0,128,.55); border-color: rgba(255,255,255,.8); }
-    .d-icon-img    { font-size: 34px; line-height: 1; }
-    .d-icon-label  { margin-top: 4px; font-size: 11px; line-height: 1.25; word-break: break-word; }
+    #smenu.open{display:flex}
+    .sm-side{
+      position:absolute;left:0;top:0;bottom:0;width:28px;
+      background:linear-gradient(to top,#444,#999);
+      display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px;
+    }
+    .sm-side span{
+      writing-mode:vertical-rl;transform:rotate(180deg);
+      font-size:11px;font-weight:bold;color:rgba(255,255,255,.3);
+      letter-spacing:2px;
+    }
+    .sm-list{margin-left:28px;display:flex;flex-direction:column}
+    .sm-item{
+      padding:6px 8px;display:flex;align-items:center;gap:8px;
+      cursor:pointer;font-size:11px;position:relative;
+    }
+    .sm-item:hover{background:#000080;color:#fff}
+    .sm-item .sm-ico{font-size:18px;flex-shrink:0}
+    .sm-item .sm-arr{margin-left:auto;font-size:9px}
+    .sm-div{height:1px;margin:2px 4px;border-top:1px solid #808080;border-bottom:1px solid #fff}
+    .sm-sub{
+      position:absolute;left:100%;top:-2px;min-width:170px;
+      background:#c0c0c0;border:2px solid;border-color:#fff #808080 #808080 #fff;
+      box-shadow:2px 2px 5px rgba(0,0,0,.4);
+      display:none;flex-direction:column;z-index:9600;
+    }
+    .sm-item:hover .sm-sub{display:flex}
 
-    /* ── 3-D button ── */
-    .btn3d {
-      background: #c0c0c0;
-      border: 2px solid; border-color: #fff #808080 #808080 #fff;
-      font-family: inherit; font-size: 11px; cursor: pointer;
-      padding: 2px 10px; height: 23px;
-      display: inline-flex; align-items: center; gap: 5px;
-      white-space: nowrap; outline: none; flex-shrink: 0;
+    /* Context menu */
+    #ctx{
+      position:fixed;background:#c0c0c0;
+      border:2px solid;border-color:#fff #808080 #808080 #fff;
+      box-shadow:2px 2px 5px rgba(0,0,0,.4);
+      min-width:160px;display:none;z-index:9800;
     }
-    .btn3d:active, .btn3d.pressed {
-      border-color: #808080 #fff #fff #808080;
-      padding-left: 12px; padding-top: 3px;
+    .ctx-item{
+      padding:5px 20px;cursor:pointer;font-size:11px;white-space:nowrap;
     }
-    .btn3d:focus { outline: 1px dotted #000; outline-offset: -4px; }
+    .ctx-item:hover{background:#000080;color:#fff}
+    .ctx-div{height:1px;margin:2px 4px;border-top:1px solid #808080;border-bottom:1px solid #fff}
 
-    /* ── Taskbar ── */
-    #taskbar {
-      position: fixed; bottom: 0; left: 0; right: 0; height: 28px;
-      background: #c0c0c0;
-      border-top: 2px solid #fff;
-      display: flex; align-items: center; gap: 2px; padding: 2px 3px;
-      z-index: 9000;
+    /* Dropdown menu */
+    #ddmenu{
+      position:fixed;background:#c0c0c0;
+      border:2px solid;border-color:#fff #808080 #808080 #fff;
+      box-shadow:2px 2px 5px rgba(0,0,0,.4);
+      min-width:140px;display:none;z-index:9700;
+      flex-direction:column;
     }
-    .tb-sep { width: 2px; height: 20px; border-left: 1px solid #808080; border-right: 1px solid #fff; margin: 0 1px; flex-shrink: 0; }
-    #tb-wins { flex: 1; display: flex; align-items: center; gap: 2px; overflow: hidden; }
-    .tb-btn {
-      max-width: 160px; min-width: 90px; height: 22px; padding: 0 6px;
-      font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-      text-align: left; display: flex; align-items: center; gap: 5px;
-      font-family: inherit; cursor: pointer; flex-shrink: 0;
-    }
-    .tb-btn .tb-ico { font-size: 14px; }
-    #tray {
-      height: 22px; padding: 0 8px;
-      border: 1px solid; border-color: #808080 #fff #fff #808080;
-      display: flex; align-items: center; gap: 6px;
-      font-size: 11px; flex-shrink: 0;
-    }
+    #ddmenu.open{display:flex}
+    .dd-item{padding:4px 20px;cursor:pointer;font-size:11px;white-space:nowrap}
+    .dd-item:hover{background:#000080;color:#fff}
+    .dd-item.disabled{color:#808080;cursor:default}
+    .dd-item.disabled:hover{background:transparent;color:#808080}
+    .dd-div{height:1px;margin:2px 4px;border-top:1px solid #808080;border-bottom:1px solid #fff}
 
-    /* ── Start menu ── */
-    #smenu {
-      position: fixed; bottom: 28px; left: 0;
-      width: 200px; background: #c0c0c0;
-      border: 2px solid; border-color: #fff #808080 #808080 #fff;
-      box-shadow: 2px 2px 5px rgba(0,0,0,.45);
-      display: none; flex-direction: column; z-index: 9500;
+    /* Windows */
+    .win{
+      position:absolute;min-width:200px;min-height:100px;
+      background:#c0c0c0;
+      border:2px solid;border-color:#fff #808080 #808080 #fff;
+      box-shadow:2px 2px 8px rgba(0,0,0,.35);
+      display:flex;flex-direction:column;
     }
-    #smenu.open { display: flex; }
-    .sm-side {
-      position: absolute; left: 0; top: 0; bottom: 0; width: 26px;
-      background: linear-gradient(to top, #555, #aaa);
-      display: flex; align-items: flex-end; justify-content: center; padding-bottom: 6px;
-    }
-    .sm-side span {
-      writing-mode: vertical-rl; transform: rotate(180deg);
-      font-size: 11px; font-weight: bold; color: rgba(255,255,255,.35);
-      letter-spacing: 2px;
-    }
-    .sm-list { margin-left: 26px; display: flex; flex-direction: column; }
-    .sm-item {
-      padding: 6px 8px; display: flex; align-items: center; gap: 8px;
-      cursor: pointer; font-size: 11px; position: relative;
-    }
-    .sm-item:hover { background: #000080; color: #fff; }
-    .sm-item .sm-ico { font-size: 18px; flex-shrink: 0; }
-    .sm-item .sm-arr { margin-left: auto; font-size: 9px; }
-    .sm-div { height: 1px; margin: 2px 4px; border-top: 1px solid #808080; border-bottom: 1px solid #fff; }
-    .sm-sub {
-      position: absolute; left: 100%; top: -2px; min-width: 160px;
-      background: #c0c0c0; border: 2px solid; border-color: #fff #808080 #808080 #fff;
-      box-shadow: 2px 2px 5px rgba(0,0,0,.4);
-      display: none; flex-direction: column; z-index: 9600;
-    }
-    .sm-item:hover .sm-sub { display: flex; }
+    .win.hidden{display:none}
 
-    /* ── Windows ── */
-    .win {
-      position: absolute; min-width: 200px; min-height: 100px;
-      background: #c0c0c0;
-      border: 2px solid; border-color: #fff #808080 #808080 #fff;
-      box-shadow: 2px 2px 6px rgba(0,0,0,.35);
-      display: flex; flex-direction: column;
+    .win-tb{
+      height:20px;flex-shrink:0;
+      background:linear-gradient(90deg,#000080,#1084d0);
+      display:flex;align-items:center;padding:0 3px;cursor:move;gap:3px;
     }
-    .win.hidden { display: none; }
+    .win.blur .win-tb{background:linear-gradient(90deg,#7b7b7b,#b5b5b5)}
+    .win-tb-ico{font-size:12px;flex-shrink:0}
+    .win-tb-ttl{flex:1;color:#fff;font-size:11px;font-weight:bold;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .win-tb-btns{display:flex;gap:2px}
+    .win-ctrl{
+      width:16px;height:14px;flex-shrink:0;
+      background:#c0c0c0;border:1px solid;border-color:#fff #808080 #808080 #fff;
+      display:flex;align-items:center;justify-content:center;
+      cursor:pointer;font-size:9px;line-height:1;font-weight:bold;
+    }
+    .win-ctrl:active{border-color:#808080 #fff #fff #808080}
 
-    .win-tb {
-      height: 20px; flex-shrink: 0;
-      background: linear-gradient(90deg, #000080, #1084d0);
-      display: flex; align-items: center; padding: 0 3px;
-      cursor: move; gap: 3px;
+    .win-menubar{
+      flex-shrink:0;display:flex;
+      border-bottom:1px solid #808080;background:#c0c0c0;
     }
-    .win.blur .win-tb { background: linear-gradient(90deg, #7b7b7b, #b5b5b5); }
-    .win-tb-ico  { font-size: 12px; }
-    .win-tb-ttl  { flex: 1; color: #fff; font-size: 11px; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .win-tb-btns { display: flex; gap: 2px; }
-    .win-ctrl {
-      width: 16px; height: 14px; flex-shrink: 0;
-      background: #c0c0c0; border: 1px solid; border-color: #fff #808080 #808080 #fff;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; font-size: 9px; line-height: 1; font-weight: bold;
+    .wmb-item{
+      padding:2px 8px;cursor:pointer;font-size:11px;position:relative;
     }
-    .win-ctrl:active { border-color: #808080 #fff #fff #808080; }
+    .wmb-item:hover,.wmb-item.active{background:#000080;color:#fff}
 
-    .win-menubar {
-      flex-shrink: 0; display: flex;
-      border-bottom: 1px solid #808080; background: #c0c0c0;
-    }
-    .wmb-item { padding: 2px 8px; cursor: pointer; font-size: 11px; }
-    .wmb-item:hover { background: #000080; color: #fff; }
+    .win-body{flex:1;overflow:auto;position:relative}
+    .win-body.noscroll{overflow:hidden}
 
-    .win-body { flex: 1; overflow: auto; position: relative; }
-    .win-body.no-scroll { overflow: hidden; }
-
-    .win-status {
-      flex-shrink: 0; height: 20px; padding: 0 3px;
-      border-top: 1px solid #808080;
-      display: flex; align-items: center; gap: 3px;
+    .win-status{
+      flex-shrink:0;height:20px;padding:0 3px;border-top:1px solid #808080;
+      display:flex;align-items:center;gap:3px;
     }
-    .ws-cell {
-      padding: 1px 6px; font-size: 10px; color: #333;
-      border: 1px solid; border-color: #808080 #fff #fff #808080;
+    .ws-cell{
+      padding:1px 6px;font-size:10px;color:#333;
+      border:1px solid;border-color:#808080 #fff #fff #808080;
     }
-
-    .win-grip {
-      position: absolute; bottom: 0; right: 0;
-      width: 14px; height: 14px; cursor: se-resize; z-index: 2;
+    .win-grip{
+      position:absolute;bottom:0;right:0;width:14px;height:14px;
+      cursor:se-resize;z-index:2;
       background:
-        linear-gradient(135deg, transparent 0 30%, #808080 30% 40%, transparent 40% 60%, #808080 60% 70%, transparent 70% 87%, #808080 87% 100%);
+        linear-gradient(135deg,
+          transparent 0 30%,#808080 30% 40%,transparent 40% 60%,
+          #808080 60% 70%,transparent 70% 87%,#808080 87% 100%);
     }
 
-    /* ── Explorer ── */
-    .exp-wrap { display: flex; height: 100%; }
-    .exp-tree {
-      width: 150px; flex-shrink: 0; overflow: auto;
-      background: #fff; border-right: 2px solid; border-color: #808080 #fff #fff #808080;
-      padding: 2px;
+    /* Explorer */
+    .exp-wrap{display:flex;height:100%}
+    .exp-tree{
+      width:155px;flex-shrink:0;overflow:auto;
+      background:#fff;border-right:2px solid;border-color:#808080 #fff #fff #808080;padding:2px;
     }
-    .exp-main { flex: 1; overflow: auto; background: #fff; padding: 6px; }
-    .t-item {
-      display: flex; align-items: center; gap: 4px; padding: 2px 2px 2px 14px;
-      cursor: pointer; font-size: 11px; position: relative; white-space: nowrap;
+    .exp-main{flex:1;overflow:auto;background:#fff;padding:6px}
+    .t-item{
+      display:flex;align-items:center;gap:4px;padding:2px 2px 2px 16px;
+      cursor:pointer;font-size:11px;position:relative;white-space:nowrap;
     }
-    .t-item::before { content: '▶'; font-size: 7px; color: #808080; position: absolute; left: 3px; }
-    .t-item.open::before { content: '▼'; }
-    .t-item:hover { background: #000080; color: #fff; }
-    .t-item .t-ico { font-size: 14px; }
-    .t-kids { padding-left: 14px; display: none; }
-    .t-item.open + .t-kids { display: block; }
-    .f-grid { display: flex; flex-wrap: wrap; gap: 10px; padding: 4px; }
-    .f-item {
-      width: 68px; display: flex; flex-direction: column; align-items: center;
-      text-align: center; cursor: pointer; padding: 4px 2px;
-      border: 1px solid transparent;
+    .t-item::before{content:'▶';font-size:7px;color:#808080;position:absolute;left:3px}
+    .t-item.open::before{content:'▼'}
+    .t-item.noarrow::before{content:''}
+    .t-item:hover,.t-item.sel{background:#000080;color:#fff}
+    .t-ico{font-size:13px}
+    .t-kids{padding-left:14px;display:none}
+    .t-item.open+.t-kids{display:block}
+    .f-grid{display:flex;flex-wrap:wrap;gap:10px;padding:4px;align-content:flex-start}
+    .f-item{
+      width:68px;display:flex;flex-direction:column;align-items:center;
+      text-align:center;cursor:pointer;padding:4px 2px;border:1px solid transparent;
     }
-    .f-item:hover { background: #000080; color: #fff; border-color: rgba(255,255,255,.4); }
-    .f-item .f-ico { font-size: 28px; }
-    .f-item .f-name { font-size: 10px; margin-top: 3px; line-height: 1.2; word-break: break-word; }
+    .f-item:hover{background:#000080;color:#fff}
+    .f-item.sel{background:#000080;color:#fff}
+    .f-ico{font-size:28px}
+    .f-name{font-size:10px;margin-top:3px;line-height:1.2;word-break:break-word}
 
-    /* ── Notepad ── */
-    .np-ta {
-      width: 100%; height: 100%; resize: none; border: none; outline: none;
-      font-family: 'Courier New', monospace; font-size: 12px;
-      padding: 4px; background: #fff; color: #000;
+    /* Notepad */
+    .np-ta{
+      width:100%;height:100%;resize:none;border:none;outline:none;
+      font-family:'Courier New',monospace;font-size:12px;
+      padding:4px;background:#fff;color:#000;user-select:text;
     }
 
-    /* ── Paint ── */
-    .paint-shell { display: flex; flex-direction: column; height: 100%; }
-    .paint-tb { flex-shrink: 0; display: flex; align-items: center; gap: 4px; padding: 4px; border-bottom: 1px solid #808080; background: #c0c0c0; }
-    .paint-colors { display: flex; flex-wrap: wrap; width: 110px; gap: 2px; margin-left: auto; }
-    .pc { width: 16px; height: 16px; border: 1px solid #808080; cursor: pointer; flex-shrink: 0; }
-    .pc.active { outline: 2px solid #000; }
-    .paint-cv-wrap { flex: 1; overflow: auto; background: #808080; padding: 8px; }
-    #pc { display: block; background: #fff; cursor: crosshair; }
+    /* Paint */
+    .paint-shell{display:flex;flex-direction:column;height:100%}
+    .paint-tools{
+      flex-shrink:0;display:flex;align-items:center;gap:4px;
+      padding:4px 6px;border-bottom:1px solid #808080;background:#c0c0c0;flex-wrap:wrap;
+    }
+    .pt-btn{
+      width:30px;height:28px;background:#c0c0c0;
+      border:2px solid;border-color:#fff #808080 #808080 #fff;
+      cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;
+    }
+    .pt-btn:active,.pt-btn.active{border-color:#808080 #fff #fff #808080}
+    .pt-sep{width:1px;height:24px;background:#808080;margin:0 2px}
+    .pt-sizes{display:flex;flex-direction:column;gap:2px;justify-content:center}
+    .pt-sz{
+      cursor:pointer;background:#000;border-radius:50%;margin:1px auto;
+      border:1px solid transparent;
+    }
+    .pt-sz.active{border-color:#000080;outline:1px solid #000}
+    .pt-colorbox{display:flex;align-items:center;gap:4px;margin-left:auto}
+    .pt-cur{
+      width:24px;height:24px;border:2px solid;border-color:#808080 #fff #fff #808080;
+    }
+    .pt-cur2{
+      width:18px;height:18px;border:1px solid #808080;margin-top:-8px;margin-left:8px;
+    }
+    .paint-palette{display:flex;flex-wrap:wrap;width:166px;gap:1px;margin-left:4px}
+    .pc{width:16px;height:16px;border:1px solid #808080;cursor:pointer;flex-shrink:0}
+    .pc:hover{outline:1px solid #fff}
+    .paint-cv-wrap{flex:1;overflow:auto;background:#808080;padding:8px;display:flex;align-items:flex-start}
+    #pc{display:block;background:#fff;cursor:crosshair;image-rendering:pixelated}
 
-    /* ── About ── */
-    .about { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 20px; background: #fff; height: 100%; text-align: center; }
-    .about-logo { font-size: 52px; }
-    .about-ttl { font-size: 14px; font-weight: bold; }
-    .about-sep { width: 100%; border-top: 1px solid #c0c0c0; }
+    /* About */
+    .about{display:flex;flex-direction:column;align-items:center;gap:10px;padding:20px;background:#fff;height:100%;text-align:center}
 
-    /* ── Dialog ── */
-    .dlg { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
-    .dlg-row { display: flex; align-items: center; gap: 12px; }
-    .dlg-ico { font-size: 34px; }
-    .dlg-txt { font-size: 11px; line-height: 1.5; }
-    .dlg-btns { display: flex; justify-content: center; gap: 8px; }
+    /* Dialog */
+    .dlg{padding:16px;display:flex;flex-direction:column;gap:14px}
+    .dlg-row{display:flex;align-items:center;gap:12px}
+    .dlg-ico{font-size:34px;flex-shrink:0}
+    .dlg-txt{font-size:11px;line-height:1.6}
+    .dlg-btns{display:flex;justify-content:center;gap:8px}
 
-    /* ── Scrollbars ── */
-    ::-webkit-scrollbar { width: 16px; height: 16px; }
-    ::-webkit-scrollbar-track { background: #c0c0c0; }
-    ::-webkit-scrollbar-thumb { background: #c0c0c0; border: 2px solid; border-color: #fff #808080 #808080 #fff; }
-    ::-webkit-scrollbar-button { background: #c0c0c0; border: 2px solid; border-color: #fff #808080 #808080 #fff; width: 16px; height: 16px; display: block; }
+    /* Scrollbars */
+    ::-webkit-scrollbar{width:16px;height:16px}
+    ::-webkit-scrollbar-track{background:#c0c0c0}
+    ::-webkit-scrollbar-thumb{background:#c0c0c0;border:2px solid;border-color:#fff #808080 #808080 #fff}
+    ::-webkit-scrollbar-button{background:#c0c0c0;border:2px solid;border-color:#fff #808080 #808080 #fff;width:16px;height:16px;display:block}
   </style>
 </head>
 <body>
@@ -232,29 +273,42 @@
 <!-- Desktop -->
 <div id="desktop">
   <div class="d-icon" style="left:16px;top:16px"  ondblclick="openApp('mipc')"    onclick="selIcon(this)"><div class="d-icon-img">🖥️</div><div class="d-icon-label">Mi PC</div></div>
-  <div class="d-icon" style="left:16px;top:108px" ondblclick="openApp('docs')"    onclick="selIcon(this)"><div class="d-icon-img">📁</div><div class="d-icon-label">Mis Documentos</div></div>
-  <div class="d-icon" style="left:16px;top:200px" ondblclick="openApp('notepad')" onclick="selIcon(this)"><div class="d-icon-img">📝</div><div class="d-icon-label">Bloc de Notas</div></div>
-  <div class="d-icon" style="left:16px;top:292px" ondblclick="openApp('paint')"   onclick="selIcon(this)"><div class="d-icon-img">🎨</div><div class="d-icon-label">Paint</div></div>
-  <div class="d-icon" style="left:16px;top:384px" ondblclick="openApp('trash')"   onclick="selIcon(this)"><div class="d-icon-img">🗑️</div><div class="d-icon-label">Papelera</div></div>
+  <div class="d-icon" style="left:16px;top:110px" ondblclick="openApp('docs')"    onclick="selIcon(this)"><div class="d-icon-img">📁</div><div class="d-icon-label">Mis Documentos</div></div>
+  <div class="d-icon" style="left:16px;top:204px" ondblclick="openApp('notepad')" onclick="selIcon(this)"><div class="d-icon-img">📝</div><div class="d-icon-label">Bloc de Notas</div></div>
+  <div class="d-icon" style="left:16px;top:298px" ondblclick="openApp('paint')"   onclick="selIcon(this)"><div class="d-icon-img">🎨</div><div class="d-icon-label">Paint</div></div>
+  <div class="d-icon" style="left:16px;top:392px" ondblclick="openApp('trash')"   onclick="selIcon(this)"><div class="d-icon-img">🗑️</div><div class="d-icon-label">Papelera</div></div>
 </div>
+
+<!-- Context menu -->
+<div id="ctx">
+  <div class="ctx-item" onclick="ctxHide();openApp('notepad')">📝 Nuevo Bloc de Notas</div>
+  <div class="ctx-item" onclick="ctxHide();openApp('paint')">🎨 Nuevo Paint</div>
+  <div class="ctx-div"></div>
+  <div class="ctx-item" onclick="ctxHide();openApp('mipc')">🖥️ Mi PC</div>
+  <div class="ctx-div"></div>
+  <div class="ctx-item" onclick="ctxHide();openApp('about')">❓ Acerca de...</div>
+</div>
+
+<!-- Dropdown menu -->
+<div id="ddmenu"></div>
 
 <!-- Start menu -->
 <div id="smenu">
   <div class="sm-side"><span>DESKTOP OS</span></div>
   <div class="sm-list">
-    <div class="sm-item" onclick="openApp('mipc');smClose()">    <span class="sm-ico">🖥️</span>Mi PC</div>
-    <div class="sm-item" onclick="openApp('docs');smClose()">    <span class="sm-ico">📁</span>Mis Documentos</div>
+    <div class="sm-item" onclick="openApp('mipc');smClose()"><span class="sm-ico">🖥️</span>Mi PC</div>
+    <div class="sm-item" onclick="openApp('docs');smClose()"><span class="sm-ico">📁</span>Mis Documentos</div>
     <div class="sm-item">
       <span class="sm-ico">📂</span>Programas<span class="sm-arr">▶</span>
       <div class="sm-sub">
         <div class="sm-item" onclick="openApp('notepad');smClose()"><span class="sm-ico">📝</span>Bloc de Notas</div>
-        <div class="sm-item" onclick="openApp('paint');smClose()">  <span class="sm-ico">🎨</span>Paint</div>
+        <div class="sm-item" onclick="openApp('paint');smClose()"><span class="sm-ico">🎨</span>Paint</div>
       </div>
     </div>
     <div class="sm-div"></div>
-    <div class="sm-item" onclick="openApp('about');smClose()">  <span class="sm-ico">❓</span>Acerca de...</div>
+    <div class="sm-item" onclick="openApp('about');smClose()"><span class="sm-ico">❓</span>Acerca de...</div>
     <div class="sm-div"></div>
-    <div class="sm-item" onclick="doShutdown()">                <span class="sm-ico">⏻</span>Apagar...</div>
+    <div class="sm-item" onclick="doShutdown()"><span class="sm-ico">⏻</span>Apagar...</div>
   </div>
 </div>
 
@@ -264,80 +318,131 @@
   <div class="tb-sep"></div>
   <div id="tb-wins"></div>
   <div class="tb-sep"></div>
-  <div id="tray">🔊&nbsp;<span id="clock"></span></div>
+  <div id="tray">🔊 <span id="clock"></span></div>
 </div>
 
 <script>
-// ── Clock ─────────────────────────────────────────────────────────────────
-(function tick() {
+// ─────────────────────────────────────────────────────────────────────────────
+// CLOCK
+// ─────────────────────────────────────────────────────────────────────────────
+function tickClock() {
   const n = new Date();
   document.getElementById('clock').textContent =
     String(n.getHours()).padStart(2,'0') + ':' + String(n.getMinutes()).padStart(2,'0');
-  setTimeout(tick, 5000);
-})();
+}
+tickClock();
+setInterval(tickClock, 10000);
 
-// ── Desktop icon selection ─────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// GLOBAL DISMISS
+// ─────────────────────────────────────────────────────────────────────────────
+document.addEventListener('mousedown', e => {
+  if (!e.target.closest('#smenu') && !e.target.closest('#start-btn')) smClose();
+  if (!e.target.closest('#ctx'))    ctxHide();
+  if (!e.target.closest('#ddmenu') && !e.target.closest('.wmb-item')) ddHide();
+  if (!e.target.closest('.d-icon')) document.querySelectorAll('.d-icon').forEach(i=>i.classList.remove('sel'));
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CONTEXT MENU (right-click on desktop)
+// ─────────────────────────────────────────────────────────────────────────────
+document.getElementById('desktop').addEventListener('contextmenu', e => {
+  e.preventDefault();
+  const m = document.getElementById('ctx');
+  m.style.display = 'block';
+  m.style.left = Math.min(e.clientX, innerWidth  - m.offsetWidth  - 4) + 'px';
+  m.style.top  = Math.min(e.clientY, innerHeight - m.offsetHeight - 4) + 'px';
+});
+function ctxHide() { document.getElementById('ctx').style.display = 'none'; }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DROPDOWN MENU (menubar)
+// ─────────────────────────────────────────────────────────────────────────────
+function ddShow(trigger, items) {
+  const dd = document.getElementById('ddmenu');
+  dd.innerHTML = items.map(it =>
+    it === '-'
+      ? '<div class="dd-div"></div>'
+      : `<div class="dd-item${it.disabled?' disabled':''}" onclick="${it.disabled?'':'('+it.fn+')();ddHide()'}">${it.label}</div>`
+  ).join('');
+  dd.classList.add('open');
+  const r = trigger.getBoundingClientRect();
+  dd.style.left = r.left + 'px';
+  dd.style.top  = r.bottom + 'px';
+  document.querySelectorAll('.wmb-item').forEach(el => el.classList.toggle('active', el === trigger));
+}
+function ddHide() {
+  document.getElementById('ddmenu').classList.remove('open');
+  document.querySelectorAll('.wmb-item').forEach(el => el.classList.remove('active'));
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DESKTOP ICON SELECTION
+// ─────────────────────────────────────────────────────────────────────────────
 function selIcon(el) {
   document.querySelectorAll('.d-icon').forEach(i => i.classList.remove('sel'));
   el.classList.add('sel');
 }
-document.getElementById('desktop').addEventListener('mousedown', e => {
-  if (!e.target.closest('.d-icon'))  document.querySelectorAll('.d-icon').forEach(i => i.classList.remove('sel'));
-  if (!e.target.closest('#smenu') && !e.target.closest('#start-btn')) smClose();
-});
 
-// ── Start menu ─────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// START MENU
+// ─────────────────────────────────────────────────────────────────────────────
 let smOpen = false;
 function smToggle() { smOpen ? smClose() : smShow(); }
-function smShow() {
-  smOpen = true;
-  document.getElementById('smenu').classList.add('open');
-  document.getElementById('start-btn').classList.add('pressed');
-}
-function smClose() {
-  smOpen = false;
-  document.getElementById('smenu').classList.remove('open');
-  document.getElementById('start-btn').classList.remove('pressed');
-}
+function smShow()  { smOpen=true;  document.getElementById('smenu').classList.add('open');    document.getElementById('start-btn').classList.add('pressed'); }
+function smClose() { smOpen=false; document.getElementById('smenu').classList.remove('open'); document.getElementById('start-btn').classList.remove('pressed'); }
 
-// ── Window manager ─────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// WINDOW MANAGER
+// ─────────────────────────────────────────────────────────────────────────────
 let zTop = 100;
-const wins = {};   // id → { el, title, icon, minimized }
-const maxSnap = {}; // id → saved geometry before maximize
+let focusedId = null;
+const wins = {};
+const maxSnap = {};
 
-function mkWin({ id, title, icon = '🗂️', w = 480, h = 320, menu = [], status = '', body = '', noScroll = false }) {
+function mkWin({ id, title, icon='🗂️', w=480, h=320, menu=[], status='', body='', noscroll=false, onMenu }) {
   if (wins[id]) { focusWin(id); if (wins[id].minimized) unmin(id); return; }
 
   const el = document.createElement('div');
   el.className = 'win';
-  el.id = 'w-' + id;
-  const offset = Object.keys(wins).length;
-  Object.assign(el.style, { width: w+'px', height: h+'px', left: (60+offset*22)+'px', top: (50+offset*22)+'px', zIndex: ++zTop });
+  el.id = 'w-'+id;
+  const off = Object.keys(wins).length;
+  el.style.cssText = `width:${w}px;height:${h}px;left:${60+off*22}px;top:${50+off*22}px;z-index:${++zTop}`;
 
-  const menuBar = menu.length
-    ? `<div class="win-menubar">${menu.map(m=>`<div class="wmb-item">${m}</div>`).join('')}</div>`
-    : '';
+  const menuHtml = menu.length
+    ? `<div class="win-menubar">${menu.map((m,i)=>`<div class="wmb-item" data-mi="${i}">${m.label}</div>`).join('')}</div>` : '';
 
   el.innerHTML = `
     <div class="win-tb">
       <span class="win-tb-ico">${icon}</span>
       <span class="win-tb-ttl">${title}</span>
       <div class="win-tb-btns">
-        <div class="win-ctrl" onclick="minWin('${id}')" title="Minimizar">_</div>
-        <div class="win-ctrl" onclick="maxWin('${id}')" title="Maximizar">□</div>
-        <div class="win-ctrl" onclick="closeWin('${id}')" title="Cerrar" style="font-size:10px">✕</div>
+        <div class="win-ctrl" title="Minimizar" onclick="minWin('${id}')">_</div>
+        <div class="win-ctrl" title="Maximizar" onclick="maxWin('${id}')">□</div>
+        <div class="win-ctrl" title="Cerrar"    onclick="closeWin('${id}')" style="font-size:10px">✕</div>
       </div>
     </div>
-    ${menuBar}
-    <div class="win-body${noScroll?' no-scroll':''}">${body}</div>
+    ${menuHtml}
+    <div class="win-body${noscroll?' noscroll':''}">${body}</div>
     ${status ? `<div class="win-status"><div class="ws-cell" id="ws-${id}">${status}</div></div>` : ''}
-    <div class="win-grip"></div>
-  `;
+    <div class="win-grip"></div>`;
 
   document.getElementById('desktop').appendChild(el);
-  wins[id] = { el, title, icon, minimized: false };
+  wins[id] = { el, title, icon, minimized:false };
 
-  makeDrag(el.querySelector('.win-tb'), el);
+  // Menubar clicks
+  if (menu.length && onMenu) {
+    el.querySelectorAll('.wmb-item').forEach((item, i) => {
+      item.addEventListener('click', e => { e.stopPropagation(); ddShow(item, onMenu[i] || []); });
+    });
+  }
+
+  // Title bar double-click = maximize
+  el.querySelector('.win-tb').addEventListener('dblclick', e => {
+    if (!e.target.closest('.win-ctrl')) maxWin(id);
+  });
+
+  makeDrag(el.querySelector('.win-tb'), el, id);
   makeResize(el.querySelector('.win-grip'), el);
   el.addEventListener('mousedown', () => focusWin(id), true);
 
@@ -346,25 +451,40 @@ function mkWin({ id, title, icon = '🗂️', w = 480, h = 320, menu = [], statu
 }
 
 function focusWin(id) {
+  focusedId = id;
   Object.keys(wins).forEach(wid => wins[wid].el.classList.toggle('blur', wid !== id));
   if (wins[id]) { wins[id].el.style.zIndex = ++zTop; wins[id].el.classList.remove('blur'); }
+  tbRefresh();
 }
 
-function minWin(id)  { wins[id].minimized = true;  wins[id].el.classList.add('hidden'); tbRefresh(); }
-function unmin(id)   { wins[id].minimized = false; wins[id].el.classList.remove('hidden'); focusWin(id); tbRefresh(); }
+function minWin(id)  { wins[id].minimized=true;  wins[id].el.classList.add('hidden'); if(focusedId===id) focusedId=null; tbRefresh(); }
+function unmin(id)   { wins[id].minimized=false; wins[id].el.classList.remove('hidden'); focusWin(id); }
 
 function maxWin(id) {
   const el = wins[id].el;
   if (maxSnap[id]) {
-    Object.assign(el.style, maxSnap[id]);
+    el.style.left   = maxSnap[id].left;
+    el.style.top    = maxSnap[id].top;
+    el.style.width  = maxSnap[id].width;
+    el.style.height = maxSnap[id].height;
     delete maxSnap[id];
   } else {
-    maxSnap[id] = { width: el.style.width, height: el.style.height, left: el.style.left, top: el.style.top };
-    el.style.cssText += ';left:0;top:0;width:100%;height:'+(innerHeight-28)+'px';
+    maxSnap[id] = { left:el.style.left, top:el.style.top, width:el.style.width, height:el.style.height };
+    el.style.left   = '0';
+    el.style.top    = '0';
+    el.style.width  = '100%';
+    el.style.height = (innerHeight - 28) + 'px';
   }
 }
 
-function closeWin(id) { if (!wins[id]) return; wins[id].el.remove(); delete wins[id]; tbRefresh(); }
+function closeWin(id) {
+  if (!wins[id]) return;
+  wins[id].el.remove();
+  delete wins[id];
+  if (maxSnap[id]) delete maxSnap[id];
+  if (focusedId === id) focusedId = null;
+  tbRefresh();
+}
 
 function tbRefresh() {
   const tb = document.getElementById('tb-wins');
@@ -372,229 +492,572 @@ function tbRefresh() {
   Object.keys(wins).forEach(id => {
     const w = wins[id];
     const b = document.createElement('button');
-    b.className = 'btn3d tb-btn' + (w.minimized ? '' : ' pressed');
+    const active = !w.minimized && focusedId === id;
+    b.className = 'btn3d tb-btn' + (active ? ' pressed' : '');
     b.innerHTML = `<span class="tb-ico">${w.icon}</span>${w.title}`;
     b.title = w.title;
-    b.onclick = () => w.minimized ? unmin(id) : minWin(id);
+    b.onclick = () => {
+      if (w.minimized)           { unmin(id); }
+      else if (focusedId === id) { minWin(id); }
+      else                       { focusWin(id); }
+    };
     tb.appendChild(b);
   });
 }
 
-// ── Drag ──────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// DRAG
+// ─────────────────────────────────────────────────────────────────────────────
 function makeDrag(handle, el) {
   handle.addEventListener('mousedown', e => {
-    if (e.target.closest('.win-ctrl')) return;
+    if (e.target.closest('.win-ctrl') || e.target.closest('.wmb-item')) return;
     const ox = el.offsetLeft - e.clientX, oy = el.offsetTop - e.clientY;
     const desk = document.getElementById('desktop');
-    function mv(e) {
-      el.style.left = Math.max(0, Math.min(desk.clientWidth  - 40, e.clientX + ox)) + 'px';
+    const mv = e => {
+      el.style.left = Math.max(0, Math.min(desk.clientWidth  - 60, e.clientX + ox)) + 'px';
       el.style.top  = Math.max(0, Math.min(desk.clientHeight - 20, e.clientY + oy)) + 'px';
-    }
-    function up() { document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); }
+    };
+    const up = () => { document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); };
     document.addEventListener('mousemove', mv);
     document.addEventListener('mouseup', up);
     e.preventDefault();
   });
 }
 
-// ── Resize ────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// RESIZE  (fixed: delta from start position)
+// ─────────────────────────────────────────────────────────────────────────────
 function makeResize(grip, el) {
   grip.addEventListener('mousedown', e => {
-    const sw = el.offsetWidth - e.clientX, sh = el.offsetHeight - e.clientY;
-    function mv(e) {
-      el.style.width  = Math.max(200, e.clientX + sw) + 'px';
-      el.style.height = Math.max(100, e.clientY + sh) + 'px';
-    }
-    function up() { document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); }
+    e.stopPropagation();
+    const startW = el.offsetWidth, startH = el.offsetHeight;
+    const startX = e.clientX,      startY = e.clientY;
+    const mv = e => {
+      el.style.width  = Math.max(220, startW + (e.clientX - startX)) + 'px';
+      el.style.height = Math.max(100, startH + (e.clientY - startY)) + 'px';
+    };
+    const up = () => { document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); };
     document.addEventListener('mousemove', mv);
     document.addEventListener('mouseup', up);
     e.preventDefault();
   });
 }
 
-// ── Apps ──────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// KEYBOARD SHORTCUTS
+// ─────────────────────────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.altKey && e.key === 'F4' && focusedId) { closeWin(focusedId); e.preventDefault(); }
+  if (e.key === 'F5') { /* refresh noop */ e.preventDefault(); }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// APP LAUNCHER
+// ─────────────────────────────────────────────────────────────────────────────
 function openApp(name) {
-  smClose();
-  ({ mipc: openMiPC, docs: openDocs, notepad: openNotepad, paint: openPaint, trash: openTrash, about: openAbout })[name]?.();
+  smClose(); ctxHide();
+  const map = { mipc:openMiPC, docs:openDocs, notepad:openNotepad, paint:openPaint, trash:openTrash, about:openAbout };
+  map[name]?.();
 }
 
-// Mi PC
+// ─────────────────────────────────────────────────────────────────────────────
+// VIRTUAL FILESYSTEM
+// ─────────────────────────────────────────────────────────────────────────────
+const VFS = {
+  'Escritorio': { type:'folder', icon:'🖥️', children:{} },
+  'Mis Documentos': { type:'folder', icon:'📁', children:{
+    'notas.txt':      { type:'file', icon:'📄', ext:'txt', content:'Mis notas personales\n\nEscribe aquí lo que quieras recordar.' },
+    'ideas.txt':      { type:'file', icon:'📄', ext:'txt', content:'Ideas y proyectos\n\n- Idea 1\n- Idea 2\n- Idea 3' },
+    'lista.txt':      { type:'file', icon:'📄', ext:'txt', content:'Lista de tareas\n\n[ ] Tarea 1\n[ ] Tarea 2\n[x] Tarea 3' },
+    'Fotos':          { type:'folder', icon:'📁', children:{} },
+    'Trabajo':        { type:'folder', icon:'📁', children:{
+      'proyecto.txt': { type:'file', icon:'📄', ext:'txt', content:'Proyecto en curso\n\nDetalles...' }
+    }},
+  }},
+  'Disco C:': { type:'drive', icon:'💾', children:{
+    'Windows':                  { type:'folder', icon:'📁', children:{} },
+    'Archivos de programa':     { type:'folder', icon:'📁', children:{} },
+    'Usuarios':                 { type:'folder', icon:'📁', children:{} },
+  }},
+  'DVD-RW D:': { type:'drive', icon:'💿', children:{} },
+};
+
+function fsGet(path) {
+  if (!path || path === '/') return VFS;
+  const parts = path.replace(/^\//,'').split('/');
+  let node = VFS;
+  for (const p of parts) { if (!node[p]) return null; node = node[p].type==='folder'||node[p].type==='drive' ? node[p].children : node[p]; }
+  return node;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MI PC / EXPLORER
+// ─────────────────────────────────────────────────────────────────────────────
+let expPath = {};  // winId → current path string
+
 function openMiPC() {
+  expPath['mipc'] = '/';
   mkWin({
-    id: 'mipc', title: 'Mi PC', icon: '🖥️', w: 530, h: 350,
-    menu: ['Archivo','Editar','Ver','Ayuda'], status: '5 objetos',
-    noScroll: true,
-    body: `
-      <div class="exp-wrap">
-        <div class="exp-tree">
-          <div class="t-item open" onclick="this.classList.toggle('open')"><span class="t-ico">🖥️</span>Mi PC</div>
-          <div class="t-kids">
-            <div class="t-item" onclick="this.classList.toggle('open')"><span class="t-ico">💾</span>Disco C:</div>
-            <div class="t-kids"></div>
-            <div class="t-item"><span class="t-ico">💿</span>DVD D:</div>
-          </div>
-        </div>
-        <div class="exp-main">
-          <div class="f-grid">
-            <div class="f-item" ondblclick="openDocs()"><div class="f-ico">📁</div><div class="f-name">Mis Documentos</div></div>
-            <div class="f-item"><div class="f-ico">💾</div><div class="f-name">Disco local (C:)</div></div>
-            <div class="f-item"><div class="f-ico">💿</div><div class="f-name">DVD-RW (D:)</div></div>
-            <div class="f-item"><div class="f-ico">🖨️</div><div class="f-name">Impresoras</div></div>
-            <div class="f-item"><div class="f-ico">🌐</div><div class="f-name">Red</div></div>
-          </div>
-        </div>
-      </div>`
+    id:'mipc', title:'Mi PC', icon:'🖥️', w:540, h:360,
+    noscroll:true, status:'5 objetos',
+    menu:[{label:'Archivo'},{label:'Editar'},{label:'Ver'},{label:'Ayuda'}],
+    onMenu:[
+      [{label:'Cerrar', fn:`closeWin('mipc')`}],
+      [{label:'Seleccionar todo',disabled:true}],
+      [{label:'Iconos grandes',disabled:true},{label:'Lista',disabled:true}],
+      [{label:'Acerca de...', fn:`openAbout`}],
+    ],
+    body: buildExpHtml('mipc','/')
   });
 }
 
-// Mis Documentos
 function openDocs() {
+  expPath['docs'] = '/Mis Documentos';
   mkWin({
-    id: 'docs', title: 'Mis Documentos', icon: '📁', w: 480, h: 300,
-    menu: ['Archivo','Editar','Ver','Ayuda'], status: '3 objetos',
-    noScroll: true,
-    body: `
-      <div class="exp-main" style="height:100%;background:#fff">
-        <div class="f-grid">
-          <div class="f-item" ondblclick="npOpen('notas.txt','Mis notas...\n\nEscribe aquí tus notas personales.')">
-            <div class="f-ico">📄</div><div class="f-name">notas.txt</div>
-          </div>
-          <div class="f-item" ondblclick="npOpen('ideas.txt','Ideas:\\n\\n- Idea 1\n- Idea 2\n- Idea 3')">
-            <div class="f-ico">📄</div><div class="f-name">ideas.txt</div>
-          </div>
-          <div class="f-item"><div class="f-ico">📁</div><div class="f-name">Fotos</div></div>
-        </div>
-      </div>`
+    id:'docs', title:'Mis Documentos', icon:'📁', w:500, h:320,
+    noscroll:true, status:'',
+    menu:[{label:'Archivo'},{label:'Editar'},{label:'Ver'},{label:'Ayuda'}],
+    onMenu:[
+      [{label:'Cerrar', fn:`closeWin('docs')`}],
+      [{label:'Seleccionar todo',disabled:true}],
+      [{label:'Iconos grandes',disabled:true}],
+      [{label:'Acerca de...', fn:`openAbout`}],
+    ],
+    body: buildExpHtml('docs','/Mis Documentos')
   });
 }
 
-// Bloc de notas
+function buildExpHtml(winId, path) {
+  return `<div class="exp-wrap">
+    <div class="exp-tree" id="etree-${winId}">${buildTree(winId)}</div>
+    <div class="exp-main" id="emain-${winId}">${buildGrid(winId, path)}</div>
+  </div>`;
+}
+
+function buildTree(winId) {
+  function renderNode(name, node, pathSoFar) {
+    const fullPath = pathSoFar ? pathSoFar+'/'+name : '/'+name;
+    const hasChildren = node.children && Object.keys(node.children).length > 0;
+    const isOpen = expPath[winId] && (expPath[winId] === fullPath || expPath[winId].startsWith(fullPath+'/'));
+    return `<div class="t-item${hasChildren?'':' noarrow'}${isOpen?' open':''}"
+      onclick="expNav('${winId}','${fullPath}',this)">
+      <span class="t-ico">${node.icon}</span>${name}
+    </div>
+    ${hasChildren ? `<div class="t-kids">${Object.entries(node.children).filter(([,v])=>v.type==='folder'||v.type==='drive').map(([n,v])=>renderNode(n,v,fullPath)).join('')}</div>` : ''}`;
+  }
+  const rootItems = [
+    `<div class="t-item open noarrow" onclick="expNav('${winId}','/',this)"><span class="t-ico">🖥️</span>Mi PC</div><div class="t-kids">`,
+    ...Object.entries(VFS).map(([n,v]) => renderNode(n,v,'')),
+    '</div>'
+  ];
+  return rootItems.join('');
+}
+
+function buildGrid(winId, path) {
+  const isRoot = !path || path === '/';
+  const entries = isRoot ? Object.entries(VFS) : Object.entries(fsGet(path) || {});
+  const items = entries.map(([name, node]) => {
+    const isFile = node.type === 'file';
+    const dblAction = isFile
+      ? `expOpenFile('${name}','${(path||'')}')`
+      : `expNav('${winId}','${(path?path+'/'+name:'/'+name)}',null)`;
+    return `<div class="f-item" ondblclick="${dblAction}" onclick="this.closest('.f-grid').querySelectorAll('.f-item').forEach(i=>i.classList.remove('sel'));this.classList.add('sel')">
+      <div class="f-ico">${node.icon}</div>
+      <div class="f-name">${name}</div>
+    </div>`;
+  }).join('');
+  return `<div class="f-grid" style="height:100%">${items || '<div style="padding:8px;color:#808080">Carpeta vacía</div>'}</div>`;
+}
+
+function expNav(winId, path, treeEl) {
+  expPath[winId] = path;
+  // update tree selection
+  const tree = document.getElementById('etree-'+winId);
+  if (tree) {
+    tree.querySelectorAll('.t-item').forEach(i => i.classList.remove('sel'));
+    if (treeEl) { treeEl.classList.add('sel'); treeEl.classList.toggle('open'); }
+  }
+  // update main panel
+  const main = document.getElementById('emain-'+winId);
+  if (main) main.innerHTML = buildGrid(winId, path);
+  // update status
+  const ws = document.getElementById('ws-'+winId);
+  if (ws) {
+    const entries = path === '/' ? Object.keys(VFS) : Object.keys(fsGet(path) || {});
+    ws.textContent = entries.length + ' objeto' + (entries.length!==1?'s':'');
+  }
+  // update window title
+  if (wins[winId]) {
+    const name = path === '/' ? 'Mi PC' : path.split('/').pop();
+    wins[winId].el.querySelector('.win-tb-ttl').textContent = name;
+  }
+}
+
+function expOpenFile(name, path) {
+  const fullPath = path ? path + '/' + name : '/' + name;
+  const parts = fullPath.replace(/^\//,'').split('/');
+  let node = VFS;
+  for (const p of parts) { if (!node[p]) return; node = node[p]; }
+  if (node.ext === 'txt') npOpen(name, node.content || '');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NOTEPAD
+// ─────────────────────────────────────────────────────────────────────────────
 let npIdx = 0;
 function openNotepad() { npOpen('Sin título', ''); }
 function npOpen(name, text) {
   const id = 'np-' + (npIdx++);
+  let saved = true;
   mkWin({
-    id, title: `Bloc de Notas – ${name}`, icon: '📝', w: 440, h: 320,
-    menu: ['Archivo','Editar','Formato','Ver','Ayuda'],
-    body: `<textarea class="np-ta" spellcheck="false">${text}</textarea>`
+    id, title:`Bloc de Notas – ${name}`, icon:'📝', w:450, h:340,
+    menu:[{label:'Archivo'},{label:'Editar'},{label:'Formato'},{label:'Ayuda'}],
+    onMenu:[
+      [
+        {label:'Nuevo',     fn:`npNew('${id}')`},
+        '-',
+        {label:'Guardar',   fn:`npSave('${id}')`},
+        '-',
+        {label:'Cerrar',    fn:`closeWin('${id}')`},
+      ],
+      [
+        {label:'Seleccionar todo', fn:`npSelAll('${id}')`},
+        '-',
+        {label:'Fecha y hora',     fn:`npDateTime('${id}')`},
+      ],
+      [
+        {label:'Ajuste de línea', disabled:true},
+      ],
+      [
+        {label:'Acerca de Bloc de Notas', fn:`openAbout`},
+      ],
+    ],
+    body:`<textarea class="np-ta" id="npta-${id}" spellcheck="false">${escHtml(text)}</textarea>`
   });
+  // Mark dirty on input
+  setTimeout(() => {
+    const ta = document.getElementById('npta-'+id);
+    if (ta) ta.addEventListener('input', () => {
+      const ttl = wins[id]?.el?.querySelector('.win-tb-ttl');
+      if (ttl && !ttl.textContent.startsWith('*')) ttl.textContent = '*' + ttl.textContent;
+    });
+  }, 50);
 }
 
-// Paint
-let paintColor = '#000000', paintTool = 'pen', painting = false, lastPt = null;
+function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function npNew(id) {
+  const ta = document.getElementById('npta-'+id);
+  if (ta) { ta.value = ''; const t = wins[id]?.el?.querySelector('.win-tb-ttl'); if(t) t.textContent='Bloc de Notas – Sin título'; }
+}
+function npSave(id) {
+  const ta = document.getElementById('npta-'+id);
+  if (!ta) return;
+  const blob = new Blob([ta.value], {type:'text/plain;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = (wins[id]?.title?.replace('Bloc de Notas – ','') || 'notas') + '.txt';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  const ttl = wins[id]?.el?.querySelector('.win-tb-ttl');
+  if (ttl) ttl.textContent = ttl.textContent.replace(/^\*/,'');
+}
+function npSelAll(id) { const ta=document.getElementById('npta-'+id); if(ta){ta.focus();ta.select();} }
+function npDateTime(id) {
+  const ta=document.getElementById('npta-'+id);
+  if (!ta) return;
+  const n=new Date();
+  const s=n.toLocaleTimeString('es-ES')+' '+n.toLocaleDateString('es-ES');
+  const pos=ta.selectionStart;
+  ta.value=ta.value.slice(0,pos)+s+ta.value.slice(ta.selectionEnd);
+  ta.selectionStart=ta.selectionEnd=pos+s.length;
+  ta.focus();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PAINT
+// ─────────────────────────────────────────────────────────────────────────────
+let paintColor='#000000', paintBg='#ffffff', paintTool='pen', paintSize=2, painting=false, lastPt=null;
+const PALETTE = [
+  '#000000','#808080','#800000','#808000','#008000','#008080','#000080','#800080',
+  '#c0c0c0','#ffffff','#ff0000','#ffff00','#00ff00','#00ffff','#0000ff','#ff00ff',
+  '#ff8040','#804000','#80ff00','#0080ff',
+];
+
 function openPaint() {
   mkWin({
-    id: 'paint', title: 'Paint', icon: '🎨', w: 580, h: 430,
-    menu: ['Archivo','Editar','Ver','Imagen','Colores','Ayuda'],
-    noScroll: true,
-    body: `
+    id:'paint', title:'Paint', icon:'🎨', w:600, h:460,
+    noscroll:true,
+    menu:[{label:'Archivo'},{label:'Editar'},{label:'Ver'},{label:'Imagen'},{label:'Ayuda'}],
+    onMenu:[
+      [
+        {label:'Nuevo',              fn:`ptClear()`},
+        '-',
+        {label:'Guardar como PNG…',  fn:`ptSave()`},
+        '-',
+        {label:'Cerrar',             fn:`closeWin('paint')`},
+      ],
+      [{label:'Deshacer',disabled:true}],
+      [{label:'Cuadrícula',disabled:true}],
+      [{label:'Voltear horizontal',  fn:`ptFlipH()`},{label:'Voltear vertical', fn:`ptFlipV()`},'-',{label:'Invertir colores',fn:`ptInvert()`}],
+      [{label:'Acerca de Paint',     fn:`openAbout`}],
+    ],
+    body:`
       <div class="paint-shell">
-        <div class="paint-tb">
-          <button class="btn3d" onclick="ptTool('pen')"    title="Lápiz" style="font-size:14px;padding:2px 6px">✏️</button>
-          <button class="btn3d" onclick="ptTool('eraser')" title="Borrador" style="padding:2px 6px">⬜</button>
-          <button class="btn3d" onclick="ptClear()"        title="Limpiar" style="padding:2px 6px">🗑️</button>
-          <div style="display:flex;flex-direction:column;gap:2px;margin-left:6px;font-size:10px;color:#444">
-            <span>Color:</span>
-            <div id="pt-cur" style="width:22px;height:16px;border:1px solid #808080;background:#000"></div>
+        <div class="paint-tools">
+          <div class="pt-btn active" id="ptt-pen"    title="Lápiz (P)"    onclick="ptSetTool('pen',this)">✏️</div>
+          <div class="pt-btn" id="ptt-fill"   title="Relleno (F)"   onclick="ptSetTool('fill',this)">🪣</div>
+          <div class="pt-btn" id="ptt-eraser" title="Borrador (E)"  onclick="ptSetTool('eraser',this)">⬜</div>
+          <div class="pt-btn" id="ptt-line"   title="Línea (L)"     onclick="ptSetTool('line',this)">╱</div>
+          <div class="pt-btn" id="ptt-rect"   title="Rectángulo (R)"onclick="ptSetTool('rect',this)">▭</div>
+          <div class="pt-btn" id="ptt-ellipse"title="Elipse (O)"    onclick="ptSetTool('ellipse',this)">⬭</div>
+          <div class="pt-sep"></div>
+          <div class="pt-sizes">
+            <div class="pt-sz active" id="psz-1" style="width:2px;height:2px"  onclick="ptSetSize(2,this)"></div>
+            <div class="pt-sz"        id="psz-2" style="width:4px;height:4px"  onclick="ptSetSize(4,this)"></div>
+            <div class="pt-sz"        id="psz-3" style="width:8px;height:8px"  onclick="ptSetSize(8,this)"></div>
           </div>
-          <div class="paint-colors">
-            ${['#000000','#ffffff','#ff0000','#00ff00','#0000ff','#ffff00','#ff00ff','#00ffff',
-               '#800000','#008000','#000080','#808000','#800080','#008080','#c0c0c0','#808080',
-               '#ff8000','#8000ff','#0080ff','#ff0080'].map(c =>
-              `<div class="pc" style="background:${c}" onclick="ptColor('${c}')"></div>`
-            ).join('')}
+          <div class="pt-sep"></div>
+          <div class="pt-colorbox">
+            <div style="position:relative;width:36px;height:32px;margin-right:4px">
+              <div id="pt-bg"  class="pt-cur2" style="background:#fff;position:absolute;bottom:0;right:0;border:2px solid;border-color:#808080 #fff #fff #808080"></div>
+              <div id="pt-fg"  class="pt-cur"  style="background:#000;position:absolute;top:0;left:0;border:2px solid;border-color:#fff #808080 #808080 #fff;width:24px;height:24px"></div>
+            </div>
+            <div class="paint-palette">
+              ${PALETTE.map((c,i)=>`<div class="pc" data-color="${c}" style="background:${c}"
+                onclick="ptSetFg('${c}')" oncontextmenu="ptSetBg('${c}');event.preventDefault()"
+                title="${c}"></div>`).join('')}
+            </div>
           </div>
         </div>
-        <div class="paint-cv-wrap">
-          <canvas id="pc" width="700" height="500"></canvas>
+        <div class="paint-cv-wrap" id="pt-cvwrap">
+          <canvas id="pc" width="800" height="600"></canvas>
         </div>
-        <div class="win-status"><div class="ws-cell" id="pt-coords">0, 0</div></div>
+        <div class="win-status">
+          <div class="ws-cell" id="pt-coords">0, 0</div>
+          <div class="ws-cell" id="pt-tool">Lápiz</div>
+        </div>
       </div>`
   });
   requestAnimationFrame(initPaint);
 }
 
+let ptCtx = null, ptSnap = null;
+
 function initPaint() {
   const cv = document.getElementById('pc');
   if (!cv) return;
-  const ctx = cv.getContext('2d');
-  ctx.fillStyle = '#ffffff'; ctx.fillRect(0,0,cv.width,cv.height);
-  ctx.lineJoin = ctx.lineCap = 'round'; ctx.lineWidth = 2;
+  ptCtx = cv.getContext('2d');
+  ptCtx.fillStyle = '#ffffff';
+  ptCtx.fillRect(0,0,cv.width,cv.height);
+  ptCtx.lineJoin = ptCtx.lineCap = 'round';
 
-  cv.onmousedown = e => { painting = true; lastPt = pt(cv,e); };
-  cv.onmousemove = e => {
-    const p = pt(cv,e);
+  const getPos = e => {
+    const r = cv.getBoundingClientRect();
+    return { x:Math.round(e.clientX-r.left), y:Math.round(e.clientY-r.top) };
+  };
+
+  cv.addEventListener('mousedown', e => {
+    e.preventDefault();
+    const p = getPos(e);
+    painting = true; lastPt = p;
+    if (paintTool === 'fill') { ptFloodFill(p.x, p.y); painting=false; return; }
+    ptSnap = ptCtx.getImageData(0,0,cv.width,cv.height);
+    if (paintTool === 'pen' || paintTool === 'eraser') {
+      ptCtx.beginPath(); ptCtx.moveTo(p.x,p.y); ptCtx.lineTo(p.x,p.y);
+      ptCtx.strokeStyle = paintTool==='eraser' ? paintBg : paintColor;
+      ptCtx.lineWidth   = paintTool==='eraser' ? paintSize*4 : paintSize;
+      ptCtx.stroke();
+    }
+  });
+
+  cv.addEventListener('mousemove', e => {
+    const p = getPos(e);
     const el = document.getElementById('pt-coords');
     if (el) el.textContent = p.x+', '+p.y;
+    if (!painting || !lastPt) return;
+
+    if (paintTool === 'pen' || paintTool === 'eraser') {
+      ptCtx.strokeStyle = paintTool==='eraser' ? paintBg : paintColor;
+      ptCtx.lineWidth   = paintTool==='eraser' ? paintSize*4 : paintSize;
+      ptCtx.beginPath(); ptCtx.moveTo(lastPt.x,lastPt.y); ptCtx.lineTo(p.x,p.y); ptCtx.stroke();
+      lastPt = p;
+    } else {
+      // Preview shape
+      ptCtx.putImageData(ptSnap,0,0);
+      ptCtx.strokeStyle = paintColor; ptCtx.fillStyle = paintBg;
+      ptCtx.lineWidth = paintSize;
+      if (paintTool === 'line') {
+        ptCtx.beginPath(); ptCtx.moveTo(lastPt.x,lastPt.y); ptCtx.lineTo(p.x,p.y); ptCtx.stroke();
+      } else if (paintTool === 'rect') {
+        ptCtx.strokeRect(lastPt.x,lastPt.y,p.x-lastPt.x,p.y-lastPt.y);
+      } else if (paintTool === 'ellipse') {
+        ptCtx.beginPath();
+        ptCtx.ellipse(
+          (lastPt.x+p.x)/2,(lastPt.y+p.y)/2,
+          Math.abs(p.x-lastPt.x)/2,Math.abs(p.y-lastPt.y)/2,0,0,Math.PI*2
+        );
+        ptCtx.stroke();
+      }
+    }
+  });
+
+  cv.addEventListener('mouseup', e => {
     if (!painting) return;
-    ctx.strokeStyle = paintTool === 'eraser' ? '#fff' : paintColor;
-    ctx.lineWidth   = paintTool === 'eraser' ? 18 : 2;
-    ctx.beginPath(); ctx.moveTo(lastPt.x, lastPt.y); ctx.lineTo(p.x, p.y); ctx.stroke();
-    lastPt = p;
-  };
-  cv.onmouseup = cv.onmouseleave = () => { painting = false; lastPt = null; };
+    painting = false;
+    const p = getPos(e);
+    if (paintTool === 'line' && ptSnap) {
+      ptCtx.putImageData(ptSnap,0,0);
+      ptCtx.strokeStyle=paintColor; ptCtx.lineWidth=paintSize;
+      ptCtx.beginPath(); ptCtx.moveTo(lastPt.x,lastPt.y); ptCtx.lineTo(p.x,p.y); ptCtx.stroke();
+    }
+    lastPt = null; ptSnap = null;
+  });
+
+  cv.addEventListener('mouseleave', () => { painting=false; lastPt=null; });
 }
 
-function pt(cv,e) { const r=cv.getBoundingClientRect(); return {x:Math.round(e.clientX-r.left),y:Math.round(e.clientY-r.top)}; }
-function ptTool(t) { paintTool = t; }
-function ptColor(c) {
+function ptSetTool(t, el) {
+  paintTool = t;
+  document.querySelectorAll('.pt-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  const names = {pen:'Lápiz',fill:'Relleno',eraser:'Borrador',line:'Línea',rect:'Rectángulo',ellipse:'Elipse'};
+  const s = document.getElementById('pt-tool'); if(s) s.textContent = names[t]||t;
+}
+
+function ptSetSize(s, el) {
+  paintSize = s;
+  document.querySelectorAll('.pt-sz').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function ptSetFg(c) {
   paintColor = c;
-  document.querySelectorAll('.pc').forEach(el => el.classList.toggle('active', el.style.background === c || getComputedStyle(el).backgroundColor === hexToRgb(c)));
-  const cur = document.getElementById('pt-cur');
-  if (cur) cur.style.background = c;
+  const el = document.getElementById('pt-fg'); if(el) el.style.background=c;
 }
-function hexToRgb(h) { const r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16); return `rgb(${r}, ${g}, ${b})`; }
-function ptClear() { const cv=document.getElementById('pc'); if(!cv)return; const ctx=cv.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,cv.width,cv.height); }
+function ptSetBg(c) {
+  paintBg = c;
+  const el = document.getElementById('pt-bg'); if(el) el.style.background=c;
+}
 
-// Papelera
+function ptClear() {
+  const cv = document.getElementById('pc'); if(!cv||!ptCtx) return;
+  ptCtx.fillStyle='#ffffff'; ptCtx.fillRect(0,0,cv.width,cv.height);
+}
+
+function ptSave() {
+  const cv = document.getElementById('pc'); if(!cv) return;
+  const a = document.createElement('a');
+  a.href = cv.toDataURL('image/png');
+  a.download = 'paint.png';
+  a.click();
+}
+
+function ptFlipH() {
+  const cv=document.getElementById('pc'); if(!cv||!ptCtx) return;
+  const tmp=document.createElement('canvas'); tmp.width=cv.width; tmp.height=cv.height;
+  const tc=tmp.getContext('2d'); tc.translate(cv.width,0); tc.scale(-1,1); tc.drawImage(cv,0,0);
+  ptCtx.clearRect(0,0,cv.width,cv.height); ptCtx.drawImage(tmp,0,0);
+}
+function ptFlipV() {
+  const cv=document.getElementById('pc'); if(!cv||!ptCtx) return;
+  const tmp=document.createElement('canvas'); tmp.width=cv.width; tmp.height=cv.height;
+  const tc=tmp.getContext('2d'); tc.translate(0,cv.height); tc.scale(1,-1); tc.drawImage(cv,0,0);
+  ptCtx.clearRect(0,0,cv.width,cv.height); ptCtx.drawImage(tmp,0,0);
+}
+function ptInvert() {
+  const cv=document.getElementById('pc'); if(!cv||!ptCtx) return;
+  const d=ptCtx.getImageData(0,0,cv.width,cv.height);
+  for(let i=0;i<d.data.length;i+=4){d.data[i]=255-d.data[i];d.data[i+1]=255-d.data[i+1];d.data[i+2]=255-d.data[i+2];}
+  ptCtx.putImageData(d,0,0);
+}
+
+function ptFloodFill(sx, sy) {
+  const cv=document.getElementById('pc'); if(!cv||!ptCtx) return;
+  const d=ptCtx.getImageData(0,0,cv.width,cv.height), dat=d.data;
+  const W=cv.width, H=cv.height;
+  function idx(x,y){return (y*W+x)*4;}
+  const si=idx(sx,sy);
+  const [tr,tg,tb,ta]=[dat[si],dat[si+1],dat[si+2],dat[si+3]];
+  const fc=parseInt(paintColor.slice(1),16);
+  const [fr,fg,fb]=[(fc>>16)&255,(fc>>8)&255,fc&255];
+  if(tr===fr&&tg===fg&&tb===fb) return;
+  const stack=[[sx,sy]];
+  while(stack.length){
+    const [x,y]=stack.pop();
+    if(x<0||x>=W||y<0||y>=H) continue;
+    const i=idx(x,y);
+    if(dat[i]!==tr||dat[i+1]!==tg||dat[i+2]!==tb||dat[i+3]!==ta) continue;
+    dat[i]=fr;dat[i+1]=fg;dat[i+2]=fb;dat[i+3]=255;
+    stack.push([x+1,y],[x-1,y],[x,y+1],[x,y-1]);
+  }
+  ptCtx.putImageData(d,0,0);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PAPELERA
+// ─────────────────────────────────────────────────────────────────────────────
 function openTrash() {
   mkWin({
-    id: 'trash', title: 'Papelera de reciclaje', icon: '🗑️', w: 380, h: 220,
-    menu: ['Archivo','Editar','Ver','Ayuda'], status: 'La Papelera está vacía',
-    body: `<div style="height:100%;background:#fff;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;color:#808080">
+    id:'trash', title:'Papelera de reciclaje', icon:'🗑️', w:380, h:220,
+    menu:[{label:'Archivo'},{label:'Editar'},{label:'Ver'},{label:'Ayuda'}],
+    onMenu:[
+      [{label:'Vaciar Papelera',disabled:true},'-',{label:'Cerrar',fn:`closeWin('trash')`}],
+      [{label:'Seleccionar todo',disabled:true}],
+      [{label:'Iconos',disabled:true}],
+      [{label:'Acerca de...',fn:`openAbout`}],
+    ],
+    status:'La Papelera está vacía',
+    body:`<div style="height:100%;background:#fff;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;color:#808080">
       <div style="font-size:52px">🗑️</div>
       <div>La Papelera está vacía</div>
     </div>`
   });
 }
 
-// Acerca de
+// ─────────────────────────────────────────────────────────────────────────────
+// ACERCA DE
+// ─────────────────────────────────────────────────────────────────────────────
 function openAbout() {
   mkWin({
-    id: 'about', title: 'Acerca de Desktop OS', icon: '❓', w: 320, h: 250,
-    body: `
-      <div class="about">
-        <div class="about-logo">🪟</div>
-        <div class="about-ttl">Desktop OS</div>
-        <div>Versión 1.0</div>
-        <div class="about-sep"></div>
-        <div style="color:#444">Hecho con HTML, CSS y JavaScript</div>
-        <div style="color:#444">gasiocheck.github.io</div>
-        <button class="btn3d" style="width:80px;margin-top:8px" onclick="closeWin('about')">Aceptar</button>
-      </div>`
+    id:'about', title:'Acerca de Desktop OS', icon:'❓', w:300, h:240,
+    body:`<div class="about">
+      <div style="font-size:52px">🪟</div>
+      <div style="font-size:14px;font-weight:bold">Desktop OS</div>
+      <div>Versión 1.0</div>
+      <div style="width:100%;border-top:1px solid #c0c0c0"></div>
+      <div style="color:#444;font-size:11px">Hecho con HTML, CSS y JavaScript puro</div>
+      <div style="color:#444;font-size:11px">gasiocheck.github.io</div>
+      <button class="btn3d" style="width:80px;margin-top:6px" onclick="closeWin('about')">Aceptar</button>
+    </div>`
   });
 }
 
-// Apagar
+// ─────────────────────────────────────────────────────────────────────────────
+// APAGAR
+// ─────────────────────────────────────────────────────────────────────────────
 function doShutdown() {
   smClose();
   mkWin({
-    id: 'shutdown', title: 'Apagar el sistema', icon: '⏻', w: 310, h: 155,
-    body: `
-      <div class="dlg">
-        <div class="dlg-row"><div class="dlg-ico">💻</div><div class="dlg-txt">¿Deseas apagar el equipo?</div></div>
-        <div class="dlg-btns">
-          <button class="btn3d" style="width:90px" onclick="goBlack()">Apagar</button>
-          <button class="btn3d" style="width:90px" onclick="closeWin('shutdown')">Cancelar</button>
-        </div>
-      </div>`
+    id:'shutdown', title:'Apagar el sistema', icon:'⏻', w:300, h:145,
+    body:`<div class="dlg">
+      <div class="dlg-row">
+        <div class="dlg-ico">💻</div>
+        <div class="dlg-txt">¿Deseas apagar el equipo?</div>
+      </div>
+      <div class="dlg-btns">
+        <button class="btn3d" style="width:90px" onclick="goBlack()">Apagar</button>
+        <button class="btn3d" style="width:90px" onclick="closeWin('shutdown')">Cancelar</button>
+      </div>
+    </div>`
   });
 }
+
 function goBlack() {
   document.body.innerHTML = `<div style="width:100vw;height:100vh;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:#fff;font-family:monospace">
     <div style="font-size:52px">⏻</div>
     <div style="font-size:20px">Apagando...</div>
-    <div style="font-size:12px;color:#666;margin-top:8px">Ya puedes apagar el ordenador de forma segura</div>
+    <div style="font-size:12px;color:#555;margin-top:8px">Ya puedes apagar el ordenador de forma segura</div>
   </div>`;
 }
 </script>
