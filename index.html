@@ -3,22 +3,600 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>gasiocheck</title>
+  <title>Desktop OS</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: #f9f9f9;
-      color: #111;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      width: 100vw; height: 100vh; overflow: hidden;
+      background: #008080;
+      font-family: 'MS Sans Serif', Tahoma, 'Segoe UI', sans-serif;
+      font-size: 11px;
+      user-select: none;
     }
-    h1 { font-size: 2rem; font-weight: 700; }
+
+    /* ── Desktop ── */
+    #desktop {
+      width: 100%; height: calc(100% - 28px);
+      position: relative; overflow: hidden;
+    }
+
+    /* ── Desktop icons ── */
+    .d-icon {
+      position: absolute; width: 76px;
+      display: flex; flex-direction: column; align-items: center;
+      padding: 6px 4px; cursor: pointer; text-align: center;
+      border: 1px solid transparent; border-radius: 2px;
+      color: #fff; text-shadow: 1px 1px 2px #000;
+    }
+    .d-icon:hover  { background: rgba(0,0,128,.35); border-color: rgba(255,255,255,.5); }
+    .d-icon.sel    { background: rgba(0,0,128,.55); border-color: rgba(255,255,255,.8); }
+    .d-icon-img    { font-size: 34px; line-height: 1; }
+    .d-icon-label  { margin-top: 4px; font-size: 11px; line-height: 1.25; word-break: break-word; }
+
+    /* ── 3-D button ── */
+    .btn3d {
+      background: #c0c0c0;
+      border: 2px solid; border-color: #fff #808080 #808080 #fff;
+      font-family: inherit; font-size: 11px; cursor: pointer;
+      padding: 2px 10px; height: 23px;
+      display: inline-flex; align-items: center; gap: 5px;
+      white-space: nowrap; outline: none; flex-shrink: 0;
+    }
+    .btn3d:active, .btn3d.pressed {
+      border-color: #808080 #fff #fff #808080;
+      padding-left: 12px; padding-top: 3px;
+    }
+    .btn3d:focus { outline: 1px dotted #000; outline-offset: -4px; }
+
+    /* ── Taskbar ── */
+    #taskbar {
+      position: fixed; bottom: 0; left: 0; right: 0; height: 28px;
+      background: #c0c0c0;
+      border-top: 2px solid #fff;
+      display: flex; align-items: center; gap: 2px; padding: 2px 3px;
+      z-index: 9000;
+    }
+    .tb-sep { width: 2px; height: 20px; border-left: 1px solid #808080; border-right: 1px solid #fff; margin: 0 1px; flex-shrink: 0; }
+    #tb-wins { flex: 1; display: flex; align-items: center; gap: 2px; overflow: hidden; }
+    .tb-btn {
+      max-width: 160px; min-width: 90px; height: 22px; padding: 0 6px;
+      font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      text-align: left; display: flex; align-items: center; gap: 5px;
+      font-family: inherit; cursor: pointer; flex-shrink: 0;
+    }
+    .tb-btn .tb-ico { font-size: 14px; }
+    #tray {
+      height: 22px; padding: 0 8px;
+      border: 1px solid; border-color: #808080 #fff #fff #808080;
+      display: flex; align-items: center; gap: 6px;
+      font-size: 11px; flex-shrink: 0;
+    }
+
+    /* ── Start menu ── */
+    #smenu {
+      position: fixed; bottom: 28px; left: 0;
+      width: 200px; background: #c0c0c0;
+      border: 2px solid; border-color: #fff #808080 #808080 #fff;
+      box-shadow: 2px 2px 5px rgba(0,0,0,.45);
+      display: none; flex-direction: column; z-index: 9500;
+    }
+    #smenu.open { display: flex; }
+    .sm-side {
+      position: absolute; left: 0; top: 0; bottom: 0; width: 26px;
+      background: linear-gradient(to top, #555, #aaa);
+      display: flex; align-items: flex-end; justify-content: center; padding-bottom: 6px;
+    }
+    .sm-side span {
+      writing-mode: vertical-rl; transform: rotate(180deg);
+      font-size: 11px; font-weight: bold; color: rgba(255,255,255,.35);
+      letter-spacing: 2px;
+    }
+    .sm-list { margin-left: 26px; display: flex; flex-direction: column; }
+    .sm-item {
+      padding: 6px 8px; display: flex; align-items: center; gap: 8px;
+      cursor: pointer; font-size: 11px; position: relative;
+    }
+    .sm-item:hover { background: #000080; color: #fff; }
+    .sm-item .sm-ico { font-size: 18px; flex-shrink: 0; }
+    .sm-item .sm-arr { margin-left: auto; font-size: 9px; }
+    .sm-div { height: 1px; margin: 2px 4px; border-top: 1px solid #808080; border-bottom: 1px solid #fff; }
+    .sm-sub {
+      position: absolute; left: 100%; top: -2px; min-width: 160px;
+      background: #c0c0c0; border: 2px solid; border-color: #fff #808080 #808080 #fff;
+      box-shadow: 2px 2px 5px rgba(0,0,0,.4);
+      display: none; flex-direction: column; z-index: 9600;
+    }
+    .sm-item:hover .sm-sub { display: flex; }
+
+    /* ── Windows ── */
+    .win {
+      position: absolute; min-width: 200px; min-height: 100px;
+      background: #c0c0c0;
+      border: 2px solid; border-color: #fff #808080 #808080 #fff;
+      box-shadow: 2px 2px 6px rgba(0,0,0,.35);
+      display: flex; flex-direction: column;
+    }
+    .win.hidden { display: none; }
+
+    .win-tb {
+      height: 20px; flex-shrink: 0;
+      background: linear-gradient(90deg, #000080, #1084d0);
+      display: flex; align-items: center; padding: 0 3px;
+      cursor: move; gap: 3px;
+    }
+    .win.blur .win-tb { background: linear-gradient(90deg, #7b7b7b, #b5b5b5); }
+    .win-tb-ico  { font-size: 12px; }
+    .win-tb-ttl  { flex: 1; color: #fff; font-size: 11px; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .win-tb-btns { display: flex; gap: 2px; }
+    .win-ctrl {
+      width: 16px; height: 14px; flex-shrink: 0;
+      background: #c0c0c0; border: 1px solid; border-color: #fff #808080 #808080 #fff;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 9px; line-height: 1; font-weight: bold;
+    }
+    .win-ctrl:active { border-color: #808080 #fff #fff #808080; }
+
+    .win-menubar {
+      flex-shrink: 0; display: flex;
+      border-bottom: 1px solid #808080; background: #c0c0c0;
+    }
+    .wmb-item { padding: 2px 8px; cursor: pointer; font-size: 11px; }
+    .wmb-item:hover { background: #000080; color: #fff; }
+
+    .win-body { flex: 1; overflow: auto; position: relative; }
+    .win-body.no-scroll { overflow: hidden; }
+
+    .win-status {
+      flex-shrink: 0; height: 20px; padding: 0 3px;
+      border-top: 1px solid #808080;
+      display: flex; align-items: center; gap: 3px;
+    }
+    .ws-cell {
+      padding: 1px 6px; font-size: 10px; color: #333;
+      border: 1px solid; border-color: #808080 #fff #fff #808080;
+    }
+
+    .win-grip {
+      position: absolute; bottom: 0; right: 0;
+      width: 14px; height: 14px; cursor: se-resize; z-index: 2;
+      background:
+        linear-gradient(135deg, transparent 0 30%, #808080 30% 40%, transparent 40% 60%, #808080 60% 70%, transparent 70% 87%, #808080 87% 100%);
+    }
+
+    /* ── Explorer ── */
+    .exp-wrap { display: flex; height: 100%; }
+    .exp-tree {
+      width: 150px; flex-shrink: 0; overflow: auto;
+      background: #fff; border-right: 2px solid; border-color: #808080 #fff #fff #808080;
+      padding: 2px;
+    }
+    .exp-main { flex: 1; overflow: auto; background: #fff; padding: 6px; }
+    .t-item {
+      display: flex; align-items: center; gap: 4px; padding: 2px 2px 2px 14px;
+      cursor: pointer; font-size: 11px; position: relative; white-space: nowrap;
+    }
+    .t-item::before { content: '▶'; font-size: 7px; color: #808080; position: absolute; left: 3px; }
+    .t-item.open::before { content: '▼'; }
+    .t-item:hover { background: #000080; color: #fff; }
+    .t-item .t-ico { font-size: 14px; }
+    .t-kids { padding-left: 14px; display: none; }
+    .t-item.open + .t-kids { display: block; }
+    .f-grid { display: flex; flex-wrap: wrap; gap: 10px; padding: 4px; }
+    .f-item {
+      width: 68px; display: flex; flex-direction: column; align-items: center;
+      text-align: center; cursor: pointer; padding: 4px 2px;
+      border: 1px solid transparent;
+    }
+    .f-item:hover { background: #000080; color: #fff; border-color: rgba(255,255,255,.4); }
+    .f-item .f-ico { font-size: 28px; }
+    .f-item .f-name { font-size: 10px; margin-top: 3px; line-height: 1.2; word-break: break-word; }
+
+    /* ── Notepad ── */
+    .np-ta {
+      width: 100%; height: 100%; resize: none; border: none; outline: none;
+      font-family: 'Courier New', monospace; font-size: 12px;
+      padding: 4px; background: #fff; color: #000;
+    }
+
+    /* ── Paint ── */
+    .paint-shell { display: flex; flex-direction: column; height: 100%; }
+    .paint-tb { flex-shrink: 0; display: flex; align-items: center; gap: 4px; padding: 4px; border-bottom: 1px solid #808080; background: #c0c0c0; }
+    .paint-colors { display: flex; flex-wrap: wrap; width: 110px; gap: 2px; margin-left: auto; }
+    .pc { width: 16px; height: 16px; border: 1px solid #808080; cursor: pointer; flex-shrink: 0; }
+    .pc.active { outline: 2px solid #000; }
+    .paint-cv-wrap { flex: 1; overflow: auto; background: #808080; padding: 8px; }
+    #pc { display: block; background: #fff; cursor: crosshair; }
+
+    /* ── About ── */
+    .about { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 20px; background: #fff; height: 100%; text-align: center; }
+    .about-logo { font-size: 52px; }
+    .about-ttl { font-size: 14px; font-weight: bold; }
+    .about-sep { width: 100%; border-top: 1px solid #c0c0c0; }
+
+    /* ── Dialog ── */
+    .dlg { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+    .dlg-row { display: flex; align-items: center; gap: 12px; }
+    .dlg-ico { font-size: 34px; }
+    .dlg-txt { font-size: 11px; line-height: 1.5; }
+    .dlg-btns { display: flex; justify-content: center; gap: 8px; }
+
+    /* ── Scrollbars ── */
+    ::-webkit-scrollbar { width: 16px; height: 16px; }
+    ::-webkit-scrollbar-track { background: #c0c0c0; }
+    ::-webkit-scrollbar-thumb { background: #c0c0c0; border: 2px solid; border-color: #fff #808080 #808080 #fff; }
+    ::-webkit-scrollbar-button { background: #c0c0c0; border: 2px solid; border-color: #fff #808080 #808080 #fff; width: 16px; height: 16px; display: block; }
   </style>
 </head>
 <body>
-  <h1>Hola mundo</h1>
+
+<!-- Desktop -->
+<div id="desktop">
+  <div class="d-icon" style="left:16px;top:16px"  ondblclick="openApp('mipc')"    onclick="selIcon(this)"><div class="d-icon-img">🖥️</div><div class="d-icon-label">Mi PC</div></div>
+  <div class="d-icon" style="left:16px;top:108px" ondblclick="openApp('docs')"    onclick="selIcon(this)"><div class="d-icon-img">📁</div><div class="d-icon-label">Mis Documentos</div></div>
+  <div class="d-icon" style="left:16px;top:200px" ondblclick="openApp('notepad')" onclick="selIcon(this)"><div class="d-icon-img">📝</div><div class="d-icon-label">Bloc de Notas</div></div>
+  <div class="d-icon" style="left:16px;top:292px" ondblclick="openApp('paint')"   onclick="selIcon(this)"><div class="d-icon-img">🎨</div><div class="d-icon-label">Paint</div></div>
+  <div class="d-icon" style="left:16px;top:384px" ondblclick="openApp('trash')"   onclick="selIcon(this)"><div class="d-icon-img">🗑️</div><div class="d-icon-label">Papelera</div></div>
+</div>
+
+<!-- Start menu -->
+<div id="smenu">
+  <div class="sm-side"><span>DESKTOP OS</span></div>
+  <div class="sm-list">
+    <div class="sm-item" onclick="openApp('mipc');smClose()">    <span class="sm-ico">🖥️</span>Mi PC</div>
+    <div class="sm-item" onclick="openApp('docs');smClose()">    <span class="sm-ico">📁</span>Mis Documentos</div>
+    <div class="sm-item">
+      <span class="sm-ico">📂</span>Programas<span class="sm-arr">▶</span>
+      <div class="sm-sub">
+        <div class="sm-item" onclick="openApp('notepad');smClose()"><span class="sm-ico">📝</span>Bloc de Notas</div>
+        <div class="sm-item" onclick="openApp('paint');smClose()">  <span class="sm-ico">🎨</span>Paint</div>
+      </div>
+    </div>
+    <div class="sm-div"></div>
+    <div class="sm-item" onclick="openApp('about');smClose()">  <span class="sm-ico">❓</span>Acerca de...</div>
+    <div class="sm-div"></div>
+    <div class="sm-item" onclick="doShutdown()">                <span class="sm-ico">⏻</span>Apagar...</div>
+  </div>
+</div>
+
+<!-- Taskbar -->
+<div id="taskbar">
+  <button class="btn3d" id="start-btn" onclick="smToggle()">🪟 Inicio</button>
+  <div class="tb-sep"></div>
+  <div id="tb-wins"></div>
+  <div class="tb-sep"></div>
+  <div id="tray">🔊&nbsp;<span id="clock"></span></div>
+</div>
+
+<script>
+// ── Clock ─────────────────────────────────────────────────────────────────
+(function tick() {
+  const n = new Date();
+  document.getElementById('clock').textContent =
+    String(n.getHours()).padStart(2,'0') + ':' + String(n.getMinutes()).padStart(2,'0');
+  setTimeout(tick, 5000);
+})();
+
+// ── Desktop icon selection ─────────────────────────────────────────────────
+function selIcon(el) {
+  document.querySelectorAll('.d-icon').forEach(i => i.classList.remove('sel'));
+  el.classList.add('sel');
+}
+document.getElementById('desktop').addEventListener('mousedown', e => {
+  if (!e.target.closest('.d-icon'))  document.querySelectorAll('.d-icon').forEach(i => i.classList.remove('sel'));
+  if (!e.target.closest('#smenu') && !e.target.closest('#start-btn')) smClose();
+});
+
+// ── Start menu ─────────────────────────────────────────────────────────────
+let smOpen = false;
+function smToggle() { smOpen ? smClose() : smShow(); }
+function smShow() {
+  smOpen = true;
+  document.getElementById('smenu').classList.add('open');
+  document.getElementById('start-btn').classList.add('pressed');
+}
+function smClose() {
+  smOpen = false;
+  document.getElementById('smenu').classList.remove('open');
+  document.getElementById('start-btn').classList.remove('pressed');
+}
+
+// ── Window manager ─────────────────────────────────────────────────────────
+let zTop = 100;
+const wins = {};   // id → { el, title, icon, minimized }
+const maxSnap = {}; // id → saved geometry before maximize
+
+function mkWin({ id, title, icon = '🗂️', w = 480, h = 320, menu = [], status = '', body = '', noScroll = false }) {
+  if (wins[id]) { focusWin(id); if (wins[id].minimized) unmin(id); return; }
+
+  const el = document.createElement('div');
+  el.className = 'win';
+  el.id = 'w-' + id;
+  const offset = Object.keys(wins).length;
+  Object.assign(el.style, { width: w+'px', height: h+'px', left: (60+offset*22)+'px', top: (50+offset*22)+'px', zIndex: ++zTop });
+
+  const menuBar = menu.length
+    ? `<div class="win-menubar">${menu.map(m=>`<div class="wmb-item">${m}</div>`).join('')}</div>`
+    : '';
+
+  el.innerHTML = `
+    <div class="win-tb">
+      <span class="win-tb-ico">${icon}</span>
+      <span class="win-tb-ttl">${title}</span>
+      <div class="win-tb-btns">
+        <div class="win-ctrl" onclick="minWin('${id}')" title="Minimizar">_</div>
+        <div class="win-ctrl" onclick="maxWin('${id}')" title="Maximizar">□</div>
+        <div class="win-ctrl" onclick="closeWin('${id}')" title="Cerrar" style="font-size:10px">✕</div>
+      </div>
+    </div>
+    ${menuBar}
+    <div class="win-body${noScroll?' no-scroll':''}">${body}</div>
+    ${status ? `<div class="win-status"><div class="ws-cell" id="ws-${id}">${status}</div></div>` : ''}
+    <div class="win-grip"></div>
+  `;
+
+  document.getElementById('desktop').appendChild(el);
+  wins[id] = { el, title, icon, minimized: false };
+
+  makeDrag(el.querySelector('.win-tb'), el);
+  makeResize(el.querySelector('.win-grip'), el);
+  el.addEventListener('mousedown', () => focusWin(id), true);
+
+  focusWin(id);
+  tbRefresh();
+}
+
+function focusWin(id) {
+  Object.keys(wins).forEach(wid => wins[wid].el.classList.toggle('blur', wid !== id));
+  if (wins[id]) { wins[id].el.style.zIndex = ++zTop; wins[id].el.classList.remove('blur'); }
+}
+
+function minWin(id)  { wins[id].minimized = true;  wins[id].el.classList.add('hidden'); tbRefresh(); }
+function unmin(id)   { wins[id].minimized = false; wins[id].el.classList.remove('hidden'); focusWin(id); tbRefresh(); }
+
+function maxWin(id) {
+  const el = wins[id].el;
+  if (maxSnap[id]) {
+    Object.assign(el.style, maxSnap[id]);
+    delete maxSnap[id];
+  } else {
+    maxSnap[id] = { width: el.style.width, height: el.style.height, left: el.style.left, top: el.style.top };
+    el.style.cssText += ';left:0;top:0;width:100%;height:'+(innerHeight-28)+'px';
+  }
+}
+
+function closeWin(id) { if (!wins[id]) return; wins[id].el.remove(); delete wins[id]; tbRefresh(); }
+
+function tbRefresh() {
+  const tb = document.getElementById('tb-wins');
+  tb.innerHTML = '';
+  Object.keys(wins).forEach(id => {
+    const w = wins[id];
+    const b = document.createElement('button');
+    b.className = 'btn3d tb-btn' + (w.minimized ? '' : ' pressed');
+    b.innerHTML = `<span class="tb-ico">${w.icon}</span>${w.title}`;
+    b.title = w.title;
+    b.onclick = () => w.minimized ? unmin(id) : minWin(id);
+    tb.appendChild(b);
+  });
+}
+
+// ── Drag ──────────────────────────────────────────────────────────────────
+function makeDrag(handle, el) {
+  handle.addEventListener('mousedown', e => {
+    if (e.target.closest('.win-ctrl')) return;
+    const ox = el.offsetLeft - e.clientX, oy = el.offsetTop - e.clientY;
+    const desk = document.getElementById('desktop');
+    function mv(e) {
+      el.style.left = Math.max(0, Math.min(desk.clientWidth  - 40, e.clientX + ox)) + 'px';
+      el.style.top  = Math.max(0, Math.min(desk.clientHeight - 20, e.clientY + oy)) + 'px';
+    }
+    function up() { document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); }
+    document.addEventListener('mousemove', mv);
+    document.addEventListener('mouseup', up);
+    e.preventDefault();
+  });
+}
+
+// ── Resize ────────────────────────────────────────────────────────────────
+function makeResize(grip, el) {
+  grip.addEventListener('mousedown', e => {
+    const sw = el.offsetWidth - e.clientX, sh = el.offsetHeight - e.clientY;
+    function mv(e) {
+      el.style.width  = Math.max(200, e.clientX + sw) + 'px';
+      el.style.height = Math.max(100, e.clientY + sh) + 'px';
+    }
+    function up() { document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); }
+    document.addEventListener('mousemove', mv);
+    document.addEventListener('mouseup', up);
+    e.preventDefault();
+  });
+}
+
+// ── Apps ──────────────────────────────────────────────────────────────────
+function openApp(name) {
+  smClose();
+  ({ mipc: openMiPC, docs: openDocs, notepad: openNotepad, paint: openPaint, trash: openTrash, about: openAbout })[name]?.();
+}
+
+// Mi PC
+function openMiPC() {
+  mkWin({
+    id: 'mipc', title: 'Mi PC', icon: '🖥️', w: 530, h: 350,
+    menu: ['Archivo','Editar','Ver','Ayuda'], status: '5 objetos',
+    noScroll: true,
+    body: `
+      <div class="exp-wrap">
+        <div class="exp-tree">
+          <div class="t-item open" onclick="this.classList.toggle('open')"><span class="t-ico">🖥️</span>Mi PC</div>
+          <div class="t-kids">
+            <div class="t-item" onclick="this.classList.toggle('open')"><span class="t-ico">💾</span>Disco C:</div>
+            <div class="t-kids"></div>
+            <div class="t-item"><span class="t-ico">💿</span>DVD D:</div>
+          </div>
+        </div>
+        <div class="exp-main">
+          <div class="f-grid">
+            <div class="f-item" ondblclick="openDocs()"><div class="f-ico">📁</div><div class="f-name">Mis Documentos</div></div>
+            <div class="f-item"><div class="f-ico">💾</div><div class="f-name">Disco local (C:)</div></div>
+            <div class="f-item"><div class="f-ico">💿</div><div class="f-name">DVD-RW (D:)</div></div>
+            <div class="f-item"><div class="f-ico">🖨️</div><div class="f-name">Impresoras</div></div>
+            <div class="f-item"><div class="f-ico">🌐</div><div class="f-name">Red</div></div>
+          </div>
+        </div>
+      </div>`
+  });
+}
+
+// Mis Documentos
+function openDocs() {
+  mkWin({
+    id: 'docs', title: 'Mis Documentos', icon: '📁', w: 480, h: 300,
+    menu: ['Archivo','Editar','Ver','Ayuda'], status: '3 objetos',
+    noScroll: true,
+    body: `
+      <div class="exp-main" style="height:100%;background:#fff">
+        <div class="f-grid">
+          <div class="f-item" ondblclick="npOpen('notas.txt','Mis notas...\n\nEscribe aquí tus notas personales.')">
+            <div class="f-ico">📄</div><div class="f-name">notas.txt</div>
+          </div>
+          <div class="f-item" ondblclick="npOpen('ideas.txt','Ideas:\\n\\n- Idea 1\n- Idea 2\n- Idea 3')">
+            <div class="f-ico">📄</div><div class="f-name">ideas.txt</div>
+          </div>
+          <div class="f-item"><div class="f-ico">📁</div><div class="f-name">Fotos</div></div>
+        </div>
+      </div>`
+  });
+}
+
+// Bloc de notas
+let npIdx = 0;
+function openNotepad() { npOpen('Sin título', ''); }
+function npOpen(name, text) {
+  const id = 'np-' + (npIdx++);
+  mkWin({
+    id, title: `Bloc de Notas – ${name}`, icon: '📝', w: 440, h: 320,
+    menu: ['Archivo','Editar','Formato','Ver','Ayuda'],
+    body: `<textarea class="np-ta" spellcheck="false">${text}</textarea>`
+  });
+}
+
+// Paint
+let paintColor = '#000000', paintTool = 'pen', painting = false, lastPt = null;
+function openPaint() {
+  mkWin({
+    id: 'paint', title: 'Paint', icon: '🎨', w: 580, h: 430,
+    menu: ['Archivo','Editar','Ver','Imagen','Colores','Ayuda'],
+    noScroll: true,
+    body: `
+      <div class="paint-shell">
+        <div class="paint-tb">
+          <button class="btn3d" onclick="ptTool('pen')"    title="Lápiz" style="font-size:14px;padding:2px 6px">✏️</button>
+          <button class="btn3d" onclick="ptTool('eraser')" title="Borrador" style="padding:2px 6px">⬜</button>
+          <button class="btn3d" onclick="ptClear()"        title="Limpiar" style="padding:2px 6px">🗑️</button>
+          <div style="display:flex;flex-direction:column;gap:2px;margin-left:6px;font-size:10px;color:#444">
+            <span>Color:</span>
+            <div id="pt-cur" style="width:22px;height:16px;border:1px solid #808080;background:#000"></div>
+          </div>
+          <div class="paint-colors">
+            ${['#000000','#ffffff','#ff0000','#00ff00','#0000ff','#ffff00','#ff00ff','#00ffff',
+               '#800000','#008000','#000080','#808000','#800080','#008080','#c0c0c0','#808080',
+               '#ff8000','#8000ff','#0080ff','#ff0080'].map(c =>
+              `<div class="pc" style="background:${c}" onclick="ptColor('${c}')"></div>`
+            ).join('')}
+          </div>
+        </div>
+        <div class="paint-cv-wrap">
+          <canvas id="pc" width="700" height="500"></canvas>
+        </div>
+        <div class="win-status"><div class="ws-cell" id="pt-coords">0, 0</div></div>
+      </div>`
+  });
+  requestAnimationFrame(initPaint);
+}
+
+function initPaint() {
+  const cv = document.getElementById('pc');
+  if (!cv) return;
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(0,0,cv.width,cv.height);
+  ctx.lineJoin = ctx.lineCap = 'round'; ctx.lineWidth = 2;
+
+  cv.onmousedown = e => { painting = true; lastPt = pt(cv,e); };
+  cv.onmousemove = e => {
+    const p = pt(cv,e);
+    const el = document.getElementById('pt-coords');
+    if (el) el.textContent = p.x+', '+p.y;
+    if (!painting) return;
+    ctx.strokeStyle = paintTool === 'eraser' ? '#fff' : paintColor;
+    ctx.lineWidth   = paintTool === 'eraser' ? 18 : 2;
+    ctx.beginPath(); ctx.moveTo(lastPt.x, lastPt.y); ctx.lineTo(p.x, p.y); ctx.stroke();
+    lastPt = p;
+  };
+  cv.onmouseup = cv.onmouseleave = () => { painting = false; lastPt = null; };
+}
+
+function pt(cv,e) { const r=cv.getBoundingClientRect(); return {x:Math.round(e.clientX-r.left),y:Math.round(e.clientY-r.top)}; }
+function ptTool(t) { paintTool = t; }
+function ptColor(c) {
+  paintColor = c;
+  document.querySelectorAll('.pc').forEach(el => el.classList.toggle('active', el.style.background === c || getComputedStyle(el).backgroundColor === hexToRgb(c)));
+  const cur = document.getElementById('pt-cur');
+  if (cur) cur.style.background = c;
+}
+function hexToRgb(h) { const r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16); return `rgb(${r}, ${g}, ${b})`; }
+function ptClear() { const cv=document.getElementById('pc'); if(!cv)return; const ctx=cv.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,cv.width,cv.height); }
+
+// Papelera
+function openTrash() {
+  mkWin({
+    id: 'trash', title: 'Papelera de reciclaje', icon: '🗑️', w: 380, h: 220,
+    menu: ['Archivo','Editar','Ver','Ayuda'], status: 'La Papelera está vacía',
+    body: `<div style="height:100%;background:#fff;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;color:#808080">
+      <div style="font-size:52px">🗑️</div>
+      <div>La Papelera está vacía</div>
+    </div>`
+  });
+}
+
+// Acerca de
+function openAbout() {
+  mkWin({
+    id: 'about', title: 'Acerca de Desktop OS', icon: '❓', w: 320, h: 250,
+    body: `
+      <div class="about">
+        <div class="about-logo">🪟</div>
+        <div class="about-ttl">Desktop OS</div>
+        <div>Versión 1.0</div>
+        <div class="about-sep"></div>
+        <div style="color:#444">Hecho con HTML, CSS y JavaScript</div>
+        <div style="color:#444">gasiocheck.github.io</div>
+        <button class="btn3d" style="width:80px;margin-top:8px" onclick="closeWin('about')">Aceptar</button>
+      </div>`
+  });
+}
+
+// Apagar
+function doShutdown() {
+  smClose();
+  mkWin({
+    id: 'shutdown', title: 'Apagar el sistema', icon: '⏻', w: 310, h: 155,
+    body: `
+      <div class="dlg">
+        <div class="dlg-row"><div class="dlg-ico">💻</div><div class="dlg-txt">¿Deseas apagar el equipo?</div></div>
+        <div class="dlg-btns">
+          <button class="btn3d" style="width:90px" onclick="goBlack()">Apagar</button>
+          <button class="btn3d" style="width:90px" onclick="closeWin('shutdown')">Cancelar</button>
+        </div>
+      </div>`
+  });
+}
+function goBlack() {
+  document.body.innerHTML = `<div style="width:100vw;height:100vh;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:#fff;font-family:monospace">
+    <div style="font-size:52px">⏻</div>
+    <div style="font-size:20px">Apagando...</div>
+    <div style="font-size:12px;color:#666;margin-top:8px">Ya puedes apagar el ordenador de forma segura</div>
+  </div>`;
+}
+</script>
 </body>
 </html>
