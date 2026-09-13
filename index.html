@@ -101,7 +101,7 @@ body{width:100vw;height:100vh;overflow:hidden;font-family:Arial,sans-serif;font-
 @keyframes tslide{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
 
 /* WALLPAPER PICKER */
-#wp-modal{position:fixed;inset:0;z-index:4500;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;display:none}
+#wp-modal{position:fixed;inset:0;z-index:4500;background:rgba(0,0,0,.5);align-items:center;justify-content:center;display:none}
 .wp-win{background:var(--c0);border:2px solid;border-color:#fff #808080 #808080 #fff;width:360px;box-shadow:2px 2px 8px #000}
 .wp-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:12px}
 .wp-opt{height:48px;border:3px solid transparent;cursor:pointer;border-radius:1px}
@@ -468,9 +468,16 @@ function showScreen(id){
     if(s===id){e.style.display=s==='scr-desktop'?'block':'flex';e.hidden=false;}
     else{e.style.display='none';e.hidden=true;}
   });
+  // Cierra cualquier modal o menú residual al cambiar de pantalla
+  if(id==='scr-desktop'){
+    const mod=$('mod-ov');if(mod)mod.remove();
+    const cm=$('ctx-menu');if(cm)cm.style.display='none';
+    const sm=$('start-menu');if(sm)sm.hidden=true;
+  }
 }
 
 // ===== BOOT =====
+let _bootDone=false;
 function boot(){
   const lines=['Iniciando PERKYMAFIA OS v2.0...','Cargando módulos de audio...','Conectando con la base de datos...','Inicializando gestor de temas...','Cargando interfaz de usuario...','Sistema listo.'];
   const bl=$('boot-lines'),bar=$('boot-bar');
@@ -481,23 +488,10 @@ function boot(){
       bar.style.width=(i/lines.length*100)+'%';
       setTimeout(step,300+Math.random()*200);
     } else {
-      setTimeout(async()=>{
-        // Intenta restaurar sesión guardada antes de mostrar login
-        try{
-          const{data:{session}}=await Promise.race([
-            SB.auth.getSession(),
-            new Promise((_,r)=>setTimeout(()=>r(new Error('timeout')),5000))
-          ]);
-          if(session){
-            showScreen('scr-auth');
-            const errEl=$('l-err');
-            errEl.style.color='#555';errEl.textContent='Sesión encontrada, cargando...';
-            await loadUserData(session.user);
-            return;
-          }
-        }catch(e){}
-        showScreen('scr-auth');
-      },400);
+      _bootDone=true;
+      // Si onAuthStateChange ya cargó al usuario durante el boot, va al desktop
+      if(CU){showScreen('scr-desktop');return;}
+      showScreen('scr-auth');
     }
   }
   setTimeout(step,400);
@@ -583,7 +577,7 @@ async function loadUserData(user){
     ]);
     setupDesktop();
     setupRealtime();
-    showScreen('scr-desktop');
+    if(_bootDone)showScreen('scr-desktop');
   }catch(e){
     console.error('loadUserData error:',e);
     showScreen('scr-auth');
@@ -592,9 +586,12 @@ async function loadUserData(user){
   }
 }
 
+let _loadingUser=false;
 SB.auth.onAuthStateChange(async(ev,sess)=>{
   if((ev==='SIGNED_IN'||ev==='INITIAL_SESSION'||ev==='TOKEN_REFRESHED')&&sess){
-    await loadUserData(sess.user);
+    if(_loadingUser)return;
+    _loadingUser=true;
+    try{await loadUserData(sess.user);}finally{_loadingUser=false;}
   } else if(ev==='PASSWORD_RECOVERY'&&sess){
     // Usuario viene del enlace de reset de contraseña
     showScreen('scr-auth');showLogin();
@@ -831,7 +828,7 @@ function openWpPicker(){
     d.onclick=()=>{CWall=w.id;localStorage.setItem('pkm_wall',w.id);applyWall();document.querySelectorAll('.wp-opt').forEach(x=>x.classList.remove('sel'));d.classList.add('sel');};
     g.appendChild(d);
   });
-  $('wp-modal').style.display='flex';
+  const wm=$('wp-modal');wm.style.display='flex';wm.style.alignItems='center';wm.style.justifyContent='center';
 }
 
 // ===== CONTEXT MENU =====
