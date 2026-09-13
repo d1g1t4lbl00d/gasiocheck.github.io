@@ -1215,9 +1215,18 @@ function renderStatsTab(){
   </div>`;
 }
 
+// spotify y soundcloud son jsonb con forma {url, publicado}, pero versiones
+// anteriores guardaron ahi una cadena suelta. Normaliza ambos casos.
+function normLink(v){
+  if(v&&typeof v==='object')return{url:v.url||'',publicado:!!v.publicado};
+  return{url:typeof v==='string'?v:'',publicado:false};
+}
+
 function openSongModal(id){
   const s=id?songs.find(x=>x.id===id):null;
   curSong=s?JSON.parse(JSON.stringify(s)):{titulo:'',artistas:[],estado:'Idea',bpm:'',tonalidad:'',genero:'',notas:'',checklist:[],spotify:'',soundcloud:'',historial:[],links:[],tareas:[],comentarios:[]};
+  curSong.spotify=normLink(curSong.spotify);
+  curSong.soundcloud=normLink(curSong.soundcloud);
   mTab='general';
   renderSongModal(id);
 }
@@ -1283,8 +1292,8 @@ function renderMTabContent(id){
           <button class="rbtn" style="padding:1px 6px;font-size:10px" onclick="removeLink(${i})">✕</button>
         </div>`).join('')}</div>
       <div style="margin-top:10px;border-top:1px solid #ddd;padding-top:10px">
-        <label>Spotify</label><input id="lk-spotify" value="${esc(s.spotify||'')}" placeholder="URL de Spotify" oninput="curSong.spotify=this.value">
-        <label>SoundCloud</label><input id="lk-sc" value="${esc(s.soundcloud||'')}" placeholder="URL de SoundCloud" oninput="curSong.soundcloud=this.value">
+        <label>Spotify</label><input id="lk-spotify" value="${esc(s.spotify.url)}" placeholder="URL de Spotify" oninput="curSong.spotify.url=this.value">
+        <label>SoundCloud</label><input id="lk-sc" value="${esc(s.soundcloud.url)}" placeholder="URL de SoundCloud" oninput="curSong.soundcloud.url=this.value">
         <label>Añadir enlace personalizado</label>
         <div class="frow" style="gap:4px">
           <input id="lk-name" placeholder="Nombre (ej: Drive)" style="flex:1">
@@ -1398,7 +1407,7 @@ async function saveSong(id){
     prioridad:s.prioridad||'Media',
     bpm:s.bpm||null,tonalidad:s.tonalidad||'',genero:s.genero||'',notas:s.notas||'',
     responsable:CP?CP.artist_name||CP.nombre||'':'',
-    checklist:s.checklist||[],spotify:s.spotify||null,soundcloud:s.soundcloud||null,
+    checklist:s.checklist||[],spotify:normLink(s.spotify),soundcloud:normLink(s.soundcloud),
     historial:s.historial||[],links:s.links||[],tareas:s.tareas||[],comentarios:s.comentarios||[],
     production_stages:s.production_stages||[],
     updated_at:new Date().toISOString()
