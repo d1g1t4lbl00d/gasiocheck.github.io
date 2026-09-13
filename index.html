@@ -46,6 +46,7 @@ body{width:100vw;height:100vh;overflow:hidden;font-family:Arial,sans-serif;font-
 .desk-icon .di{font-size:30px;display:block;margin-bottom:3px;line-height:1}
 .desk-icon:hover{background:rgba(0,0,128,.5);border-color:rgba(255,255,255,.4)}
 .desk-icon.sel{background:var(--navy);border-color:#fff}
+.desk-icon .ext{opacity:.75;font-size:9px}
 
 /* TASKBAR */
 #taskbar{position:fixed;bottom:0;left:0;right:0;height:28px;background:var(--c0);border-top:2px solid #fff;display:flex;align-items:center;z-index:1000;gap:2px;padding:0 2px;box-shadow:0 -1px 0 #808080}
@@ -518,6 +519,14 @@ const ESTADOS=['Idea','Grabando','Mezcla','Masterizado','Listo para publicar','P
 const ECOLORS={Idea:'#e8e8e8',Grabando:'#fff3cd',Mezcla:'#cce5ff',Masterizado:'#d4edda','Listo para publicar':'#d1ecf1',Publicado:'#000080'};
 const ETCOLORS={Idea:'#333',Grabando:'#856404',Mezcla:'#004085',Masterizado:'#155724','Listo para publicar':'#0c5460',Publicado:'#fff'};
 const ETYPES={session:{label:'Sesión',icon:'🎙️',cls:'evt-session'},deadline:{label:'Deadline',icon:'⏰',cls:'evt-deadline'},release:{label:'Release',icon:'🚀',cls:'evt-release'},event:{label:'Evento',icon:'🎪',cls:'evt-event'},other:{label:'Otro',icon:'📌',cls:'evt-other'}};
+// Accesos directos a webs externas. Se abren en pestaña nueva: no todos los
+// sitios permiten incrustarse en un iframe, y en móvil una web dentro de una
+// ventana pequeña es inservible.
+const WEBS=[
+  {id:'underbro',  icon:'🌐', label:'underbro\n.app',  url:'https://underbro.app'},
+  {id:'perkyweb',  icon:'🎧', label:'perkymafia\n.com', url:'https://perkymafia.com'}
+];
+
 const WALLS=[
   {id:'teal',label:'Teal',css:'#008080'},{id:'navy',label:'Marino',css:'#000050'},
   {id:'dark',label:'Oscuro',css:'#1a1a2e'},{id:'purple',label:'Púrpura',css:'linear-gradient(135deg,#2d0050,#6a0080)'},
@@ -958,7 +967,9 @@ function showCtxMenu(x,y){
   <div class="ctx-item" onclick="openChat();hideCtxMenu()">💬 Chat</div>
   <div class="ctx-item" onclick="openAgenda();hideCtxMenu()">📅 Agenda</div>
   <div class="ctx-item" onclick="openNotas();hideCtxMenu()">📝 Notas</div>
-  <div class="ctx-item" onclick="openStats();hideCtxMenu()">📊 Estadísticas</div>`;
+  <div class="ctx-item" onclick="openStats();hideCtxMenu()">📊 Estadísticas</div>
+  <div class="ctx-div"></div>
+  ${WEBS.map(w=>`<div class="ctx-item" onclick="openWeb('${w.url}');hideCtxMenu()">${w.icon} ${esc(w.label.replace('\n',''))} ↗</div>`).join('')}`;
   if(CP&&CP.role==='admin')html+=`<div class="ctx-div"></div><div class="ctx-item" onclick="openAdmin();hideCtxMenu()">👥 Administrar usuarios</div>`;
   m.innerHTML=html;
   m.style.cssText=`display:block;left:${Math.min(x,window.innerWidth-165)}px;top:${Math.min(y,window.innerHeight-200)}px`;
@@ -981,6 +992,8 @@ function toggleStart(){
       <div class="sm-item" onclick="openMiPanel();toggleStart()">🧑‍💻 Mi Panel</div>
       <div class="sm-item" onclick="openActividad();toggleStart()">📡 Actividad</div>
       <div class="sm-item" onclick="openSprint();toggleStart()">🚀 Sprint</div>
+      <div class="sm-divider"></div>
+      ${WEBS.map(w=>`<div class="sm-item" onclick="openWeb('${w.url}');toggleStart()">${w.icon} ${esc(w.label.replace('\n',''))} ↗</div>`).join('')}
       ${CP&&CP.role==='admin'?'<div class="sm-divider"></div><div class="sm-item" onclick="openAdmin();toggleStart()">👥 Usuarios</div>':''}
       <div class="sm-divider"></div>
       <div class="sm-item" onclick="openProfile();toggleStart()">👤 Mi Perfil</div>
@@ -1006,17 +1019,24 @@ function setupDesktop(){
   apps.push({id:'mipanel',icon:'🧑‍💻',label:'Mi Panel',fn:'openMiPanel()'});
   apps.push({id:'actividad',icon:'📡',label:'Actividad',fn:'openActividad()'});
   apps.push({id:'sprint',icon:'🚀',label:'Sprint',fn:'openSprint()'});
+  WEBS.forEach(w=>apps.push({id:w.id,icon:w.icon,label:w.label,fn:`openWeb('${w.url}')`,web:true}));
   if(CP&&CP.role==='admin')apps.push({id:'admin',icon:'👥',label:'Usuarios',fn:'openAdmin()'});
   // En móvil se abre con un toque: el doble toque lo captura el navegador como zoom.
   bg.innerHTML=apps.map(a=>`
-    <div class="desk-icon" ondblclick="${a.fn}" onclick="selIcon(this);if(isMobile())${a.fn}" oncontextmenu="event.preventDefault()">
-      <span class="di">${a.icon}</span>${a.label.replace('\n','<br>')}
+    <div class="desk-icon${a.web?' desk-web':''}" ondblclick="${a.fn}" onclick="selIcon(this);if(isMobile())${a.fn}" oncontextmenu="event.preventDefault()">
+      <span class="di">${a.icon}</span>${a.label.replace('\n','<br>')}${a.web?' <span class="ext">↗</span>':''}
     </div>`).join('');
   bg.addEventListener('contextmenu',e=>{e.preventDefault();showCtxMenu(e.clientX,e.clientY);});
   bg.addEventListener('click',()=>{hideCtxMenu();$('start-menu').hidden=true;$('btn-start').classList.remove('open');document.querySelectorAll('.desk-icon').forEach(x=>x.classList.remove('sel'));});
   applyWall();
 }
 function selIcon(el){document.querySelectorAll('.desk-icon').forEach(x=>x.classList.remove('sel'));el.classList.add('sel');}
+
+// noopener evita que la web abierta pueda manipular esta pestaña vía window.opener
+function openWeb(url){
+  const w=window.open(url,'_blank','noopener,noreferrer');
+  if(!w)notify('Bloqueado','El navegador bloqueó la ventana emergente. Permite las ventanas emergentes de este sitio.','err');
+}
 
 // ===== MODAL =====
 function openModal(pid,html){
