@@ -3,451 +3,604 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Desktop OS</title>
+  <title>Perkymafia OS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.min.js"></script>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
-    body{
-      width:100vw;height:100vh;overflow:hidden;
-      background:#008080;
-      font-family:'MS Sans Serif',Tahoma,'Segoe UI',sans-serif;
-      font-size:11px;user-select:none;
-    }
+    body{overflow:hidden;width:100vw;height:100vh;font-family:'MS Sans Serif',Tahoma,'Segoe UI',sans-serif}
+
+    /* ── SCREENS ── */
+    .screen{position:fixed;inset:0;z-index:100}
+    .screen[hidden]{display:none!important}
+
+    /* Boot */
+    #scr-boot{background:#000;color:#0f0;font-family:'Courier New',monospace;font-size:13px;padding:20px;overflow:hidden}
+    .bl{line-height:1.7}
+    .bl .ok{color:#0f0}
+    .bl .err{color:#f44}
+    .cursor{display:inline-block;width:9px;height:14px;background:#0f0;animation:blink .7s step-end infinite;vertical-align:text-bottom}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+    /* Auth */
+    #scr-auth,#scr-pending{background:#008080;display:flex;align-items:center;justify-content:center;padding:16px}
+    .rwin{background:#c0c0c0;border:2px solid;border-color:#fff #808080 #808080 #fff;box-shadow:4px 4px 12px rgba(0,0,0,.5);width:100%;max-width:370px}
+    .rwin-tb{height:22px;background:linear-gradient(90deg,#000080,#1084d0);display:flex;align-items:center;padding:0 6px;gap:4px}
+    .rwin-tb span{flex:1;color:#fff;font-size:12px;font-weight:bold}
+    .rwin-body{padding:20px}
+    .rwin-logo{font-family:'Bebas Neue',sans-serif;font-size:28px;color:#000080;margin-bottom:14px;letter-spacing:1px}
+    .rwin-logo em{color:#c9a227;font-style:normal}
+    .af{margin-bottom:10px}
+    .af label{display:block;font-size:11px;font-weight:700;margin-bottom:4px}
+    .af input{width:100%;padding:6px 8px;font-size:13px;border:2px solid;border-color:#808080 #fff #fff #808080;background:#fff;font-family:inherit;outline:none}
+    .af input:focus{border-color:#000080}
+    .auth-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+    .auth-switch{text-align:center;margin-top:10px;font-size:12px;color:#000080;cursor:pointer}
+    .auth-switch:hover{text-decoration:underline}
+    .auth-err{color:#c00;font-size:12px;margin-top:8px;min-height:16px}
+
+    /* Pending */
+    .pending-body{padding:28px 20px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px}
+    .pending-body .ico{font-size:52px}
+    .pending-body p{font-size:12px;line-height:1.7;color:#333;max-width:280px}
+    .pending-body strong{color:#000080}
+
+    /* 3D button */
+    .btn3d{background:#c0c0c0;border:2px solid;border-color:#fff #808080 #808080 #fff;font-family:inherit;font-size:12px;cursor:pointer;padding:4px 14px;height:24px;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;outline:none}
+    .btn3d:active,.btn3d.pressed{border-color:#808080 #fff #fff #808080;padding-left:16px;padding-top:5px}
+    .btn3d.gold{background:#c9a227;border-color:#e5c040 #8a6e1a #8a6e1a #e5c040;color:#1a1400;font-weight:700}
+
+    /* ── DESKTOP ── */
+    #scr-desktop{background:#008080}
     #desktop{width:100%;height:calc(100% - 28px);position:relative;overflow:hidden}
 
     /* Desktop icons */
-    .d-icon{
-      position:absolute;width:80px;
-      display:flex;flex-direction:column;align-items:center;
-      padding:6px 4px;cursor:pointer;text-align:center;
-      border:1px solid transparent;border-radius:2px;
-      color:#fff;text-shadow:1px 1px 2px #000;
-    }
+    .d-icon{position:absolute;width:80px;display:flex;flex-direction:column;align-items:center;padding:6px 4px;cursor:pointer;text-align:center;border:1px solid transparent;border-radius:2px;color:#fff;text-shadow:1px 1px 2px #000}
     .d-icon:hover{background:rgba(0,0,128,.35);border-color:rgba(255,255,255,.5)}
     .d-icon.sel{background:rgba(0,0,128,.6);border-color:rgba(255,255,255,.9)}
     .d-icon-img{font-size:34px;line-height:1}
     .d-icon-label{margin-top:4px;font-size:11px;line-height:1.25;word-break:break-word}
 
-    /* 3-D button */
-    .btn3d{
-      background:#c0c0c0;
-      border:2px solid;border-color:#fff #808080 #808080 #fff;
-      font-family:inherit;font-size:11px;cursor:pointer;
-      padding:2px 10px;height:23px;
-      display:inline-flex;align-items:center;gap:5px;
-      white-space:nowrap;outline:none;flex-shrink:0;
-    }
-    .btn3d:active,.btn3d.pressed{
-      border-color:#808080 #fff #fff #808080;
-      padding-left:12px;padding-top:3px;
-    }
-
     /* Taskbar */
-    #taskbar{
-      position:fixed;bottom:0;left:0;right:0;height:28px;
-      background:#c0c0c0;border-top:2px solid #fff;
-      display:flex;align-items:center;gap:2px;padding:2px 3px;
-      z-index:9000;
-    }
+    #taskbar{position:fixed;bottom:0;left:0;right:0;height:28px;background:#c0c0c0;border-top:2px solid #fff;display:flex;align-items:center;gap:2px;padding:2px 3px;z-index:8000}
     .tb-sep{width:2px;height:20px;border-left:1px solid #808080;border-right:1px solid #fff;margin:0 1px;flex-shrink:0}
-    #tb-wins{flex:1;display:flex;align-items:center;gap:2px;overflow:hidden;min-width:0}
-    .tb-btn{
-      max-width:160px;min-width:80px;height:22px;padding:0 6px;
-      font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-      text-align:left;display:flex;align-items:center;gap:5px;
-      font-family:inherit;cursor:pointer;flex-shrink:0;
-    }
-    .tb-btn .tb-ico{font-size:13px;flex-shrink:0}
-    #tray{
-      height:22px;padding:0 8px;
-      border:1px solid;border-color:#808080 #fff #fff #808080;
-      display:flex;align-items:center;gap:6px;
-      font-size:11px;flex-shrink:0;
-    }
+    #tb-wins{flex:1;display:flex;align-items:center;gap:2px;overflow:hidden}
+    .tb-btn{max-width:160px;min-width:80px;height:22px;padding:0 6px;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left;display:flex;align-items:center;gap:5px;font-family:inherit;cursor:pointer;flex-shrink:0}
+    #tray{height:22px;padding:0 8px;border:1px solid;border-color:#808080 #fff #fff #808080;display:flex;align-items:center;gap:6px;font-size:11px;flex-shrink:0}
 
     /* Start menu */
-    #smenu{
-      position:fixed;bottom:28px;left:0;
-      width:210px;background:#c0c0c0;
-      border:2px solid;border-color:#fff #808080 #808080 #fff;
-      box-shadow:2px 2px 6px rgba(0,0,0,.5);
-      display:none;flex-direction:column;z-index:9500;
-    }
+    #smenu{position:fixed;bottom:28px;left:0;width:210px;background:#c0c0c0;border:2px solid;border-color:#fff #808080 #808080 #fff;box-shadow:2px 2px 6px rgba(0,0,0,.5);display:none;flex-direction:column;z-index:9500}
     #smenu.open{display:flex}
-    .sm-side{
-      position:absolute;left:0;top:0;bottom:0;width:28px;
-      background:linear-gradient(to top,#444,#999);
-      display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px;
-    }
-    .sm-side span{
-      writing-mode:vertical-rl;transform:rotate(180deg);
-      font-size:11px;font-weight:bold;color:rgba(255,255,255,.3);
-      letter-spacing:2px;
-    }
+    .sm-side{position:absolute;left:0;top:0;bottom:0;width:28px;background:linear-gradient(to top,#000080,#4488cc);display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px}
+    .sm-side span{writing-mode:vertical-rl;transform:rotate(180deg);font-family:'Bebas Neue',sans-serif;font-size:14px;color:rgba(255,255,255,.4);letter-spacing:2px}
     .sm-list{margin-left:28px;display:flex;flex-direction:column}
-    .sm-item{
-      padding:6px 8px;display:flex;align-items:center;gap:8px;
-      cursor:pointer;font-size:11px;position:relative;
-    }
+    .sm-item{padding:6px 8px;display:flex;align-items:center;gap:8px;cursor:pointer;font-size:11px}
     .sm-item:hover{background:#000080;color:#fff}
-    .sm-item .sm-ico{font-size:18px;flex-shrink:0}
-    .sm-item .sm-arr{margin-left:auto;font-size:9px}
+    .sm-ico{font-size:18px;flex-shrink:0}
     .sm-div{height:1px;margin:2px 4px;border-top:1px solid #808080;border-bottom:1px solid #fff}
-    .sm-sub{
-      position:absolute;left:100%;top:-2px;min-width:170px;
-      background:#c0c0c0;border:2px solid;border-color:#fff #808080 #808080 #fff;
-      box-shadow:2px 2px 5px rgba(0,0,0,.4);
-      display:none;flex-direction:column;z-index:9600;
-    }
-    .sm-item:hover .sm-sub{display:flex}
 
     /* Context menu */
-    #ctx{
-      position:fixed;background:#c0c0c0;
-      border:2px solid;border-color:#fff #808080 #808080 #fff;
-      box-shadow:2px 2px 5px rgba(0,0,0,.4);
-      min-width:160px;display:none;z-index:9800;
-    }
-    .ctx-item{
-      padding:5px 20px;cursor:pointer;font-size:11px;white-space:nowrap;
-    }
+    #ctxmenu{position:fixed;background:#c0c0c0;border:2px solid;border-color:#fff #808080 #808080 #fff;box-shadow:2px 2px 5px rgba(0,0,0,.4);min-width:160px;display:none;z-index:9800}
+    .ctx-item{padding:5px 16px;cursor:pointer;font-size:11px;white-space:nowrap}
     .ctx-item:hover{background:#000080;color:#fff}
     .ctx-div{height:1px;margin:2px 4px;border-top:1px solid #808080;border-bottom:1px solid #fff}
 
-    /* Dropdown menu */
-    #ddmenu{
-      position:fixed;background:#c0c0c0;
-      border:2px solid;border-color:#fff #808080 #808080 #fff;
-      box-shadow:2px 2px 5px rgba(0,0,0,.4);
-      min-width:140px;display:none;z-index:9700;
-      flex-direction:column;
-    }
-    #ddmenu.open{display:flex}
-    .dd-item{padding:4px 20px;cursor:pointer;font-size:11px;white-space:nowrap}
-    .dd-item:hover{background:#000080;color:#fff}
-    .dd-item.disabled{color:#808080;cursor:default}
-    .dd-item.disabled:hover{background:transparent;color:#808080}
-    .dd-div{height:1px;margin:2px 4px;border-top:1px solid #808080;border-bottom:1px solid #fff}
-
     /* Windows */
-    .win{
-      position:absolute;min-width:200px;min-height:100px;
-      background:#c0c0c0;
-      border:2px solid;border-color:#fff #808080 #808080 #fff;
-      box-shadow:2px 2px 8px rgba(0,0,0,.35);
-      display:flex;flex-direction:column;
-    }
+    .win{position:absolute;min-width:320px;min-height:200px;background:#c0c0c0;border:2px solid;border-color:#fff #808080 #808080 #fff;box-shadow:2px 2px 8px rgba(0,0,0,.4);display:flex;flex-direction:column}
     .win.hidden{display:none}
-
-    .win-tb{
-      height:20px;flex-shrink:0;
-      background:linear-gradient(90deg,#000080,#1084d0);
-      display:flex;align-items:center;padding:0 3px;cursor:move;gap:3px;
-    }
+    .win-tb{height:22px;flex-shrink:0;background:linear-gradient(90deg,#000080,#1084d0);display:flex;align-items:center;padding:0 4px;cursor:move;gap:4px}
     .win.blur .win-tb{background:linear-gradient(90deg,#7b7b7b,#b5b5b5)}
-    .win-tb-ico{font-size:12px;flex-shrink:0}
-    .win-tb-ttl{flex:1;color:#fff;font-size:11px;font-weight:bold;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .win-tb-btns{display:flex;gap:2px}
-    .win-ctrl{
-      width:16px;height:14px;flex-shrink:0;
-      background:#c0c0c0;border:1px solid;border-color:#fff #808080 #808080 #fff;
-      display:flex;align-items:center;justify-content:center;
-      cursor:pointer;font-size:9px;line-height:1;font-weight:bold;
-    }
+    .win-tb-ico{font-size:13px}
+    .win-tb-ttl{flex:1;color:#fff;font-size:12px;font-weight:bold;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .win-ctrl{width:16px;height:14px;flex-shrink:0;background:#c0c0c0;border:1px solid;border-color:#fff #808080 #808080 #fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:9px;font-weight:bold}
     .win-ctrl:active{border-color:#808080 #fff #fff #808080}
+    .win-body{flex:1;overflow:hidden;position:relative}
+    .win-grip{position:absolute;bottom:0;right:0;width:14px;height:14px;cursor:se-resize;z-index:2;background:linear-gradient(135deg,transparent 0 30%,#808080 30% 40%,transparent 40% 60%,#808080 60% 70%,transparent 70% 87%,#808080 87% 100%)}
 
-    .win-menubar{
-      flex-shrink:0;display:flex;
-      border-bottom:1px solid #808080;background:#c0c0c0;
+    /* ── PERKYMAFIA APP ── */
+    :root{
+      --bg:#141210;--surface:#1c1914;--surface-2:#262119;--surface-3:#302a20;
+      --border:#3a3226;--text:#f2ece0;--muted:#a89d8a;
+      --gold:#c9a227;--gold-dim:rgba(201,162,39,.14);
+      --pink:#ff3d78;--pink-dim:rgba(255,61,120,.14);
+      --green:#4fb477;--green-dim:rgba(79,180,119,.14);
+      --blue:#5b8fd6;--blue-dim:rgba(91,143,214,.14);
     }
-    .wmb-item{
-      padding:2px 8px;cursor:pointer;font-size:11px;position:relative;
-    }
-    .wmb-item:hover,.wmb-item.active{background:#000080;color:#fff}
+    .pkapp{width:100%;height:100%;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:12px;display:flex;flex-direction:column;overflow:hidden}
 
-    .win-body{flex:1;overflow:auto;position:relative}
-    .win-body.noscroll{overflow:hidden}
+    /* Header */
+    .pk-hdr{background:var(--surface);border-bottom:1px solid var(--border);padding:8px 12px;flex-shrink:0;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .pk-logo{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;line-height:1}
+    .pk-logo em{color:var(--gold);font-style:normal}
+    .pk-hdr-right{display:flex;gap:6px;align-items:center;margin-left:auto;flex-wrap:wrap}
 
-    .win-status{
-      flex-shrink:0;height:20px;padding:0 3px;border-top:1px solid #808080;
-      display:flex;align-items:center;gap:3px;
-    }
-    .ws-cell{
-      padding:1px 6px;font-size:10px;color:#333;
-      border:1px solid;border-color:#808080 #fff #fff #808080;
-    }
-    .win-grip{
-      position:absolute;bottom:0;right:0;width:14px;height:14px;
-      cursor:se-resize;z-index:2;
-      background:
-        linear-gradient(135deg,
-          transparent 0 30%,#808080 30% 40%,transparent 40% 60%,
-          #808080 60% 70%,transparent 70% 87%,#808080 87% 100%);
-    }
+    /* Stats */
+    .pk-stats{display:flex;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto}
+    .pk-stat{padding:7px 14px;border-right:1px solid var(--border);flex-shrink:0}
+    .pk-stat:last-child{border-right:none}
+    .pk-stat .n{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--gold);line-height:1}
+    .pk-stat .l{color:var(--muted);font-size:10px;margin-top:2px}
 
-    /* Explorer */
-    .exp-wrap{display:flex;height:100%}
-    .exp-tree{
-      width:155px;flex-shrink:0;overflow:auto;
-      background:#fff;border-right:2px solid;border-color:#808080 #fff #fff #808080;padding:2px;
-    }
-    .exp-main{flex:1;overflow:auto;background:#fff;padding:6px}
-    .t-item{
-      display:flex;align-items:center;gap:4px;padding:2px 2px 2px 16px;
-      cursor:pointer;font-size:11px;position:relative;white-space:nowrap;
-    }
-    .t-item::before{content:'▶';font-size:7px;color:#808080;position:absolute;left:3px}
-    .t-item.open::before{content:'▼'}
-    .t-item.noarrow::before{content:''}
-    .t-item:hover,.t-item.sel{background:#000080;color:#fff}
-    .t-ico{font-size:13px}
-    .t-kids{padding-left:14px;display:none}
-    .t-item.open+.t-kids{display:block}
-    .f-grid{display:flex;flex-wrap:wrap;gap:10px;padding:4px;align-content:flex-start}
-    .f-item{
-      width:68px;display:flex;flex-direction:column;align-items:center;
-      text-align:center;cursor:pointer;padding:4px 2px;border:1px solid transparent;
-    }
-    .f-item:hover{background:#000080;color:#fff}
-    .f-item.sel{background:#000080;color:#fff}
-    .f-ico{font-size:28px}
-    .f-name{font-size:10px;margin-top:3px;line-height:1.2;word-break:break-word}
+    /* Tabs */
+    .pk-tabs{display:flex;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0}
+    .pk-tab{background:none;border:none;color:var(--muted);padding:7px 4px;margin-right:16px;font-size:13px;font-weight:600;border-bottom:2px solid transparent;cursor:pointer;font-family:'Inter',sans-serif;flex-shrink:0}
+    .pk-tab.active{color:var(--text);border-bottom-color:var(--pink)}
 
-    /* Notepad */
-    .np-ta{
-      width:100%;height:100%;resize:none;border:none;outline:none;
-      font-family:'Courier New',monospace;font-size:12px;
-      padding:4px;background:#fff;color:#000;user-select:text;
-    }
+    /* Content */
+    .pk-content{flex:1;overflow:auto;padding:10px 12px}
 
-    /* Paint */
-    .paint-shell{display:flex;flex-direction:column;height:100%}
-    .paint-tools{
-      flex-shrink:0;display:flex;align-items:center;gap:4px;
-      padding:4px 6px;border-bottom:1px solid #808080;background:#c0c0c0;flex-wrap:wrap;
-    }
-    .pt-btn{
-      width:30px;height:28px;background:#c0c0c0;
-      border:2px solid;border-color:#fff #808080 #808080 #fff;
-      cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;
-    }
-    .pt-btn:active,.pt-btn.active{border-color:#808080 #fff #fff #808080}
-    .pt-sep{width:1px;height:24px;background:#808080;margin:0 2px}
-    .pt-sizes{display:flex;flex-direction:column;gap:2px;justify-content:center}
-    .pt-sz{
-      cursor:pointer;background:#000;border-radius:50%;margin:1px auto;
-      border:1px solid transparent;
-    }
-    .pt-sz.active{border-color:#000080;outline:1px solid #000}
-    .pt-colorbox{display:flex;align-items:center;gap:4px;margin-left:auto}
-    .pt-cur{
-      width:24px;height:24px;border:2px solid;border-color:#808080 #fff #fff #808080;
-    }
-    .pt-cur2{
-      width:18px;height:18px;border:1px solid #808080;margin-top:-8px;margin-left:8px;
-    }
-    .paint-palette{display:flex;flex-wrap:wrap;width:166px;gap:1px;margin-left:4px}
-    .pc{width:16px;height:16px;border:1px solid #808080;cursor:pointer;flex-shrink:0}
-    .pc:hover{outline:1px solid #fff}
-    .paint-cv-wrap{flex:1;overflow:auto;background:#808080;padding:8px;display:flex;align-items:flex-start}
-    #pc{display:block;background:#fff;cursor:crosshair;image-rendering:pixelated}
+    /* Toolbar */
+    .pk-toolbar{display:flex;gap:7px;margin-bottom:10px;align-items:center;flex-wrap:wrap}
+    .pk-inp,.pk-sel{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:5px 9px;border-radius:4px;font-size:12px;font-family:'Inter',sans-serif}
+    .pk-inp{flex:1;min-width:140px}
+    .pk-btn{background:var(--surface-2);color:var(--text);border:1px solid var(--border);padding:5px 11px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;flex-shrink:0}
+    .pk-btn:hover{border-color:var(--gold)}
+    .pk-btn.gold{background:var(--gold);color:#1a1400;border-color:var(--gold)}
+    .pk-btn.gold:hover{background:#dcb736}
+    .pk-btn.ghost{background:transparent;color:var(--muted);border-color:var(--border)}
+    .pk-btn.ghost:hover{color:var(--text)}
+    .pk-btn.sm{padding:4px 8px;font-size:11px}
+    .pk-btn.danger{color:var(--pink);border-color:var(--pink);background:var(--pink-dim)}
+    .pk-spacer{flex:1}
+    .view-tgl{display:flex;border:1px solid var(--border);border-radius:4px;overflow:hidden}
+    .view-tgl .pk-btn{border:none;border-radius:0;border-right:1px solid var(--border)}
+    .view-tgl .pk-btn:last-child{border-right:none}
+    .view-tgl .pk-btn.active-v{color:var(--pink)}
 
-    /* About */
-    .about{display:flex;flex-direction:column;align-items:center;gap:10px;padding:20px;background:#fff;height:100%;text-align:center}
+    /* Bulk bar */
+    .bulk-bar{display:flex;align-items:center;gap:8px;background:var(--surface-3);border:1px solid var(--pink);border-radius:6px;padding:7px 10px;margin-bottom:8px;font-size:12px}
 
-    /* Dialog */
-    .dlg{padding:16px;display:flex;flex-direction:column;gap:14px}
-    .dlg-row{display:flex;align-items:center;gap:12px}
-    .dlg-ico{font-size:34px;flex-shrink:0}
-    .dlg-txt{font-size:11px;line-height:1.6}
-    .dlg-btns{display:flex;justify-content:center;gap:8px}
+    /* Table */
+    .pk-tbl{width:100%;border-collapse:collapse;background:var(--surface);border:1px solid var(--border);border-radius:6px;overflow:hidden}
+    .pk-tbl thead th{text-align:left;font-size:10.5px;color:var(--muted);font-weight:600;padding:8px 10px;border-bottom:1px solid var(--border);background:var(--surface-2);cursor:pointer;user-select:none;white-space:nowrap}
+    .pk-tbl thead th.ns{cursor:default}
+    .pk-tbl tbody td{padding:9px 10px;border-bottom:1px solid var(--border);font-size:12px;vertical-align:top}
+    .pk-tbl tbody tr:last-child td{border-bottom:none}
+    .pk-tbl tbody tr:hover{background:rgba(255,255,255,.02)}
+    .sarr{font-size:9px;color:var(--pink);margin-left:3px}
 
-    /* Scrollbars */
-    ::-webkit-scrollbar{width:16px;height:16px}
-    ::-webkit-scrollbar-track{background:#c0c0c0}
-    ::-webkit-scrollbar-thumb{background:#c0c0c0;border:2px solid;border-color:#fff #808080 #808080 #fff}
-    ::-webkit-scrollbar-button{background:#c0c0c0;border:2px solid;border-color:#fff #808080 #808080 #fff;width:16px;height:16px;display:block}
+    /* Cells */
+    .title-cell{display:flex;gap:8px;align-items:flex-start}
+    .cthumb{width:36px;height:36px;border-radius:4px;object-fit:cover;border:1px solid var(--border);flex-shrink:0}
+    .cthumb.ph{display:flex;align-items:center;justify-content:center;background:var(--surface-2);color:var(--muted);font-size:13px;font-family:'Bebas Neue',sans-serif}
+    .stitle{font-weight:700;font-size:12px}
+    .smeta{color:var(--muted);font-size:10.5px;margin-top:2px}
+    .ptbar{width:100%;height:3px;background:var(--surface-2);border-radius:2px;margin-top:5px;overflow:hidden;max-width:120px}
+    .ptfill{height:100%;background:var(--pink)}
+    .atag{display:inline-block;background:var(--surface-2);border:1px solid var(--border);padding:2px 6px;border-radius:3px;font-size:10.5px;margin:1px 2px 0 0}
+    .atag.feat{border-color:var(--pink);color:var(--pink)}
+    .plat{font-size:10.5px;font-weight:700;padding:3px 7px;border-radius:3px;border:1px solid var(--border);color:var(--muted);text-decoration:none;display:inline-block}
+    .plat.on{color:#fff}
+    .plat.spt.on{background:#1DB95430;border-color:#1DB954;color:#4fdc7c}
+    .plat.sc.on{background:#ff550030;border-color:#ff5500;color:#ff9a5c}
+    .plat-badges{display:flex;gap:4px}
+    .row-acts{display:flex;gap:4px;white-space:nowrap}
+
+    /* Pills */
+    .pill{display:inline-block;padding:2px 7px;border-radius:3px;font-size:10.5px;font-weight:600;border:1px solid transparent;white-space:nowrap}
+    .p-idea{background:var(--surface-2);color:var(--muted);border-color:var(--border)}
+    .p-grabando,.p-mezcla{background:var(--blue-dim);color:var(--blue);border-color:var(--blue)}
+    .p-masterizado{background:var(--gold-dim);color:var(--gold);border-color:var(--gold)}
+    .p-listo{background:var(--pink-dim);color:var(--pink);border-color:var(--pink)}
+    .p-publicado{background:var(--green-dim);color:var(--green);border:1.5px solid var(--green);font-weight:700}
+    .pdot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px}
+    .pd-Alta{background:var(--pink)}.pd-Media{background:var(--gold)}.pd-Baja{background:var(--muted)}
+
+    /* Kanban */
+    .kanban{display:flex;gap:8px;overflow-x:auto;height:100%;padding-bottom:6px}
+    .kcol{background:var(--surface);border:1px solid var(--border);border-radius:6px;min-width:190px;flex:1;max-height:100%;display:flex;flex-direction:column}
+    .kcol-h{padding:7px 10px;border-bottom:1px solid var(--border);font-size:11.5px;font-weight:700;display:flex;justify-content:space-between;background:var(--surface-2)}
+    .kcol-h .cnt{color:var(--muted);font-weight:600}
+    .kcol.dragover{outline:2px dashed var(--pink);outline-offset:-4px}
+    .kcards{padding:7px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:6px}
+    .kcard{background:var(--surface-2);border:1px solid var(--border);border-radius:5px;padding:8px;cursor:grab;font-size:11.5px}
+    .kcard:active{cursor:grabbing}
+    .kcard .kt{font-weight:700;margin-bottom:3px}
+    .kcard .ka{color:var(--muted);font-size:10.5px;margin-bottom:3px}
+
+    /* Artists */
+    .art-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+    .art-card{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px}
+    .art-card h3{margin:0 0 3px;font-size:14px}
+    .art-type{font-size:10.5px;margin-bottom:6px;display:inline-block}
+    .t-m{color:var(--gold)}.t-c{color:var(--pink)}
+    .art-contact{color:var(--muted);font-size:11.5px;margin-bottom:5px;word-break:break-word}
+    .art-count{color:var(--muted);font-size:11px;margin-bottom:8px}
+
+    /* Resumen */
+    .res-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:12px}
+    .panel{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px}
+    .panel h3{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:.5px;margin:0 0 10px;color:var(--gold)}
+    .bar-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:11px}
+    .bar-label{width:105px;flex-shrink:0;color:var(--muted)}
+    .bar-track{flex:1;background:var(--surface-2);border-radius:3px;height:12px;overflow:hidden}
+    .bar-fill{height:100%;border-radius:3px}
+    .bar-num{width:20px;text-align:right;font-weight:600}
+    .rank-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px}
+    .rank-row:last-child{border-bottom:none}
+    .rank-row .rn{color:var(--muted)}
+    .up-row{display:flex;justify-content:space-between;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px}
+    .up-row:last-child{border-bottom:none}
+    .up-row .ud{color:var(--pink);font-weight:700;white-space:nowrap}
+    .empty{padding:36px 20px;text-align:center;color:var(--muted);font-size:12px}
+    .empty b{color:var(--text)}
+
+    /* Modal */
+    .pk-ov{position:absolute;inset:0;background:rgba(10,9,7,.78);display:flex;align-items:flex-start;justify-content:center;padding:16px;z-index:50;overflow-y:auto}
+    .pk-modal{background:var(--surface);border:1px solid var(--gold);border-radius:8px;width:100%;max-width:560px;padding:18px;margin:auto}
+    .pk-modal h2{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;margin:0 0 12px;color:var(--gold)}
+    .field{margin-bottom:11px}
+    .field label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px;font-weight:600}
+    .field input[type=text],.field input[type=date],.field select,.field textarea{width:100%;background:var(--surface-2);border:1px solid var(--border);color:var(--text);padding:6px 9px;border-radius:4px;font-size:12px;font-family:'Inter',sans-serif}
+    .field textarea{resize:vertical;min-height:52px}
+    .field-row{display:flex;gap:8px}
+    .field-row .field{flex:1}
+    .chk-row{display:flex;align-items:center;gap:6px;margin-top:5px}
+    .chk-row input{width:auto}
+    .art-picker{display:flex;flex-wrap:wrap;gap:5px;max-height:120px;overflow-y:auto;border:1px solid var(--border);border-radius:4px;padding:7px;background:var(--surface-2)}
+    .art-picker label{display:flex;align-items:center;gap:4px;background:var(--surface);border:1px solid var(--border);padding:3px 7px;border-radius:3px;font-size:11.5px;cursor:pointer}
+    .art-picker label.checked{border-color:var(--pink);color:var(--pink)}
+    .art-picker input{width:auto;margin:0}
+    .modal-acts{display:flex;justify-content:flex-end;gap:6px;margin-top:14px;flex-wrap:wrap}
+    .modal-acts .danger{margin-right:auto}
+    .cl-item{display:flex;align-items:center;gap:6px;padding:4px 0;font-size:12px}
+    .cl-item input[type=checkbox]{width:auto}
+    .cl-item .txt{flex:1}
+    .cl-item .txt.done{text-decoration:line-through;color:var(--muted)}
+    .cl-item button{background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer}
+    .cl-item button:hover{color:var(--pink)}
+    .add-cl{display:flex;gap:5px;margin-top:6px}
+    .add-cl input{flex:1}
+    .cover-up{display:flex;align-items:center;gap:10px}
+    .cover-prev{width:54px;height:54px;border-radius:5px;object-fit:cover;border:1px solid var(--border);background:var(--surface-2)}
+    details.hist summary{cursor:pointer;color:var(--muted);font-size:11.5px;font-weight:600;padding:3px 0}
+    .hist-e{font-size:11px;color:var(--muted);padding:3px 0;border-bottom:1px solid var(--border)}
+    .hist-e:last-child{border-bottom:none}
+    .hist-e b{color:var(--text)}
+
+    /* Admin panel */
+    .adm-app{width:100%;height:100%;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;overflow:auto;padding:14px}
+    .adm-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;color:var(--gold);margin-bottom:14px}
+    .adm-tbl{width:100%;border-collapse:collapse;background:var(--surface);border:1px solid var(--border);border-radius:6px;overflow:hidden}
+    .adm-tbl th{text-align:left;font-size:11px;color:var(--muted);padding:8px 10px;border-bottom:1px solid var(--border);background:var(--surface-2)}
+    .adm-tbl td{padding:10px;border-bottom:1px solid var(--border);font-size:12px;vertical-align:middle}
+    .adm-tbl tr:last-child td{border-bottom:none}
+    .badge-pend{color:var(--gold);font-weight:700;font-size:11px}
+    .badge-appr{color:var(--green);font-weight:700;font-size:11px}
+    .badge-adm{color:var(--pink);font-weight:700;font-size:11px}
+    .badge-rej{color:var(--muted);font-weight:700;font-size:11px}
+
+    /* Toast */
+    .toast{position:fixed;bottom:40px;left:50%;transform:translateX(-50%);background:#262119;border:1px solid #c9a227;color:#f2ece0;padding:9px 16px;border-radius:6px;font-size:12px;font-family:'Inter',sans-serif;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:9900}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(-4px)}
+
+    /* Scrollbars inside dark app */
+    .pkapp ::-webkit-scrollbar{width:7px;height:7px}
+    .pkapp ::-webkit-scrollbar-track{background:var(--surface)}
+    .pkapp ::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+    .adm-app ::-webkit-scrollbar{width:7px}
+    .adm-app ::-webkit-scrollbar-track{background:var(--surface)}
+    .adm-app ::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+
+    @media(max-width:640px){
+      .res-grid{grid-template-columns:1fr}
+      .pk-tbl thead{display:none}
+      .pk-tbl tbody td{display:block;border-bottom:none;padding:4px 10px}
+      .pk-tbl tbody tr{border-bottom:1px solid var(--border)}
+    }
   </style>
 </head>
 <body>
 
-<!-- Desktop -->
-<div id="desktop">
-  <div class="d-icon" style="left:16px;top:16px"  ondblclick="openApp('mipc')"    onclick="selIcon(this)"><div class="d-icon-img">🖥️</div><div class="d-icon-label">Mi PC</div></div>
-  <div class="d-icon" style="left:16px;top:110px" ondblclick="openApp('docs')"    onclick="selIcon(this)"><div class="d-icon-img">📁</div><div class="d-icon-label">Mis Documentos</div></div>
-  <div class="d-icon" style="left:16px;top:204px" ondblclick="openApp('notepad')" onclick="selIcon(this)"><div class="d-icon-img">📝</div><div class="d-icon-label">Bloc de Notas</div></div>
-  <div class="d-icon" style="left:16px;top:298px" ondblclick="openApp('paint')"   onclick="selIcon(this)"><div class="d-icon-img">🎨</div><div class="d-icon-label">Paint</div></div>
-  <div class="d-icon" style="left:16px;top:392px" ondblclick="openApp('trash')"   onclick="selIcon(this)"><div class="d-icon-img">🗑️</div><div class="d-icon-label">Papelera</div></div>
-</div>
+<!-- ══ BOOT ══════════════════════════════════════════════════════════════ -->
+<div id="scr-boot" class="screen"></div>
 
-<!-- Context menu -->
-<div id="ctx">
-  <div class="ctx-item" onclick="ctxHide();openApp('notepad')">📝 Nuevo Bloc de Notas</div>
-  <div class="ctx-item" onclick="ctxHide();openApp('paint')">🎨 Nuevo Paint</div>
-  <div class="ctx-div"></div>
-  <div class="ctx-item" onclick="ctxHide();openApp('mipc')">🖥️ Mi PC</div>
-  <div class="ctx-div"></div>
-  <div class="ctx-item" onclick="ctxHide();openApp('about')">❓ Acerca de...</div>
-</div>
+<!-- ══ AUTH ══════════════════════════════════════════════════════════════ -->
+<div id="scr-auth" class="screen" hidden>
+  <div class="rwin">
+    <div class="rwin-tb"><span id="auth-title">Iniciar sesión</span></div>
+    <div class="rwin-body">
+      <div class="rwin-logo">PERKY<em>MAFIA</em> OS</div>
 
-<!-- Dropdown menu -->
-<div id="ddmenu"></div>
+      <!-- Login form -->
+      <div id="form-login">
+        <div class="af"><label>Email</label><input id="l-email" type="email" autocomplete="email"></div>
+        <div class="af"><label>Contraseña</label><input id="l-pass" type="password" autocomplete="current-password"></div>
+        <div class="auth-err" id="l-err"></div>
+        <div class="auth-btns">
+          <button class="btn3d" onclick="doLogin()">Entrar</button>
+        </div>
+        <div class="auth-switch" onclick="showRegister()">¿No tienes cuenta? Regístrate</div>
+      </div>
 
-<!-- Start menu -->
-<div id="smenu">
-  <div class="sm-side"><span>DESKTOP OS</span></div>
-  <div class="sm-list">
-    <div class="sm-item" onclick="openApp('mipc');smClose()"><span class="sm-ico">🖥️</span>Mi PC</div>
-    <div class="sm-item" onclick="openApp('docs');smClose()"><span class="sm-ico">📁</span>Mis Documentos</div>
-    <div class="sm-item">
-      <span class="sm-ico">📂</span>Programas<span class="sm-arr">▶</span>
-      <div class="sm-sub">
-        <div class="sm-item" onclick="openApp('notepad');smClose()"><span class="sm-ico">📝</span>Bloc de Notas</div>
-        <div class="sm-item" onclick="openApp('paint');smClose()"><span class="sm-ico">🎨</span>Paint</div>
+      <!-- Register form -->
+      <div id="form-register" hidden>
+        <div class="af"><label>Tu nombre artístico</label><input id="r-nombre" type="text" autocomplete="name"></div>
+        <div class="af"><label>Email</label><input id="r-email" type="email" autocomplete="email"></div>
+        <div class="af"><label>Contraseña</label><input id="r-pass" type="password" autocomplete="new-password"></div>
+        <div class="auth-err" id="r-err"></div>
+        <div class="auth-btns">
+          <button class="btn3d" onclick="doRegister()">Registrarse</button>
+        </div>
+        <div class="auth-switch" onclick="showLogin()">¿Ya tienes cuenta? Inicia sesión</div>
+      </div>
+
+      <!-- Registered OK -->
+      <div id="form-registered" hidden style="text-align:center;padding:10px 0">
+        <div style="font-size:32px;margin-bottom:10px">✅</div>
+        <div style="font-size:12px;line-height:1.7;color:#333">
+          <strong>Registro enviado.</strong><br>
+          Confirma tu email y luego el admin aprobará tu acceso.
+        </div>
+        <div style="margin-top:12px">
+          <button class="btn3d" onclick="showLogin()">Volver al login</button>
+        </div>
       </div>
     </div>
-    <div class="sm-div"></div>
-    <div class="sm-item" onclick="openApp('about');smClose()"><span class="sm-ico">❓</span>Acerca de...</div>
-    <div class="sm-div"></div>
-    <div class="sm-item" onclick="doShutdown()"><span class="sm-ico">⏻</span>Apagar...</div>
   </div>
 </div>
 
-<!-- Taskbar -->
-<div id="taskbar">
-  <button class="btn3d" id="start-btn" onclick="smToggle()">🪟 Inicio</button>
-  <div class="tb-sep"></div>
-  <div id="tb-wins"></div>
-  <div class="tb-sep"></div>
-  <div id="tray">🔊 <span id="clock"></span></div>
+<!-- ══ PENDING ════════════════════════════════════════════════════════════ -->
+<div id="scr-pending" class="screen" hidden>
+  <div class="rwin">
+    <div class="rwin-tb"><span>Acceso pendiente</span></div>
+    <div class="pending-body">
+      <div class="ico">⏳</div>
+      <p>Tu cuenta está <strong>pendiente de aprobación</strong> por el administrador.<br>
+      Te avisarán cuando tengas acceso.</p>
+      <button class="btn3d" onclick="SB.auth.signOut()">Cerrar sesión</button>
+    </div>
+  </div>
 </div>
 
+<!-- ══ DESKTOP ════════════════════════════════════════════════════════════ -->
+<div id="scr-desktop" class="screen" hidden>
+  <div id="desktop">
+    <div class="d-icon" style="left:16px;top:16px"  id="icon-pkm"   ondblclick="openApp('pkm')"   onclick="selIcon(this)">
+      <div class="d-icon-img">🎵</div><div class="d-icon-label">Control</div>
+    </div>
+    <div class="d-icon" style="left:16px;top:110px" id="icon-admin" ondblclick="openApp('admin')" onclick="selIcon(this)" hidden>
+      <div class="d-icon-img">👥</div><div class="d-icon-label">Usuarios</div>
+    </div>
+  </div>
+
+  <div id="smenu">
+    <div class="sm-side"><span>PERKYMAFIA</span></div>
+    <div class="sm-list">
+      <div class="sm-item" onclick="openApp('pkm');smClose()"><span class="sm-ico">🎵</span>Control</div>
+      <div class="sm-item" id="sm-admin" onclick="openApp('admin');smClose()" hidden><span class="sm-ico">👥</span>Usuarios</div>
+      <div class="sm-div"></div>
+      <div class="sm-item" onclick="doLogout()"><span class="sm-ico">🚪</span>Cerrar sesión</div>
+    </div>
+  </div>
+
+  <div id="ctxmenu">
+    <div class="ctx-item" onclick="ctxHide();openApp('pkm')">🎵 Abrir Control</div>
+    <div class="ctx-div"></div>
+    <div class="ctx-item" onclick="ctxHide();doLogout()">🚪 Cerrar sesión</div>
+  </div>
+
+  <div id="taskbar">
+    <button class="btn3d" id="start-btn" onclick="smToggle()">🪟 Inicio</button>
+    <div class="tb-sep"></div>
+    <div id="tb-wins"></div>
+    <div class="tb-sep"></div>
+    <div id="tray">🎵 <span id="clock"></span></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ══════════════════════════════════════════════════════════════════════ -->
 <script>
-// ─────────────────────────────────────────────────────────────────────────────
-// CLOCK
-// ─────────────────────────────────────────────────────────────────────────────
+// ── Supabase ──────────────────────────────────────────────────────────────
+const SB_URL = 'https://gwycdrnwkzmoxbxcqxih.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd3eWNkcm53a3ptb3hieGNxeGloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwMzgyNDEsImV4cCI6MjA5NDYxNDI0MX0.fTm-TesEgil6NjaiiCspZdjMCX6PxAclFhlPs6PNngc';
+const SB = supabase.createClient(SB_URL, SB_KEY);
+
+let currentUser = null, currentProfile = null;
+let songs = [], artists = [];
+
+// ── Toast ─────────────────────────────────────────────────────────────────
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toast._h);
+  toast._h = setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+// ── Screens ───────────────────────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.hidden = s.id !== 'scr-'+id);
+}
+
+// ── Clock ─────────────────────────────────────────────────────────────────
 function tickClock() {
   const n = new Date();
-  document.getElementById('clock').textContent =
-    String(n.getHours()).padStart(2,'0') + ':' + String(n.getMinutes()).padStart(2,'0');
+  const el = document.getElementById('clock');
+  if (el) el.textContent = String(n.getHours()).padStart(2,'0') + ':' + String(n.getMinutes()).padStart(2,'0');
 }
-tickClock();
-setInterval(tickClock, 10000);
+tickClock(); setInterval(tickClock, 10000);
 
-// ─────────────────────────────────────────────────────────────────────────────
-// GLOBAL DISMISS
-// ─────────────────────────────────────────────────────────────────────────────
-document.addEventListener('mousedown', e => {
-  if (!e.target.closest('#smenu') && !e.target.closest('#start-btn')) smClose();
-  if (!e.target.closest('#ctx'))    ctxHide();
-  if (!e.target.closest('#ddmenu') && !e.target.closest('.wmb-item')) ddHide();
-  if (!e.target.closest('.d-icon')) document.querySelectorAll('.d-icon').forEach(i=>i.classList.remove('sel'));
+// ── Boot animation ────────────────────────────────────────────────────────
+function showBoot() {
+  const lines = [
+    {t:'PERKYMAFIA OS v1.0', c:''},
+    {t:'Iniciando sistema de archivos...', c:'ok'},
+    {t:'Cargando módulo de audio...', c:'ok'},
+    {t:'Conectando con la base de datos...', c:'ok'},
+    {t:'Verificando sesión...', c:'ok'},
+    {t:'Listo.', c:''},
+  ];
+  const el = document.getElementById('scr-boot');
+  el.innerHTML = '';
+  let i = 0;
+  function next() {
+    if (i >= lines.length) { setTimeout(() => showScreen('auth'), 600); return; }
+    const ln = lines[i++];
+    const d = document.createElement('div');
+    d.className = 'bl';
+    d.innerHTML = ln.t + (ln.c === 'ok' ? ' <span class="ok">[OK]</span>' : '');
+    el.appendChild(d);
+    setTimeout(next, i === 1 ? 300 : 380);
+  }
+  next();
+}
+
+// ── Auth ──────────────────────────────────────────────────────────────────
+function showLogin()    { document.getElementById('form-login').hidden=false; document.getElementById('form-register').hidden=true; document.getElementById('form-registered').hidden=true; document.getElementById('auth-title').textContent='Iniciar sesión'; }
+function showRegister() { document.getElementById('form-login').hidden=true;  document.getElementById('form-register').hidden=false; document.getElementById('form-registered').hidden=true; document.getElementById('auth-title').textContent='Crear cuenta'; }
+
+async function doLogin() {
+  const email = document.getElementById('l-email').value.trim();
+  const pass  = document.getElementById('l-pass').value;
+  const err   = document.getElementById('l-err');
+  err.textContent = '';
+  if (!email || !pass) { err.textContent = 'Rellena todos los campos'; return; }
+  const { error } = await SB.auth.signInWithPassword({ email, password: pass });
+  if (error) { err.textContent = error.message === 'Invalid login credentials' ? 'Email o contraseña incorrectos' : error.message; }
+}
+
+async function doRegister() {
+  const nombre = document.getElementById('r-nombre').value.trim();
+  const email  = document.getElementById('r-email').value.trim();
+  const pass   = document.getElementById('r-pass').value;
+  const err    = document.getElementById('r-err');
+  err.textContent = '';
+  if (!nombre || !email || !pass) { err.textContent = 'Rellena todos los campos'; return; }
+  if (pass.length < 6) { err.textContent = 'La contraseña debe tener al menos 6 caracteres'; return; }
+  const { error } = await SB.auth.signUp({ email, password: pass, options: { data: { nombre } } });
+  if (error) { err.textContent = error.message; return; }
+  document.getElementById('form-register').hidden = true;
+  document.getElementById('form-registered').hidden = false;
+}
+
+async function doLogout() {
+  smClose();
+  await SB.auth.signOut();
+}
+
+// ── Load user data ────────────────────────────────────────────────────────
+async function loadUserData(user) {
+  currentUser = user;
+  let { data: prof } = await SB.from('profiles').select('*').eq('id', user.id).single();
+
+  if (!prof) {
+    await SB.from('profiles').upsert({
+      id: user.id, email: user.email,
+      nombre: user.user_metadata?.nombre || user.email.split('@')[0],
+      role: user.email === 'asarap08@gmail.com' ? 'admin' : 'member',
+      approved: user.email === 'asarap08@gmail.com',
+    });
+    const { data: p2 } = await SB.from('profiles').select('*').eq('id', user.id).single();
+    prof = p2;
+  }
+
+  currentProfile = prof;
+
+  if (!prof || !prof.approved) {
+    showScreen('pending');
+    return;
+  }
+
+  // Cargar datos
+  const [sr, ar] = await Promise.all([
+    SB.from('songs').select('*').order('creado', { ascending: false }),
+    SB.from('artists').select('*').order('nombre'),
+  ]);
+  songs   = sr.data || [];
+  artists = ar.data || [];
+
+  songs.forEach(migrateSong);
+  showScreen('desktop');
+  setupDesktop();
+}
+
+// ── Auth state changes ────────────────────────────────────────────────────
+SB.auth.onAuthStateChange(async (event, session) => {
+  if (event === 'SIGNED_IN' && session) {
+    await loadUserData(session.user);
+  } else if (event === 'SIGNED_OUT') {
+    currentUser = null; currentProfile = null;
+    songs = []; artists = [];
+    showScreen('auth'); showLogin();
+  }
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// CONTEXT MENU (right-click on desktop)
-// ─────────────────────────────────────────────────────────────────────────────
-document.getElementById('desktop').addEventListener('contextmenu', e => {
-  e.preventDefault();
-  const m = document.getElementById('ctx');
-  m.style.display = 'block';
-  m.style.left = Math.min(e.clientX, innerWidth  - m.offsetWidth  - 4) + 'px';
-  m.style.top  = Math.min(e.clientY, innerHeight - m.offsetHeight - 4) + 'px';
-});
-function ctxHide() { document.getElementById('ctx').style.display = 'none'; }
+// ── Init ──────────────────────────────────────────────────────────────────
+(async () => {
+  const { data: { session } } = await SB.auth.getSession();
+  if (session) { await loadUserData(session.user); }
+  else { showBoot(); }
+})();
 
-// ─────────────────────────────────────────────────────────────────────────────
-// DROPDOWN MENU (menubar)
-// ─────────────────────────────────────────────────────────────────────────────
-function ddShow(trigger, items) {
-  const dd = document.getElementById('ddmenu');
-  dd.innerHTML = items.map(it =>
-    it === '-'
-      ? '<div class="dd-div"></div>'
-      : `<div class="dd-item${it.disabled?' disabled':''}" onclick="${it.disabled?'':'('+it.fn+')();ddHide()'}">${it.label}</div>`
-  ).join('');
-  dd.classList.add('open');
-  const r = trigger.getBoundingClientRect();
-  dd.style.left = r.left + 'px';
-  dd.style.top  = r.bottom + 'px';
-  document.querySelectorAll('.wmb-item').forEach(el => el.classList.toggle('active', el === trigger));
-}
-function ddHide() {
-  document.getElementById('ddmenu').classList.remove('open');
-  document.querySelectorAll('.wmb-item').forEach(el => el.classList.remove('active'));
+// ── Desktop setup ─────────────────────────────────────────────────────────
+function setupDesktop() {
+  const isAdmin = currentProfile?.role === 'admin';
+  document.getElementById('icon-admin').hidden = !isAdmin;
+  document.getElementById('sm-admin').hidden   = !isAdmin;
+  openApp('pkm');
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// DESKTOP ICON SELECTION
-// ─────────────────────────────────────────────────────────────────────────────
+// ── Desktop icon selection ────────────────────────────────────────────────
 function selIcon(el) {
   document.querySelectorAll('.d-icon').forEach(i => i.classList.remove('sel'));
   el.classList.add('sel');
 }
+document.addEventListener('mousedown', e => {
+  if (!e.target.closest('.d-icon'))    document.querySelectorAll('.d-icon').forEach(i => i.classList.remove('sel'));
+  if (!e.target.closest('#smenu') && !e.target.closest('#start-btn')) smClose();
+  if (!e.target.closest('#ctxmenu'))   ctxHide();
+});
+document.getElementById('desktop')?.addEventListener('contextmenu', e => {
+  e.preventDefault();
+  const m = document.getElementById('ctxmenu');
+  m.style.display = 'block';
+  m.style.left = Math.min(e.clientX, innerWidth - 180) + 'px';
+  m.style.top  = Math.min(e.clientY, innerHeight - 100) + 'px';
+});
+function ctxHide() { document.getElementById('ctxmenu').style.display = 'none'; }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// START MENU
-// ─────────────────────────────────────────────────────────────────────────────
+// ── Start menu ────────────────────────────────────────────────────────────
 let smOpen = false;
 function smToggle() { smOpen ? smClose() : smShow(); }
 function smShow()  { smOpen=true;  document.getElementById('smenu').classList.add('open');    document.getElementById('start-btn').classList.add('pressed'); }
 function smClose() { smOpen=false; document.getElementById('smenu').classList.remove('open'); document.getElementById('start-btn').classList.remove('pressed'); }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// WINDOW MANAGER
-// ─────────────────────────────────────────────────────────────────────────────
-let zTop = 100;
-let focusedId = null;
-const wins = {};
-const maxSnap = {};
+// ── Window manager ────────────────────────────────────────────────────────
+let zTop = 100, focusedId = null;
+const wins = {}, maxSnap = {};
 
-function mkWin({ id, title, icon='🗂️', w=480, h=320, menu=[], status='', body='', noscroll=false, onMenu }) {
+function mkWin({ id, title, icon='🗂️', w=700, h=520, body='' }) {
   if (wins[id]) { focusWin(id); if (wins[id].minimized) unmin(id); return; }
-
   const el = document.createElement('div');
-  el.className = 'win';
-  el.id = 'w-'+id;
+  el.className = 'win'; el.id = 'w-'+id;
   const off = Object.keys(wins).length;
-  el.style.cssText = `width:${w}px;height:${h}px;left:${60+off*22}px;top:${50+off*22}px;z-index:${++zTop}`;
-
-  const menuHtml = menu.length
-    ? `<div class="win-menubar">${menu.map((m,i)=>`<div class="wmb-item" data-mi="${i}">${m.label}</div>`).join('')}</div>` : '';
-
+  const dw = document.getElementById('desktop').clientWidth;
+  const dh = document.getElementById('desktop').clientHeight;
+  const lft = Math.max(0, Math.min(dw - w, 30 + off*20));
+  const top = Math.max(0, Math.min(dh - h, 30 + off*20));
+  el.style.cssText = `width:${w}px;height:${h}px;left:${lft}px;top:${top}px;z-index:${++zTop}`;
   el.innerHTML = `
     <div class="win-tb">
       <span class="win-tb-ico">${icon}</span>
       <span class="win-tb-ttl">${title}</span>
-      <div class="win-tb-btns">
-        <div class="win-ctrl" title="Minimizar" onclick="minWin('${id}')">_</div>
-        <div class="win-ctrl" title="Maximizar" onclick="maxWin('${id}')">□</div>
-        <div class="win-ctrl" title="Cerrar"    onclick="closeWin('${id}')" style="font-size:10px">✕</div>
+      <div style="display:flex;gap:2px">
+        <div class="win-ctrl" onclick="minWin('${id}')" title="Minimizar">_</div>
+        <div class="win-ctrl" onclick="maxWin('${id}')" title="Maximizar">□</div>
+        <div class="win-ctrl" onclick="closeWin('${id}')" title="Cerrar" style="font-size:10px">✕</div>
       </div>
     </div>
-    ${menuHtml}
-    <div class="win-body${noscroll?' noscroll':''}">${body}</div>
-    ${status ? `<div class="win-status"><div class="ws-cell" id="ws-${id}">${status}</div></div>` : ''}
+    <div class="win-body">${body}</div>
     <div class="win-grip"></div>`;
-
   document.getElementById('desktop').appendChild(el);
   wins[id] = { el, title, icon, minimized:false };
-
-  // Menubar clicks
-  if (menu.length && onMenu) {
-    el.querySelectorAll('.wmb-item').forEach((item, i) => {
-      item.addEventListener('click', e => { e.stopPropagation(); ddShow(item, onMenu[i] || []); });
-    });
-  }
-
-  // Title bar double-click = maximize
-  el.querySelector('.win-tb').addEventListener('dblclick', e => {
-    if (!e.target.closest('.win-ctrl')) maxWin(id);
-  });
-
-  makeDrag(el.querySelector('.win-tb'), el, id);
+  el.querySelector('.win-tb').addEventListener('dblclick', e => { if (!e.target.closest('.win-ctrl')) maxWin(id); });
+  makeDrag(el.querySelector('.win-tb'), el);
   makeResize(el.querySelector('.win-grip'), el);
   el.addEventListener('mousedown', () => focusWin(id), true);
-
-  focusWin(id);
-  tbRefresh();
+  focusWin(id); tbRefresh();
 }
 
 function focusWin(id) {
@@ -456,609 +609,639 @@ function focusWin(id) {
   if (wins[id]) { wins[id].el.style.zIndex = ++zTop; wins[id].el.classList.remove('blur'); }
   tbRefresh();
 }
-
 function minWin(id)  { wins[id].minimized=true;  wins[id].el.classList.add('hidden'); if(focusedId===id) focusedId=null; tbRefresh(); }
 function unmin(id)   { wins[id].minimized=false; wins[id].el.classList.remove('hidden'); focusWin(id); }
-
 function maxWin(id) {
   const el = wins[id].el;
-  if (maxSnap[id]) {
-    el.style.left   = maxSnap[id].left;
-    el.style.top    = maxSnap[id].top;
-    el.style.width  = maxSnap[id].width;
-    el.style.height = maxSnap[id].height;
-    delete maxSnap[id];
-  } else {
-    maxSnap[id] = { left:el.style.left, top:el.style.top, width:el.style.width, height:el.style.height };
-    el.style.left   = '0';
-    el.style.top    = '0';
-    el.style.width  = '100%';
-    el.style.height = (innerHeight - 28) + 'px';
-  }
+  if (maxSnap[id]) { el.style.left=maxSnap[id].left; el.style.top=maxSnap[id].top; el.style.width=maxSnap[id].width; el.style.height=maxSnap[id].height; delete maxSnap[id]; }
+  else { maxSnap[id]={left:el.style.left,top:el.style.top,width:el.style.width,height:el.style.height}; el.style.left='0';el.style.top='0';el.style.width='100%';el.style.height=(innerHeight-28)+'px'; }
 }
-
-function closeWin(id) {
-  if (!wins[id]) return;
-  wins[id].el.remove();
-  delete wins[id];
-  if (maxSnap[id]) delete maxSnap[id];
-  if (focusedId === id) focusedId = null;
-  tbRefresh();
-}
-
+function closeWin(id) { if(!wins[id]) return; wins[id].el.remove(); delete wins[id]; if(maxSnap[id]) delete maxSnap[id]; if(focusedId===id) focusedId=null; tbRefresh(); }
 function tbRefresh() {
   const tb = document.getElementById('tb-wins');
   tb.innerHTML = '';
   Object.keys(wins).forEach(id => {
     const w = wins[id];
+    const active = !w.minimized && focusedId===id;
     const b = document.createElement('button');
-    const active = !w.minimized && focusedId === id;
-    b.className = 'btn3d tb-btn' + (active ? ' pressed' : '');
-    b.innerHTML = `<span class="tb-ico">${w.icon}</span>${w.title}`;
-    b.title = w.title;
-    b.onclick = () => {
-      if (w.minimized)           { unmin(id); }
-      else if (focusedId === id) { minWin(id); }
-      else                       { focusWin(id); }
-    };
+    b.className = 'btn3d tb-btn'+(active?' pressed':'');
+    b.innerHTML = `<span style="font-size:13px">${w.icon}</span>${w.title}`;
+    b.title = w.title; b.onclick = () => w.minimized ? unmin(id) : focusedId===id ? minWin(id) : focusWin(id);
     tb.appendChild(b);
   });
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// DRAG
-// ─────────────────────────────────────────────────────────────────────────────
 function makeDrag(handle, el) {
   handle.addEventListener('mousedown', e => {
-    if (e.target.closest('.win-ctrl') || e.target.closest('.wmb-item')) return;
-    const ox = el.offsetLeft - e.clientX, oy = el.offsetTop - e.clientY;
-    const desk = document.getElementById('desktop');
-    const mv = e => {
-      el.style.left = Math.max(0, Math.min(desk.clientWidth  - 60, e.clientX + ox)) + 'px';
-      el.style.top  = Math.max(0, Math.min(desk.clientHeight - 20, e.clientY + oy)) + 'px';
-    };
-    const up = () => { document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); };
-    document.addEventListener('mousemove', mv);
-    document.addEventListener('mouseup', up);
-    e.preventDefault();
+    if (e.target.closest('.win-ctrl')) return;
+    const ox=el.offsetLeft-e.clientX, oy=el.offsetTop-e.clientY;
+    const desk=document.getElementById('desktop');
+    const mv=e=>{ el.style.left=Math.max(0,Math.min(desk.clientWidth-60,e.clientX+ox))+'px'; el.style.top=Math.max(0,Math.min(desk.clientHeight-20,e.clientY+oy))+'px'; };
+    const up=()=>{ document.removeEventListener('mousemove',mv); document.removeEventListener('mouseup',up); };
+    document.addEventListener('mousemove',mv); document.addEventListener('mouseup',up); e.preventDefault();
   });
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// RESIZE  (fixed: delta from start position)
-// ─────────────────────────────────────────────────────────────────────────────
 function makeResize(grip, el) {
   grip.addEventListener('mousedown', e => {
     e.stopPropagation();
-    const startW = el.offsetWidth, startH = el.offsetHeight;
-    const startX = e.clientX,      startY = e.clientY;
-    const mv = e => {
-      el.style.width  = Math.max(220, startW + (e.clientX - startX)) + 'px';
-      el.style.height = Math.max(100, startH + (e.clientY - startY)) + 'px';
-    };
-    const up = () => { document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); };
-    document.addEventListener('mousemove', mv);
-    document.addEventListener('mouseup', up);
-    e.preventDefault();
+    const sw=el.offsetWidth,sh=el.offsetHeight,sx=e.clientX,sy=e.clientY;
+    const mv=e=>{ el.style.width=Math.max(400,sw+(e.clientX-sx))+'px'; el.style.height=Math.max(300,sh+(e.clientY-sy))+'px'; };
+    const up=()=>{ document.removeEventListener('mousemove',mv); document.removeEventListener('mouseup',up); };
+    document.addEventListener('mousemove',mv); document.addEventListener('mouseup',up); e.preventDefault();
   });
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// KEYBOARD SHORTCUTS
-// ─────────────────────────────────────────────────────────────────────────────
 document.addEventListener('keydown', e => {
-  if (e.altKey && e.key === 'F4' && focusedId) { closeWin(focusedId); e.preventDefault(); }
-  if (e.key === 'F5') { /* refresh noop */ e.preventDefault(); }
+  if (e.altKey && e.key==='F4' && focusedId) { closeWin(focusedId); e.preventDefault(); }
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// APP LAUNCHER
-// ─────────────────────────────────────────────────────────────────────────────
+// ── App launcher ──────────────────────────────────────────────────────────
 function openApp(name) {
   smClose(); ctxHide();
-  const map = { mipc:openMiPC, docs:openDocs, notepad:openNotepad, paint:openPaint, trash:openTrash, about:openAbout };
-  map[name]?.();
+  if (name==='pkm')   openPKM();
+  if (name==='admin') openAdmin();
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// VIRTUAL FILESYSTEM
-// ─────────────────────────────────────────────────────────────────────────────
-const VFS = {
-  'Escritorio': { type:'folder', icon:'🖥️', children:{} },
-  'Mis Documentos': { type:'folder', icon:'📁', children:{
-    'notas.txt':      { type:'file', icon:'📄', ext:'txt', content:'Mis notas personales\n\nEscribe aquí lo que quieras recordar.' },
-    'ideas.txt':      { type:'file', icon:'📄', ext:'txt', content:'Ideas y proyectos\n\n- Idea 1\n- Idea 2\n- Idea 3' },
-    'lista.txt':      { type:'file', icon:'📄', ext:'txt', content:'Lista de tareas\n\n[ ] Tarea 1\n[ ] Tarea 2\n[x] Tarea 3' },
-    'Fotos':          { type:'folder', icon:'📁', children:{} },
-    'Trabajo':        { type:'folder', icon:'📁', children:{
-      'proyecto.txt': { type:'file', icon:'📄', ext:'txt', content:'Proyecto en curso\n\nDetalles...' }
-    }},
-  }},
-  'Disco C:': { type:'drive', icon:'💾', children:{
-    'Windows':                  { type:'folder', icon:'📁', children:{} },
-    'Archivos de programa':     { type:'folder', icon:'📁', children:{} },
-    'Usuarios':                 { type:'folder', icon:'📁', children:{} },
-  }},
-  'DVD-RW D:': { type:'drive', icon:'💿', children:{} },
-};
+// ═══════════════════════════════════════════════════════════════════════════
+// PERKYMAFIA CONTROL
+// ═══════════════════════════════════════════════════════════════════════════
+const ESTADOS = ['Idea','Grabando','Mezcla','Masterizado','Listo para publicar','Publicado'];
+const ESTADO_COLOR = {'Idea':'var(--muted)','Grabando':'var(--blue)','Mezcla':'var(--blue)','Masterizado':'var(--gold)','Listo para publicar':'var(--pink)','Publicado':'var(--green)'};
+const DEFAULT_CL = ['Grabar voces','Mezcla','Mastering','Portada','Subir a Spotify','Subir a SoundCloud'];
 
-function fsGet(path) {
-  if (!path || path === '/') return VFS;
-  const parts = path.replace(/^\//,'').split('/');
-  let node = VFS;
-  for (const p of parts) { if (!node[p]) return null; node = node[p].type==='folder'||node[p].type==='drive' ? node[p].children : node[p]; }
-  return node;
+let pkmView='tabla', pkmTab='temas', pkmSort={field:'creado',dir:'desc'};
+let pkmSelected = new Set();
+
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+function nowIso(){ return new Date().toISOString(); }
+function fmtDT(iso){ try{ return new Date(iso).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}); }catch{ return iso; } }
+function escH(s){ return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function migrateSong(s){ if(!s.checklist) s.checklist=[]; if(!s.historial) s.historial=[]; if(!s.prioridad) s.prioridad='Media'; if(!s.responsable) s.responsable=''; if(!s.portada) s.portada=''; if(!s.creado) s.creado=nowIso(); }
+function logHist(song, txt){ song.historial=(song.historial||[]); song.historial.unshift({fecha:nowIso(),texto:txt}); }
+function pillClass(e){ const m={'Idea':'p-idea','Grabando':'p-grabando','Mezcla':'p-mezcla','Masterizado':'p-masterizado','Listo para publicar':'p-listo','Publicado':'p-publicado'}; return m[e]||'p-idea'; }
+function artistName(id){ const a=artists.find(x=>x.id===id); return a?a.nombre:'???'; }
+function isFeat(id){ const a=artists.find(x=>x.id===id); return a&&a.tipo==='Colaborador'; }
+function songsFor(id){ return songs.filter(s=>s.artistas.includes(id)); }
+function clProg(s){ if(!s.checklist||!s.checklist.length) return null; const done=s.checklist.filter(c=>c.hecho).length; return {done,total:s.checklist.length,pct:Math.round(done/s.checklist.length*100)}; }
+
+function openPKM() {
+  mkWin({ id:'pkm', title:'PERKYMAFIA Control', icon:'🎵', w:Math.min(1000,innerWidth-40), h:Math.min(680,innerHeight-60), body:`<div class="pkapp" id="pkmapp"></div>` });
+  renderPKM();
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// MI PC / EXPLORER
-// ─────────────────────────────────────────────────────────────────────────────
-let expPath = {};  // winId → current path string
-
-function openMiPC() {
-  expPath['mipc'] = '/';
-  mkWin({
-    id:'mipc', title:'Mi PC', icon:'🖥️', w:540, h:360,
-    noscroll:true, status:'5 objetos',
-    menu:[{label:'Archivo'},{label:'Editar'},{label:'Ver'},{label:'Ayuda'}],
-    onMenu:[
-      [{label:'Cerrar', fn:`closeWin('mipc')`}],
-      [{label:'Seleccionar todo',disabled:true}],
-      [{label:'Iconos grandes',disabled:true},{label:'Lista',disabled:true}],
-      [{label:'Acerca de...', fn:`openAbout`}],
-    ],
-    body: buildExpHtml('mipc','/')
-  });
-}
-
-function openDocs() {
-  expPath['docs'] = '/Mis Documentos';
-  mkWin({
-    id:'docs', title:'Mis Documentos', icon:'📁', w:500, h:320,
-    noscroll:true, status:'',
-    menu:[{label:'Archivo'},{label:'Editar'},{label:'Ver'},{label:'Ayuda'}],
-    onMenu:[
-      [{label:'Cerrar', fn:`closeWin('docs')`}],
-      [{label:'Seleccionar todo',disabled:true}],
-      [{label:'Iconos grandes',disabled:true}],
-      [{label:'Acerca de...', fn:`openAbout`}],
-    ],
-    body: buildExpHtml('docs','/Mis Documentos')
-  });
-}
-
-function buildExpHtml(winId, path) {
-  return `<div class="exp-wrap">
-    <div class="exp-tree" id="etree-${winId}">${buildTree(winId)}</div>
-    <div class="exp-main" id="emain-${winId}">${buildGrid(winId, path)}</div>
-  </div>`;
-}
-
-function buildTree(winId) {
-  function renderNode(name, node, pathSoFar) {
-    const fullPath = pathSoFar ? pathSoFar+'/'+name : '/'+name;
-    const hasChildren = node.children && Object.keys(node.children).length > 0;
-    const isOpen = expPath[winId] && (expPath[winId] === fullPath || expPath[winId].startsWith(fullPath+'/'));
-    return `<div class="t-item${hasChildren?'':' noarrow'}${isOpen?' open':''}"
-      onclick="expNav('${winId}','${fullPath}',this)">
-      <span class="t-ico">${node.icon}</span>${name}
+function renderPKM() {
+  const el = document.getElementById('pkmapp');
+  if (!el) return;
+  el.innerHTML = `
+    <div class="pk-hdr">
+      <div class="pk-logo">PERKY<em>MAFIA</em></div>
+      <div class="pk-hdr-right">
+        <button class="pk-btn ghost sm" onclick="pkmExportCSV()">CSV</button>
+        <button class="pk-btn ghost sm" onclick="pkmExportJSON()">JSON</button>
+        <button class="pk-btn ghost sm" onclick="pkmImport()">Importar</button>
+        <input type="file" id="pkm-file" accept="application/json" style="display:none" onchange="pkmImportFile(this)">
+      </div>
     </div>
-    ${hasChildren ? `<div class="t-kids">${Object.entries(node.children).filter(([,v])=>v.type==='folder'||v.type==='drive').map(([n,v])=>renderNode(n,v,fullPath)).join('')}</div>` : ''}`;
-  }
-  const rootItems = [
-    `<div class="t-item open noarrow" onclick="expNav('${winId}','/',this)"><span class="t-ico">🖥️</span>Mi PC</div><div class="t-kids">`,
-    ...Object.entries(VFS).map(([n,v]) => renderNode(n,v,'')),
-    '</div>'
-  ];
-  return rootItems.join('');
+    <div class="pk-stats" id="pkm-stats"></div>
+    <div class="pk-tabs">
+      <button class="pk-tab${pkmTab==='temas'?' active':''}" onclick="pkmSetTab('temas')">Temas</button>
+      <button class="pk-tab${pkmTab==='artistas'?' active':''}" onclick="pkmSetTab('artistas')">Artistas &amp; feats</button>
+      <button class="pk-tab${pkmTab==='resumen'?' active':''}" onclick="pkmSetTab('resumen')">Resumen</button>
+    </div>
+    <div class="pk-content" id="pkm-content"></div>
+    <div id="pkm-modal-root"></div>
+  `;
+  renderStats();
+  renderPKMContent();
 }
 
-function buildGrid(winId, path) {
-  const isRoot = !path || path === '/';
-  const entries = isRoot ? Object.entries(VFS) : Object.entries(fsGet(path) || {});
-  const items = entries.map(([name, node]) => {
-    const isFile = node.type === 'file';
-    const dblAction = isFile
-      ? `expOpenFile('${name}','${(path||'')}')`
-      : `expNav('${winId}','${(path?path+'/'+name:'/'+name)}',null)`;
-    return `<div class="f-item" ondblclick="${dblAction}" onclick="this.closest('.f-grid').querySelectorAll('.f-item').forEach(i=>i.classList.remove('sel'));this.classList.add('sel')">
-      <div class="f-ico">${node.icon}</div>
-      <div class="f-name">${name}</div>
-    </div>`;
-  }).join('');
-  return `<div class="f-grid" style="height:100%">${items || '<div style="padding:8px;color:#808080">Carpeta vacía</div>'}</div>`;
+function renderStats() {
+  const el = document.getElementById('pkm-stats');
+  if (!el) return;
+  el.innerHTML = `
+    <div class="pk-stat"><div class="n">${songs.length}</div><div class="l">Temas</div></div>
+    <div class="pk-stat"><div class="n">${songs.filter(s=>s.spotify?.publicado).length}</div><div class="l">En Spotify</div></div>
+    <div class="pk-stat"><div class="n">${songs.filter(s=>s.soundcloud?.publicado).length}</div><div class="l">En SoundCloud</div></div>
+    <div class="pk-stat"><div class="n">${songs.filter(s=>s.estado==='Listo para publicar').length}</div><div class="l">Listos para subir</div></div>
+    <div class="pk-stat"><div class="n">${songs.filter(s=>s.estado!=='Publicado'&&s.artistas.some(isFeat)).length}</div><div class="l">Feats pendientes</div></div>
+  `;
 }
 
-function expNav(winId, path, treeEl) {
-  expPath[winId] = path;
-  // update tree selection
-  const tree = document.getElementById('etree-'+winId);
-  if (tree) {
-    tree.querySelectorAll('.t-item').forEach(i => i.classList.remove('sel'));
-    if (treeEl) { treeEl.classList.add('sel'); treeEl.classList.toggle('open'); }
-  }
-  // update main panel
-  const main = document.getElementById('emain-'+winId);
-  if (main) main.innerHTML = buildGrid(winId, path);
-  // update status
-  const ws = document.getElementById('ws-'+winId);
-  if (ws) {
-    const entries = path === '/' ? Object.keys(VFS) : Object.keys(fsGet(path) || {});
-    ws.textContent = entries.length + ' objeto' + (entries.length!==1?'s':'');
-  }
-  // update window title
-  if (wins[winId]) {
-    const name = path === '/' ? 'Mi PC' : path.split('/').pop();
-    wins[winId].el.querySelector('.win-tb-ttl').textContent = name;
-  }
+function pkmSetTab(t) { pkmTab=t; renderPKM(); }
+
+function renderPKMContent() {
+  const el = document.getElementById('pkm-content');
+  if (!el) return;
+  if (pkmTab==='temas')    { renderTemas(el); return; }
+  if (pkmTab==='artistas') { renderArtistas(el); return; }
+  if (pkmTab==='resumen')  { renderResumen(el); return; }
 }
 
-function expOpenFile(name, path) {
-  const fullPath = path ? path + '/' + name : '/' + name;
-  const parts = fullPath.replace(/^\//,'').split('/');
-  let node = VFS;
-  for (const p of parts) { if (!node[p]) return; node = node[p]; }
-  if (node.ext === 'txt') npOpen(name, node.content || '');
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// NOTEPAD
-// ─────────────────────────────────────────────────────────────────────────────
-let npIdx = 0;
-function openNotepad() { npOpen('Sin título', ''); }
-function npOpen(name, text) {
-  const id = 'np-' + (npIdx++);
-  let saved = true;
-  mkWin({
-    id, title:`Bloc de Notas – ${name}`, icon:'📝', w:450, h:340,
-    menu:[{label:'Archivo'},{label:'Editar'},{label:'Formato'},{label:'Ayuda'}],
-    onMenu:[
-      [
-        {label:'Nuevo',     fn:`npNew('${id}')`},
-        '-',
-        {label:'Guardar',   fn:`npSave('${id}')`},
-        '-',
-        {label:'Cerrar',    fn:`closeWin('${id}')`},
-      ],
-      [
-        {label:'Seleccionar todo', fn:`npSelAll('${id}')`},
-        '-',
-        {label:'Fecha y hora',     fn:`npDateTime('${id}')`},
-      ],
-      [
-        {label:'Ajuste de línea', disabled:true},
-      ],
-      [
-        {label:'Acerca de Bloc de Notas', fn:`openAbout`},
-      ],
-    ],
-    body:`<textarea class="np-ta" id="npta-${id}" spellcheck="false">${escHtml(text)}</textarea>`
+// ── TEMAS ──
+function getFiltered() {
+  const q  = (document.getElementById('pk-search')?.value||'').trim().toLowerCase();
+  const fe = document.getElementById('pk-f-estado')?.value||'';
+  const fa = document.getElementById('pk-f-artista')?.value||'';
+  const fp = document.getElementById('pk-f-prio')?.value||'';
+  let list = songs.filter(s => {
+    if (fe && s.estado!==fe) return false;
+    if (fa && !s.artistas.includes(fa)) return false;
+    if (fp && s.prioridad!==fp) return false;
+    if (q) { const names=s.artistas.map(artistName).join(' ').toLowerCase(); if(!s.titulo.toLowerCase().includes(q)&&!names.includes(q)) return false; }
+    return true;
   });
-  // Mark dirty on input
-  setTimeout(() => {
-    const ta = document.getElementById('npta-'+id);
-    if (ta) ta.addEventListener('input', () => {
-      const ttl = wins[id]?.el?.querySelector('.win-tb-ttl');
-      if (ttl && !ttl.textContent.startsWith('*')) ttl.textContent = '*' + ttl.textContent;
-    });
-  }, 50);
-}
-
-function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-function npNew(id) {
-  const ta = document.getElementById('npta-'+id);
-  if (ta) { ta.value = ''; const t = wins[id]?.el?.querySelector('.win-tb-ttl'); if(t) t.textContent='Bloc de Notas – Sin título'; }
-}
-function npSave(id) {
-  const ta = document.getElementById('npta-'+id);
-  if (!ta) return;
-  const blob = new Blob([ta.value], {type:'text/plain;charset=utf-8'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = (wins[id]?.title?.replace('Bloc de Notas – ','') || 'notas') + '.txt';
-  a.click();
-  URL.revokeObjectURL(a.href);
-  const ttl = wins[id]?.el?.querySelector('.win-tb-ttl');
-  if (ttl) ttl.textContent = ttl.textContent.replace(/^\*/,'');
-}
-function npSelAll(id) { const ta=document.getElementById('npta-'+id); if(ta){ta.focus();ta.select();} }
-function npDateTime(id) {
-  const ta=document.getElementById('npta-'+id);
-  if (!ta) return;
-  const n=new Date();
-  const s=n.toLocaleTimeString('es-ES')+' '+n.toLocaleDateString('es-ES');
-  const pos=ta.selectionStart;
-  ta.value=ta.value.slice(0,pos)+s+ta.value.slice(ta.selectionEnd);
-  ta.selectionStart=ta.selectionEnd=pos+s.length;
-  ta.focus();
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// PAINT
-// ─────────────────────────────────────────────────────────────────────────────
-let paintColor='#000000', paintBg='#ffffff', paintTool='pen', paintSize=2, painting=false, lastPt=null;
-const PALETTE = [
-  '#000000','#808080','#800000','#808000','#008000','#008080','#000080','#800080',
-  '#c0c0c0','#ffffff','#ff0000','#ffff00','#00ff00','#00ffff','#0000ff','#ff00ff',
-  '#ff8040','#804000','#80ff00','#0080ff',
-];
-
-function openPaint() {
-  mkWin({
-    id:'paint', title:'Paint', icon:'🎨', w:600, h:460,
-    noscroll:true,
-    menu:[{label:'Archivo'},{label:'Editar'},{label:'Ver'},{label:'Imagen'},{label:'Ayuda'}],
-    onMenu:[
-      [
-        {label:'Nuevo',              fn:`ptClear()`},
-        '-',
-        {label:'Guardar como PNG…',  fn:`ptSave()`},
-        '-',
-        {label:'Cerrar',             fn:`closeWin('paint')`},
-      ],
-      [{label:'Deshacer',disabled:true}],
-      [{label:'Cuadrícula',disabled:true}],
-      [{label:'Voltear horizontal',  fn:`ptFlipH()`},{label:'Voltear vertical', fn:`ptFlipV()`},'-',{label:'Invertir colores',fn:`ptInvert()`}],
-      [{label:'Acerca de Paint',     fn:`openAbout`}],
-    ],
-    body:`
-      <div class="paint-shell">
-        <div class="paint-tools">
-          <div class="pt-btn active" id="ptt-pen"    title="Lápiz (P)"    onclick="ptSetTool('pen',this)">✏️</div>
-          <div class="pt-btn" id="ptt-fill"   title="Relleno (F)"   onclick="ptSetTool('fill',this)">🪣</div>
-          <div class="pt-btn" id="ptt-eraser" title="Borrador (E)"  onclick="ptSetTool('eraser',this)">⬜</div>
-          <div class="pt-btn" id="ptt-line"   title="Línea (L)"     onclick="ptSetTool('line',this)">╱</div>
-          <div class="pt-btn" id="ptt-rect"   title="Rectángulo (R)"onclick="ptSetTool('rect',this)">▭</div>
-          <div class="pt-btn" id="ptt-ellipse"title="Elipse (O)"    onclick="ptSetTool('ellipse',this)">⬭</div>
-          <div class="pt-sep"></div>
-          <div class="pt-sizes">
-            <div class="pt-sz active" id="psz-1" style="width:2px;height:2px"  onclick="ptSetSize(2,this)"></div>
-            <div class="pt-sz"        id="psz-2" style="width:4px;height:4px"  onclick="ptSetSize(4,this)"></div>
-            <div class="pt-sz"        id="psz-3" style="width:8px;height:8px"  onclick="ptSetSize(8,this)"></div>
-          </div>
-          <div class="pt-sep"></div>
-          <div class="pt-colorbox">
-            <div style="position:relative;width:36px;height:32px;margin-right:4px">
-              <div id="pt-bg"  class="pt-cur2" style="background:#fff;position:absolute;bottom:0;right:0;border:2px solid;border-color:#808080 #fff #fff #808080"></div>
-              <div id="pt-fg"  class="pt-cur"  style="background:#000;position:absolute;top:0;left:0;border:2px solid;border-color:#fff #808080 #808080 #fff;width:24px;height:24px"></div>
-            </div>
-            <div class="paint-palette">
-              ${PALETTE.map((c,i)=>`<div class="pc" data-color="${c}" style="background:${c}"
-                onclick="ptSetFg('${c}')" oncontextmenu="ptSetBg('${c}');event.preventDefault()"
-                title="${c}"></div>`).join('')}
-            </div>
-          </div>
-        </div>
-        <div class="paint-cv-wrap" id="pt-cvwrap">
-          <canvas id="pc" width="800" height="600"></canvas>
-        </div>
-        <div class="win-status">
-          <div class="ws-cell" id="pt-coords">0, 0</div>
-          <div class="ws-cell" id="pt-tool">Lápiz</div>
-        </div>
-      </div>`
+  list.sort((a,b)=>{
+    let va,vb;
+    if(pkmSort.field==='titulo'){va=a.titulo.toLowerCase();vb=b.titulo.toLowerCase();}
+    else if(pkmSort.field==='estado'){va=ESTADOS.indexOf(a.estado);vb=ESTADOS.indexOf(b.estado);}
+    else if(pkmSort.field==='prioridad'){const o={Alta:0,Media:1,Baja:2};va=o[a.prioridad];vb=o[b.prioridad];}
+    else{va=a.fecha||'';vb=b.fecha||'';}
+    if(va<vb) return pkmSort.dir==='asc'?-1:1;
+    if(va>vb) return pkmSort.dir==='asc'?1:-1;
+    return 0;
   });
-  requestAnimationFrame(initPaint);
+  return list;
 }
 
-let ptCtx = null, ptSnap = null;
+function setSort(f){ pkmSort=pkmSort.field===f?{field:f,dir:pkmSort.dir==='asc'?'desc':'asc'}:{field:f,dir:'asc'}; renderTemas(document.getElementById('pkm-content')); }
+function sarr(f){ return pkmSort.field===f?`<span class="sarr">${pkmSort.dir==='asc'?'▲':'▼'}</span>`:''; }
 
-function initPaint() {
-  const cv = document.getElementById('pc');
-  if (!cv) return;
-  ptCtx = cv.getContext('2d');
-  ptCtx.fillStyle = '#ffffff';
-  ptCtx.fillRect(0,0,cv.width,cv.height);
-  ptCtx.lineJoin = ptCtx.lineCap = 'round';
-
-  const getPos = e => {
-    const r = cv.getBoundingClientRect();
-    return { x:Math.round(e.clientX-r.left), y:Math.round(e.clientY-r.top) };
-  };
-
-  cv.addEventListener('mousedown', e => {
-    e.preventDefault();
-    const p = getPos(e);
-    painting = true; lastPt = p;
-    if (paintTool === 'fill') { ptFloodFill(p.x, p.y); painting=false; return; }
-    ptSnap = ptCtx.getImageData(0,0,cv.width,cv.height);
-    if (paintTool === 'pen' || paintTool === 'eraser') {
-      ptCtx.beginPath(); ptCtx.moveTo(p.x,p.y); ptCtx.lineTo(p.x,p.y);
-      ptCtx.strokeStyle = paintTool==='eraser' ? paintBg : paintColor;
-      ptCtx.lineWidth   = paintTool==='eraser' ? paintSize*4 : paintSize;
-      ptCtx.stroke();
-    }
-  });
-
-  cv.addEventListener('mousemove', e => {
-    const p = getPos(e);
-    const el = document.getElementById('pt-coords');
-    if (el) el.textContent = p.x+', '+p.y;
-    if (!painting || !lastPt) return;
-
-    if (paintTool === 'pen' || paintTool === 'eraser') {
-      ptCtx.strokeStyle = paintTool==='eraser' ? paintBg : paintColor;
-      ptCtx.lineWidth   = paintTool==='eraser' ? paintSize*4 : paintSize;
-      ptCtx.beginPath(); ptCtx.moveTo(lastPt.x,lastPt.y); ptCtx.lineTo(p.x,p.y); ptCtx.stroke();
-      lastPt = p;
-    } else {
-      // Preview shape
-      ptCtx.putImageData(ptSnap,0,0);
-      ptCtx.strokeStyle = paintColor; ptCtx.fillStyle = paintBg;
-      ptCtx.lineWidth = paintSize;
-      if (paintTool === 'line') {
-        ptCtx.beginPath(); ptCtx.moveTo(lastPt.x,lastPt.y); ptCtx.lineTo(p.x,p.y); ptCtx.stroke();
-      } else if (paintTool === 'rect') {
-        ptCtx.strokeRect(lastPt.x,lastPt.y,p.x-lastPt.x,p.y-lastPt.y);
-      } else if (paintTool === 'ellipse') {
-        ptCtx.beginPath();
-        ptCtx.ellipse(
-          (lastPt.x+p.x)/2,(lastPt.y+p.y)/2,
-          Math.abs(p.x-lastPt.x)/2,Math.abs(p.y-lastPt.y)/2,0,0,Math.PI*2
-        );
-        ptCtx.stroke();
-      }
-    }
-  });
-
-  cv.addEventListener('mouseup', e => {
-    if (!painting) return;
-    painting = false;
-    const p = getPos(e);
-    if (paintTool === 'line' && ptSnap) {
-      ptCtx.putImageData(ptSnap,0,0);
-      ptCtx.strokeStyle=paintColor; ptCtx.lineWidth=paintSize;
-      ptCtx.beginPath(); ptCtx.moveTo(lastPt.x,lastPt.y); ptCtx.lineTo(p.x,p.y); ptCtx.stroke();
-    }
-    lastPt = null; ptSnap = null;
-  });
-
-  cv.addEventListener('mouseleave', () => { painting=false; lastPt=null; });
-}
-
-function ptSetTool(t, el) {
-  paintTool = t;
-  document.querySelectorAll('.pt-btn').forEach(b=>b.classList.remove('active'));
-  el.classList.add('active');
-  const names = {pen:'Lápiz',fill:'Relleno',eraser:'Borrador',line:'Línea',rect:'Rectángulo',ellipse:'Elipse'};
-  const s = document.getElementById('pt-tool'); if(s) s.textContent = names[t]||t;
-}
-
-function ptSetSize(s, el) {
-  paintSize = s;
-  document.querySelectorAll('.pt-sz').forEach(b=>b.classList.remove('active'));
-  el.classList.add('active');
-}
-
-function ptSetFg(c) {
-  paintColor = c;
-  const el = document.getElementById('pt-fg'); if(el) el.style.background=c;
-}
-function ptSetBg(c) {
-  paintBg = c;
-  const el = document.getElementById('pt-bg'); if(el) el.style.background=c;
-}
-
-function ptClear() {
-  const cv = document.getElementById('pc'); if(!cv||!ptCtx) return;
-  ptCtx.fillStyle='#ffffff'; ptCtx.fillRect(0,0,cv.width,cv.height);
-}
-
-function ptSave() {
-  const cv = document.getElementById('pc'); if(!cv) return;
-  const a = document.createElement('a');
-  a.href = cv.toDataURL('image/png');
-  a.download = 'paint.png';
-  a.click();
-}
-
-function ptFlipH() {
-  const cv=document.getElementById('pc'); if(!cv||!ptCtx) return;
-  const tmp=document.createElement('canvas'); tmp.width=cv.width; tmp.height=cv.height;
-  const tc=tmp.getContext('2d'); tc.translate(cv.width,0); tc.scale(-1,1); tc.drawImage(cv,0,0);
-  ptCtx.clearRect(0,0,cv.width,cv.height); ptCtx.drawImage(tmp,0,0);
-}
-function ptFlipV() {
-  const cv=document.getElementById('pc'); if(!cv||!ptCtx) return;
-  const tmp=document.createElement('canvas'); tmp.width=cv.width; tmp.height=cv.height;
-  const tc=tmp.getContext('2d'); tc.translate(0,cv.height); tc.scale(1,-1); tc.drawImage(cv,0,0);
-  ptCtx.clearRect(0,0,cv.width,cv.height); ptCtx.drawImage(tmp,0,0);
-}
-function ptInvert() {
-  const cv=document.getElementById('pc'); if(!cv||!ptCtx) return;
-  const d=ptCtx.getImageData(0,0,cv.width,cv.height);
-  for(let i=0;i<d.data.length;i+=4){d.data[i]=255-d.data[i];d.data[i+1]=255-d.data[i+1];d.data[i+2]=255-d.data[i+2];}
-  ptCtx.putImageData(d,0,0);
-}
-
-function ptFloodFill(sx, sy) {
-  const cv=document.getElementById('pc'); if(!cv||!ptCtx) return;
-  const d=ptCtx.getImageData(0,0,cv.width,cv.height), dat=d.data;
-  const W=cv.width, H=cv.height;
-  function idx(x,y){return (y*W+x)*4;}
-  const si=idx(sx,sy);
-  const [tr,tg,tb,ta]=[dat[si],dat[si+1],dat[si+2],dat[si+3]];
-  const fc=parseInt(paintColor.slice(1),16);
-  const [fr,fg,fb]=[(fc>>16)&255,(fc>>8)&255,fc&255];
-  if(tr===fr&&tg===fg&&tb===fb) return;
-  const stack=[[sx,sy]];
-  while(stack.length){
-    const [x,y]=stack.pop();
-    if(x<0||x>=W||y<0||y>=H) continue;
-    const i=idx(x,y);
-    if(dat[i]!==tr||dat[i+1]!==tg||dat[i+2]!==tb||dat[i+3]!==ta) continue;
-    dat[i]=fr;dat[i+1]=fg;dat[i+2]=fb;dat[i+3]=255;
-    stack.push([x+1,y],[x-1,y],[x,y+1],[x,y-1]);
-  }
-  ptCtx.putImageData(d,0,0);
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// PAPELERA
-// ─────────────────────────────────────────────────────────────────────────────
-function openTrash() {
-  mkWin({
-    id:'trash', title:'Papelera de reciclaje', icon:'🗑️', w:380, h:220,
-    menu:[{label:'Archivo'},{label:'Editar'},{label:'Ver'},{label:'Ayuda'}],
-    onMenu:[
-      [{label:'Vaciar Papelera',disabled:true},'-',{label:'Cerrar',fn:`closeWin('trash')`}],
-      [{label:'Seleccionar todo',disabled:true}],
-      [{label:'Iconos',disabled:true}],
-      [{label:'Acerca de...',fn:`openAbout`}],
-    ],
-    status:'La Papelera está vacía',
-    body:`<div style="height:100%;background:#fff;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;color:#808080">
-      <div style="font-size:52px">🗑️</div>
-      <div>La Papelera está vacía</div>
-    </div>`
-  });
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// ACERCA DE
-// ─────────────────────────────────────────────────────────────────────────────
-function openAbout() {
-  mkWin({
-    id:'about', title:'Acerca de Desktop OS', icon:'❓', w:300, h:240,
-    body:`<div class="about">
-      <div style="font-size:52px">🪟</div>
-      <div style="font-size:14px;font-weight:bold">Desktop OS</div>
-      <div>Versión 1.0</div>
-      <div style="width:100%;border-top:1px solid #c0c0c0"></div>
-      <div style="color:#444;font-size:11px">Hecho con HTML, CSS y JavaScript puro</div>
-      <div style="color:#444;font-size:11px">gasiocheck.github.io</div>
-      <button class="btn3d" style="width:80px;margin-top:6px" onclick="closeWin('about')">Aceptar</button>
-    </div>`
-  });
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// APAGAR
-// ─────────────────────────────────────────────────────────────────────────────
-function doShutdown() {
-  smClose();
-  mkWin({
-    id:'shutdown', title:'Apagar el sistema', icon:'⏻', w:300, h:145,
-    body:`<div class="dlg">
-      <div class="dlg-row">
-        <div class="dlg-ico">💻</div>
-        <div class="dlg-txt">¿Deseas apagar el equipo?</div>
+function renderTemas(el) {
+  const artistOpts = artists.map(a=>`<option value="${a.id}">${escH(a.nombre)}${a.tipo==='Colaborador'?' (feat)':''}</option>`).join('');
+  el.innerHTML = `
+    <div class="pk-toolbar">
+      <input class="pk-inp" id="pk-search" placeholder="Buscar... ( / )" oninput="renderTemas(document.getElementById('pkm-content'))">
+      <select class="pk-sel" id="pk-f-estado" onchange="renderTemas(document.getElementById('pkm-content'))">
+        <option value="">Todos los estados</option>
+        ${ESTADOS.map(e=>`<option value="${e}">${e}</option>`).join('')}
+      </select>
+      <select class="pk-sel" id="pk-f-artista" onchange="renderTemas(document.getElementById('pkm-content'))">
+        <option value="">Todos los artistas</option>${artistOpts}
+      </select>
+      <select class="pk-sel" id="pk-f-prio" onchange="renderTemas(document.getElementById('pkm-content'))">
+        <option value="">Toda prioridad</option>
+        <option value="Alta">Alta</option><option value="Media">Media</option><option value="Baja">Baja</option>
+      </select>
+      <div class="pk-spacer"></div>
+      <div class="view-tgl">
+        <button class="pk-btn sm${pkmView==='tabla'?' active-v':''}" onclick="pkmView='tabla';renderTemas(document.getElementById('pkm-content'))">Tabla</button>
+        <button class="pk-btn sm${pkmView==='tablero'?' active-v':''}" onclick="pkmView='tablero';renderTemas(document.getElementById('pkm-content'))">Tablero</button>
       </div>
-      <div class="dlg-btns">
-        <button class="btn3d" style="width:90px" onclick="goBlack()">Apagar</button>
-        <button class="btn3d" style="width:90px" onclick="closeWin('shutdown')">Cancelar</button>
-      </div>
-    </div>`
-  });
+      <button class="pk-btn gold" onclick="openSongModal(null)">+ Nuevo tema</button>
+    </div>
+    <div id="pkm-bulk"></div>
+    <div id="pkm-songs"></div>
+  `;
+  renderBulkBar();
+  if (pkmView==='tablero') renderKanban(document.getElementById('pkm-songs'));
+  else renderTable(document.getElementById('pkm-songs'));
 }
 
-function goBlack() {
-  document.body.innerHTML = `<div style="width:100vw;height:100vh;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:#fff;font-family:monospace">
-    <div style="font-size:52px">⏻</div>
-    <div style="font-size:20px">Apagando...</div>
-    <div style="font-size:12px;color:#555;margin-top:8px">Ya puedes apagar el ordenador de forma segura</div>
+function renderBulkBar() {
+  const el = document.getElementById('pkm-bulk');
+  if (!el || pkmSelected.size===0) { if(el) el.innerHTML=''; return; }
+  el.innerHTML = `<div class="bulk-bar">
+    <span><b>${pkmSelected.size}</b> seleccionado(s)</span>
+    <select class="pk-sel" id="bulk-est">${ESTADOS.map(e=>`<option value="${e}">→ ${e}</option>`).join('')}</select>
+    <button class="pk-btn gold sm" onclick="bulkApply()">Aplicar</button>
+    <button class="pk-btn ghost sm" onclick="bulkDel()">Eliminar</button>
+    <button class="pk-btn ghost sm" onclick="pkmSelected.clear();renderTemas(document.getElementById('pkm-content'))">Cancelar</button>
   </div>`;
+}
+
+async function bulkApply() {
+  const est=document.getElementById('bulk-est').value;
+  for (const id of pkmSelected) {
+    const s=songs.find(x=>x.id===id); if(!s) continue;
+    s.estado=est; logHist(s,'Estado cambiado a '+est+' (masivo)');
+    await SB.from('songs').update({estado:est,historial:s.historial,updated_at:nowIso()}).eq('id',id);
+  }
+  pkmSelected.clear(); renderPKM(); toast('Estado actualizado');
+}
+async function bulkDel() {
+  if(!confirm('¿Eliminar '+pkmSelected.size+' temas?')) return;
+  for (const id of pkmSelected) { await SB.from('songs').delete().eq('id',id); songs=songs.filter(s=>s.id!==id); }
+  pkmSelected.clear(); renderPKM(); toast('Temas eliminados');
+}
+
+function renderTable(el) {
+  const list = getFiltered();
+  if (!songs.length) { el.innerHTML=`<div class="empty">Sin temas todavía.<br><b>Añade el primero con "+ Nuevo tema".</b></div>`; return; }
+  if (!list.length)  { el.innerHTML=`<div class="empty">Ningún tema coincide con el filtro.</div>`; return; }
+  el.innerHTML = `<table class="pk-tbl"><thead><tr>
+    <th class="ns"><input type="checkbox" id="sel-all"></th>
+    <th onclick="setSort('titulo')">Tema ${sarr('titulo')}</th>
+    <th class="ns">Artistas</th>
+    <th onclick="setSort('estado')">Estado ${sarr('estado')}</th>
+    <th onclick="setSort('prioridad')">Prioridad ${sarr('prioridad')}</th>
+    <th class="ns">Plataformas</th>
+    <th onclick="setSort('fecha')">Fecha ${sarr('fecha')}</th>
+    <th class="ns"></th>
+  </tr></thead><tbody>
+  ${list.map(s => {
+    const prog=clProg(s);
+    return `<tr>
+      <td><input type="checkbox" class="rchk" data-id="${s.id}" ${pkmSelected.has(s.id)?'checked':''}></td>
+      <td><div class="title-cell">
+        ${s.portada?`<img class="cthumb" src="${s.portada}">`:`<div class="cthumb ph">${escH(s.titulo.charAt(0).toUpperCase())}</div>`}
+        <div>
+          <div class="stitle">${escH(s.titulo)}</div>
+          ${s.genero?`<div class="smeta">${escH(s.genero)}</div>`:''}
+          ${s.responsable?`<div class="smeta">👤 ${escH(s.responsable)}</div>`:''}
+          ${prog?`<div class="ptbar"><div class="ptfill" style="width:${prog.pct}%"></div></div><div class="smeta">${prog.done}/${prog.total}</div>`:''}
+        </div>
+      </div></td>
+      <td>${s.artistas.map(id=>`<span class="atag${isFeat(id)?' feat':''}">${escH(artistName(id))}</span>`).join('')||'<span class="smeta">—</span>'}</td>
+      <td><span class="pill ${pillClass(s.estado)}">${s.estado}</span></td>
+      <td><span class="pdot pd-${s.prioridad}"></span>${s.prioridad}</td>
+      <td><div class="plat-badges">
+        ${platBadge('spt','Spotify',s.spotify)}
+        ${platBadge('sc','SoundCloud',s.soundcloud)}
+      </div></td>
+      <td>${s.fecha||'<span class="smeta">—</span>'}</td>
+      <td><div class="row-acts">
+        <button class="pk-btn ghost sm" onclick="openSongModal('${s.id}')" title="Editar">✎</button>
+        <button class="pk-btn ghost sm" onclick="deleteSong('${s.id}')" title="Borrar">✕</button>
+      </div></td>
+    </tr>`;
+  }).join('')}
+  </tbody></table>`;
+
+  document.getElementById('sel-all').onchange = e => {
+    list.forEach(s => e.target.checked ? pkmSelected.add(s.id) : pkmSelected.delete(s.id));
+    renderTable(el);
+  };
+  document.querySelectorAll('.rchk').forEach(chk => {
+    chk.onchange = () => { chk.checked?pkmSelected.add(chk.dataset.id):pkmSelected.delete(chk.dataset.id); renderBulkBar(); };
+  });
+}
+
+function platBadge(cls,label,obj) {
+  if (!obj) return `<span class="plat ${cls}">${label}</span>`;
+  if (obj.publicado && obj.url) return `<a class="plat ${cls} on" href="${escH(obj.url)}" target="_blank" rel="noopener">${label}</a>`;
+  return `<span class="plat ${cls}${obj.publicado?' on':''}">${label}</span>`;
+}
+
+function renderKanban(el) {
+  const list = getFiltered();
+  el.innerHTML = `<div class="kanban">${ESTADOS.map(estado => {
+    const items=list.filter(s=>s.estado===estado);
+    return `<div class="kcol" data-estado="${estado}">
+      <div class="kcol-h"><span>${estado}</span><span class="cnt">${items.length}</span></div>
+      <div class="kcards" data-estado="${estado}">${items.map(s => {
+        const prog=clProg(s);
+        return `<div class="kcard" draggable="true" data-id="${s.id}" onclick="openSongModal('${s.id}')">
+          <div class="kt">${escH(s.titulo)}</div>
+          <div class="ka">${s.artistas.map(artistName).join(', ')||'sin asignar'}</div>
+          <span class="pdot pd-${s.prioridad}"></span><span style="color:var(--muted);font-size:10.5px">${s.prioridad}</span>
+          ${prog?`<div class="ptbar" style="max-width:none"><div class="ptfill" style="width:${prog.pct}%"></div></div>`:''}
+        </div>`;
+      }).join('')}</div>
+    </div>`;
+  }).join('')}</div>`;
+
+  el.querySelectorAll('.kcard').forEach(card => {
+    card.addEventListener('dragstart', e => { e.stopPropagation(); e.dataTransfer.setData('text/plain', card.dataset.id); });
+  });
+  el.querySelectorAll('.kcol').forEach(col => {
+    col.addEventListener('dragover',  e => { e.preventDefault(); col.classList.add('dragover'); });
+    col.addEventListener('dragleave', () => col.classList.remove('dragover'));
+    col.addEventListener('drop', async e => {
+      e.preventDefault(); col.classList.remove('dragover');
+      const id=e.dataTransfer.getData('text/plain');
+      const song=songs.find(s=>s.id===id);
+      if (song && song.estado!==col.dataset.estado) {
+        logHist(song,'Estado cambiado a '+col.dataset.estado+' (tablero)');
+        song.estado=col.dataset.estado;
+        await SB.from('songs').update({estado:song.estado,historial:song.historial,updated_at:nowIso()}).eq('id',id);
+        renderPKM(); toast('Estado actualizado');
+      }
+    });
+  });
+}
+
+// ── ARTISTAS ──
+function renderArtistas(el) {
+  const q = (document.getElementById('pk-art-search')?.value||'').trim().toLowerCase();
+  const list = artists.filter(a=>a.nombre.toLowerCase().includes(q)).sort((a,b)=>a.tipo.localeCompare(b.tipo)||a.nombre.localeCompare(b.nombre));
+  el.innerHTML = `
+    <div class="pk-toolbar">
+      <input class="pk-inp" id="pk-art-search" placeholder="Buscar artista..." oninput="renderArtistas(document.getElementById('pkm-content'))">
+      <div class="pk-spacer"></div>
+      <button class="pk-btn gold" onclick="openArtistModal(null)">+ Nuevo artista</button>
+    </div>
+    ${!artists.length ? `<div class="empty">Sin artistas todavía.<br><b>Añade miembros y feats con "+ Nuevo artista".</b></div>` :
+      !list.length ? `<div class="empty">Nadie coincide.</div>` :
+      `<div class="art-grid">${list.map(a => {
+        const cnt=songsFor(a.id).length;
+        return `<div class="art-card">
+          <span class="art-type ${a.tipo==='Miembro'?'t-m':'t-c'}">${a.tipo==='Miembro'?'Miembro del grupo':'Feat / colaborador'}</span>
+          <h3>${escH(a.nombre)}</h3>
+          ${a.contacto?`<div class="art-contact">${escH(a.contacto)}</div>`:''}
+          <div class="art-count">${cnt} tema${cnt!==1?'s':''}</div>
+          <div class="row-acts">
+            <button class="pk-btn ghost sm" onclick="openArtistModal('${a.id}')">Editar</button>
+            <button class="pk-btn ghost sm" onclick="deleteArtist('${a.id}')">Borrar</button>
+          </div>
+        </div>`;
+      }).join('')}</div>`
+    }
+  `;
+}
+
+// ── RESUMEN ──
+function renderResumen(el) {
+  const byE=ESTADOS.map(e=>({e,n:songs.filter(s=>s.estado===e).length}));
+  const max=Math.max(1,...byE.map(x=>x.n));
+  const upcoming=songs.filter(s=>s.fecha&&s.estado!=='Publicado').sort((a,b)=>a.fecha.localeCompare(b.fecha)).slice(0,6);
+  const rankFor=(tipo)=>{
+    const list=artists.filter(a=>a.tipo===tipo).map(a=>({nombre:a.nombre,n:songsFor(a.id).length})).filter(a=>a.n>0).sort((a,b)=>b.n-a.n).slice(0,8);
+    return list.length ? list.map((a,i)=>`<div class="rank-row"><span><span class="rn">#${i+1}</span> ${escH(a.nombre)}</span><span>${a.n}</span></div>`).join('') : `<div class="empty">Sin datos.</div>`;
+  };
+  el.innerHTML = `<div class="res-grid">
+    <div class="panel"><h3>Temas por estado</h3>${byE.map(x=>`
+      <div class="bar-row"><div class="bar-label">${x.e}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${x.n/max*100}%;background:${ESTADO_COLOR[x.e]}"></div></div>
+      <div class="bar-num">${x.n}</div></div>`).join('')}
+    </div>
+    <div class="panel"><h3>Próximos lanzamientos</h3>${upcoming.length?upcoming.map(s=>`<div class="up-row"><span>${escH(s.titulo)}</span><span class="ud">${s.fecha}</span></div>`).join(''):'<div class="empty">Sin fechas programadas.</div>'}</div>
+    <div class="panel"><h3>Ranking feats</h3>${rankFor('Colaborador')}</div>
+    <div class="panel"><h3>Ranking miembros</h3>${rankFor('Miembro')}</div>
+  </div>`;
+}
+
+// ── SONG MODAL ──
+function openSongModal(id) {
+  const song = id ? songs.find(s=>s.id===id) : {
+    id:uid(), titulo:'', artistas:[], estado:'Idea', genero:'', fecha:'', prioridad:'Media',
+    responsable:'', portada:'', notas:'', creado:nowIso(), historial:[],
+    checklist: DEFAULT_CL.map(t=>({id:uid(),texto:t,hecho:false})),
+    spotify:{publicado:false,url:''}, soundcloud:{publicado:false,url:''}
+  };
+  const isNew = !id;
+  window._mcl = JSON.parse(JSON.stringify(song.checklist||[]));
+
+  const artOpts = (tipo) => artists.filter(a=>a.tipo===tipo).map(a=>`
+    <label class="${song.artistas.includes(a.id)?'checked':''}">
+      <input type="checkbox" value="${a.id}" ${song.artistas.includes(a.id)?'checked':''} onchange="this.parentElement.classList.toggle('checked',this.checked)">
+      ${escH(a.nombre)}</label>`).join('')||'<span class="smeta">ninguno todavía</span>';
+
+  const root = document.getElementById('pkm-modal-root');
+  root.innerHTML = `<div class="pk-ov" onclick="if(event.target===this)closePKMModal()">
+    <div class="pk-modal">
+      <h2>${isNew?'Nuevo tema':'Editar tema'}</h2>
+      <div class="field"><label>Título</label><input type="text" id="f-tit" value="${escH(song.titulo)}" placeholder="Nombre del tema"></div>
+      <div class="field"><label>Portada</label>
+        <div class="cover-up">
+          <img class="cover-prev" id="f-prev" src="${song.portada||''}" style="${song.portada?'':'display:none'}">
+          <input type="file" id="f-port" accept="image/*">
+          ${song.portada?`<button type="button" class="pk-btn ghost sm" onclick="document.getElementById('f-prev').src='';document.getElementById('f-prev').style.display='none';document.getElementById('f-prev').dataset.cleared='1'">Quitar</button>`:''}
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Estado</label><select id="f-est">${ESTADOS.map(e=>`<option ${song.estado===e?'selected':''}>${e}</option>`).join('')}</select></div>
+        <div class="field"><label>Prioridad</label><select id="f-prio">${['Alta','Media','Baja'].map(p=>`<option ${song.prioridad===p?'selected':''}>${p}</option>`).join('')}</select></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Fecha prevista/real</label><input type="date" id="f-fecha" value="${song.fecha||''}"></div>
+        <div class="field"><label>Responsable</label><input type="text" id="f-resp" value="${escH(song.responsable||'')}" placeholder="quién lo mueve"></div>
+      </div>
+      <div class="field"><label>Género</label><input type="text" id="f-gen" value="${escH(song.genero||'')}" placeholder="trap, reggaeton, freestyle..."></div>
+      <div class="field"><label>Miembros del grupo</label><div class="art-picker" id="picker-m">${artOpts('Miembro')}</div></div>
+      <div class="field"><label>Feats / colaboradores</label><div class="art-picker" id="picker-c">${artOpts('Colaborador')}</div></div>
+      <div class="field-row">
+        <div class="field"><label>Spotify</label>
+          <div class="chk-row"><input type="checkbox" id="f-spt" ${song.spotify?.publicado?'checked':''}><span style="color:var(--muted);font-size:12px">Publicado</span></div>
+          <input type="text" id="f-spt-url" value="${escH(song.spotify?.url||'')}" placeholder="Enlace Spotify" style="margin-top:6px">
+        </div>
+        <div class="field"><label>SoundCloud</label>
+          <div class="chk-row"><input type="checkbox" id="f-sc" ${song.soundcloud?.publicado?'checked':''}><span style="color:var(--muted);font-size:12px">Publicado</span></div>
+          <input type="text" id="f-sc-url" value="${escH(song.soundcloud?.url||'')}" placeholder="Enlace SoundCloud" style="margin-top:6px">
+        </div>
+      </div>
+      <div class="field"><label>Checklist de producción</label>
+        <div id="cl-box"></div>
+        <div class="add-cl"><input type="text" id="cl-new" placeholder="Añadir tarea..."><button type="button" class="pk-btn ghost sm" onclick="clAdd()">Añadir</button></div>
+      </div>
+      <div class="field"><label>Notas</label><textarea id="f-notas" placeholder="referencias, pendientes, ideas...">${escH(song.notas||'')}</textarea></div>
+      ${song.historial&&song.historial.length?`<details class="hist"><summary>Historial (${song.historial.length})</summary>${song.historial.map(h=>`<div class="hist-e"><b>${fmtDT(h.fecha)}</b> — ${escH(h.texto)}</div>`).join('')}</details>`:''}
+      <div class="modal-acts">
+        ${!isNew?`<button class="pk-btn danger sm danger" onclick="deleteSong('${song.id}');closePKMModal()">Borrar</button>`:''}
+        <button class="pk-btn ghost sm" onclick="closePKMModal()">Cancelar</button>
+        <button class="pk-btn gold sm" onclick="saveSong('${song.id}',${isNew})">Guardar</button>
+      </div>
+    </div></div>`;
+
+  renderCL();
+  document.getElementById('f-port').addEventListener('change', e => {
+    const file=e.target.files[0]; if(!file) return;
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      const img=new Image();
+      img.onload=()=>{
+        const maxW=320, scale=Math.min(1,maxW/img.width);
+        const cv=document.createElement('canvas'); cv.width=img.width*scale; cv.height=img.height*scale;
+        cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
+        const url=cv.toDataURL('image/jpeg',.72);
+        const prev=document.getElementById('f-prev'); prev.src=url; prev.style.display=''; prev.dataset.cleared='';
+      };
+      img.src=ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderCL() {
+  const box=document.getElementById('cl-box'); if(!box) return;
+  const items=window._mcl||[];
+  box.innerHTML=items.length?items.map(it=>`<div class="cl-item">
+    <input type="checkbox" ${it.hecho?'checked':''} onchange="clToggle('${it.id}')">
+    <span class="txt ${it.hecho?'done':''}">${escH(it.texto)}</span>
+    <button type="button" onclick="clRemove('${it.id}')">✕</button>
+  </div>`).join(''):'<div class="smeta">Sin tareas.</div>';
+}
+function clToggle(id){ const it=window._mcl.find(c=>c.id===id); if(it) it.hecho=!it.hecho; renderCL(); }
+function clRemove(id){ window._mcl=window._mcl.filter(c=>c.id!==id); renderCL(); }
+function clAdd(){ const inp=document.getElementById('cl-new'); const txt=inp.value.trim(); if(!txt) return; window._mcl.push({id:uid(),texto:txt,hecho:false}); inp.value=''; renderCL(); }
+
+async function saveSong(id, isNew) {
+  const titulo=document.getElementById('f-tit').value.trim();
+  if(!titulo){ toast('Ponle un título'); return; }
+  const miembros=Array.from(document.querySelectorAll('#picker-m input:checked')).map(i=>i.value);
+  const colabs  =Array.from(document.querySelectorAll('#picker-c input:checked')).map(i=>i.value);
+  const prevSong=songs.find(s=>s.id===id);
+  const prevEst=prevSong?prevSong.estado:null;
+  const newEst=document.getElementById('f-est').value;
+  const coverEl=document.getElementById('f-prev');
+  const portada=coverEl.dataset.cleared==='1'?'':(coverEl.src&&coverEl.style.display!=='none'?coverEl.src:(prevSong?prevSong.portada:''));
+
+  const data={
+    id, titulo, estado:newEst,
+    prioridad:document.getElementById('f-prio').value,
+    fecha:document.getElementById('f-fecha').value,
+    responsable:document.getElementById('f-resp').value.trim(),
+    genero:document.getElementById('f-gen').value.trim(),
+    artistas:[...miembros,...colabs], portada,
+    checklist:window._mcl||[],
+    spotify:{publicado:document.getElementById('f-spt').checked,url:document.getElementById('f-spt-url').value.trim()},
+    soundcloud:{publicado:document.getElementById('f-sc').checked,url:document.getElementById('f-sc-url').value.trim()},
+    notas:document.getElementById('f-notas').value.trim(),
+    creado:prevSong?prevSong.creado:nowIso(),
+    historial:prevSong?prevSong.historial:[],
+    updated_at:nowIso(),
+  };
+  if(isNew){ logHist(data,'Tema creado'); }
+  else { logHist(data,prevEst!==newEst?'Estado cambiado a '+newEst:'Editado'); }
+
+  const { error } = await SB.from('songs').upsert(data);
+  if(error){ toast('Error al guardar: '+error.message); return; }
+
+  if(isNew){ songs.unshift(data); } else { songs=songs.map(s=>s.id===id?data:s); }
+  closePKMModal(); renderPKM(); toast('Tema guardado ✓');
+}
+
+async function deleteSong(id) {
+  if(!confirm('¿Borrar este tema?')) return;
+  await SB.from('songs').delete().eq('id',id);
+  songs=songs.filter(s=>s.id!==id); pkmSelected.delete(id);
+  renderPKM(); toast('Tema borrado');
+}
+
+function closePKMModal(){ const r=document.getElementById('pkm-modal-root'); if(r) r.innerHTML=''; window._mcl=null; }
+
+// ── ARTIST MODAL ──
+function openArtistModal(id) {
+  const artist=id?artists.find(a=>a.id===id):{id:uid(),nombre:'',tipo:'Miembro',contacto:''};
+  const isNew=!id;
+  const root=document.getElementById('pkm-modal-root');
+  root.innerHTML=`<div class="pk-ov" onclick="if(event.target===this)closePKMModal()">
+    <div class="pk-modal" style="max-width:360px">
+      <h2>${isNew?'Nuevo artista':'Editar artista'}</h2>
+      <div class="field"><label>Nombre artístico</label><input type="text" id="a-nom" value="${escH(artist.nombre)}"></div>
+      <div class="field"><label>Tipo</label><select id="a-tipo">
+        <option value="Miembro" ${artist.tipo==='Miembro'?'selected':''}>Miembro del grupo</option>
+        <option value="Colaborador" ${artist.tipo==='Colaborador'?'selected':''}>Feat / colaborador externo</option>
+      </select></div>
+      <div class="field"><label>Contacto (Instagram, email, teléfono…)</label><input type="text" id="a-con" value="${escH(artist.contacto||'')}" placeholder="@usuario / email"></div>
+      <div class="modal-acts">
+        ${!isNew?`<button class="pk-btn danger sm" onclick="deleteArtist('${artist.id}');closePKMModal()">Borrar</button>`:''}
+        <button class="pk-btn ghost sm" onclick="closePKMModal()">Cancelar</button>
+        <button class="pk-btn gold sm" onclick="saveArtist('${artist.id}',${isNew})">Guardar</button>
+      </div>
+    </div></div>`;
+}
+
+async function saveArtist(id, isNew) {
+  const nombre=document.getElementById('a-nom').value.trim();
+  if(!nombre){ toast('Ponle un nombre'); return; }
+  const data={id, nombre, tipo:document.getElementById('a-tipo').value, contacto:document.getElementById('a-con').value.trim()};
+  const { error }=await SB.from('artists').upsert(data);
+  if(error){ toast('Error: '+error.message); return; }
+  if(isNew){ artists.push(data); } else { artists=artists.map(a=>a.id===id?data:a); }
+  closePKMModal(); renderPKM(); toast('Artista guardado ✓');
+}
+
+async function deleteArtist(id) {
+  const cnt=songsFor(id).length;
+  const msg=cnt?`Este artista aparece en ${cnt} tema(s). Se quitará de esos temas. ¿Continuar?`:'¿Borrar este artista?';
+  if(!confirm(msg)) return;
+  await SB.from('artists').delete().eq('id',id);
+  artists=artists.filter(a=>a.id!==id);
+  const updated=songs.filter(s=>s.artistas.includes(id));
+  for(const s of updated){ s.artistas=s.artistas.filter(aid=>aid!==id); await SB.from('songs').update({artistas:s.artistas,updated_at:nowIso()}).eq('id',s.id); }
+  renderPKM(); toast('Artista borrado');
+}
+
+// ── Export / Import ──
+function pkmExportJSON() {
+  const blob=new Blob([JSON.stringify({songs,artists},null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='perkymafia-backup.json'; a.click(); URL.revokeObjectURL(a.href);
+  toast('Backup descargado');
+}
+function pkmExportCSV() {
+  const h=['Titulo','Artistas','Estado','Prioridad','Responsable','Fecha','Genero','Spotify','SC','Notas'];
+  const rows=songs.map(s=>[s.titulo,s.artistas.map(artistName).join('|'),s.estado,s.prioridad,s.responsable,s.fecha,s.genero,s.spotify?.publicado?'Si':'No',s.soundcloud?.publicado?'Si':'No',s.notas]);
+  const csv=[h,...rows].map(r=>r.map(v=>{const s=String(v??''); return /[",;\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;}).join(';')).join('\n');
+  const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='perkymafia.csv'; a.click(); URL.revokeObjectURL(a.href);
+  toast('CSV descargado');
+}
+function pkmImport(){ document.getElementById('pkm-file')?.click(); }
+async function pkmImportFile(input) {
+  const file=input.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=async e=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      if(Array.isArray(data.songs)) { for(const s of data.songs){ migrateSong(s); await SB.from('songs').upsert(s); } songs=data.songs; }
+      if(Array.isArray(data.artists)) { for(const a of data.artists){ await SB.from('artists').upsert(a); } artists=data.artists; }
+      renderPKM(); toast('Datos importados ✓');
+    }catch{ toast('Archivo no válido'); }
+  };
+  reader.readAsText(file);
+  input.value='';
+}
+
+// Keyboard shortcuts inside PKM
+document.addEventListener('keydown', e => {
+  const typing=['input','textarea','select'].includes((e.target.tagName||'').toLowerCase())||e.target.isContentEditable;
+  if(e.key==='/'&&!typing){ e.preventDefault(); document.getElementById('pk-search')?.focus(); }
+  if(e.key==='n'&&!typing&&!document.querySelector('.pk-ov')){ e.preventDefault(); if(document.getElementById('pkmapp')) openSongModal(null); }
+  if(e.key==='Escape'&&document.querySelector('.pk-ov')){ closePKMModal(); }
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ADMIN PANEL
+// ═══════════════════════════════════════════════════════════════════════════
+function openAdmin() {
+  mkWin({ id:'admin', title:'Usuarios', icon:'👥', w:600, h:420, body:`<div class="adm-app" id="adm-content"><div style="padding:20px;color:var(--muted)">Cargando...</div></div>` });
+  loadAdminPanel();
+}
+
+async function loadAdminPanel() {
+  const el = document.getElementById('adm-content');
+  if (!el) return;
+
+  const { data: profiles, error } = await SB.from('profiles').select('*').order('created_at');
+  if (error) { el.innerHTML=`<div style="padding:20px;color:var(--pink)">Error: ${error.message}</div>`; return; }
+
+  el.innerHTML = `
+    <div class="adm-title">Gestión de usuarios</div>
+    <table class="adm-tbl">
+      <thead><tr><th>Nombre</th><th>Email</th><th>Estado</th><th>Registrado</th><th>Acciones</th></tr></thead>
+      <tbody>
+        ${profiles.map(p => {
+          const badge = p.role==='admin' ? '<span class="badge-adm">Admin</span>' :
+                        p.approved       ? '<span class="badge-appr">Aprobado</span>' :
+                                           '<span class="badge-pend">Pendiente</span>';
+          return `<tr>
+            <td>${escH(p.nombre)}</td>
+            <td style="color:var(--muted)">${escH(p.email)}</td>
+            <td>${badge}</td>
+            <td style="color:var(--muted)">${fmtDT(p.created_at)}</td>
+            <td>
+              ${p.role!=='admin'&&!p.approved ? `<button class="pk-btn gold sm" onclick="admApprove('${p.id}')">✓ Aprobar</button> ` : ''}
+              ${p.role!=='admin'&&p.approved  ? `<button class="pk-btn ghost sm" onclick="admRevoke('${p.id}')">Revocar</button> ` : ''}
+              ${p.role!=='admin'&&p.id!==currentProfile?.id ? `<button class="pk-btn ghost sm" onclick="admDelete('${p.id}')">Borrar</button>` : ''}
+            </td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+async function admApprove(id) {
+  await SB.from('profiles').update({approved:true}).eq('id',id);
+  toast('Usuario aprobado ✓'); loadAdminPanel();
+}
+async function admRevoke(id) {
+  if(!confirm('¿Revocar el acceso?')) return;
+  await SB.from('profiles').update({approved:false}).eq('id',id);
+  toast('Acceso revocado'); loadAdminPanel();
+}
+async function admDelete(id) {
+  if(!confirm('¿Borrar este usuario permanentemente?')) return;
+  await SB.from('profiles').delete().eq('id',id);
+  toast('Usuario borrado'); loadAdminPanel();
 }
 </script>
 </body>
