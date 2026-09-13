@@ -494,12 +494,13 @@ async function doLogin(){
   const email=$('l-email').value.trim(),pass=$('l-pass').value;
   const errEl=$('l-err');errEl.textContent='';errEl.style.color='red';
   if(!email||!pass){errEl.textContent='Completa todos los campos';return;}
-  errEl.style.color='#555';errEl.textContent='Entrando...';
+  errEl.style.color='#555';errEl.textContent='Conectando con Supabase...';
+  const tout=new Promise((_,r)=>setTimeout(()=>r(new Error('Sin respuesta de Supabase. Recarga la página e inténtalo de nuevo.')),15000));
   try{
-    const{error}=await SB.auth.signInWithPassword({email,password:pass});
-    if(error){errEl.style.color='red';errEl.textContent=error.message;}
-    else{errEl.textContent='';}
-  }catch(e){errEl.style.color='red';errEl.textContent='Error: '+e.message;}
+    const res=await Promise.race([SB.auth.signInWithPassword({email,password:pass}),tout]);
+    if(res.error){errEl.style.color='red';errEl.textContent=res.error.message;}
+    else{errEl.style.color='green';errEl.textContent='✅ Login OK. Cargando...';}
+  }catch(e){errEl.style.color='red';errEl.textContent=e.message;}
 }
 
 async function doRegister(){
