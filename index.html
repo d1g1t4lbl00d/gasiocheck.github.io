@@ -272,6 +272,57 @@ body{width:100vw;height:100vh;overflow:hidden;font-family:Arial,sans-serif;font-
 .admin-table td{padding:4px 8px;border-bottom:1px solid #d0d0d0;vertical-align:middle}
 .admin-table tr:hover td{background:#f0f0f8}
 
+/* MI PANEL */
+.panel-app{padding:10px;overflow-y:auto;height:100%}
+.panel-section{margin-bottom:16px}
+.panel-section h3{font-size:11px;font-weight:bold;text-transform:uppercase;letter-spacing:1px;border-bottom:2px solid var(--navy);padding-bottom:3px;margin-bottom:8px;color:var(--navy)}
+.panel-task{display:flex;gap:8px;align-items:center;padding:5px 8px;border:1px solid #d0d0d0;margin-bottom:4px;background:#fff;font-size:11px;cursor:pointer}
+.panel-task:hover{background:#eeeef8}
+.panel-task .pt-song{font-weight:bold;flex:1}
+.panel-task .pt-task{flex:2;color:#333}
+.panel-task .pt-badge{font-size:9px;padding:1px 5px;border-radius:2px;border:1px solid}
+.panel-empty{color:#888;font-size:11px;padding:6px 0}
+.prog-mini{height:4px;background:#e0e0e0;border-radius:2px;margin-top:3px;overflow:hidden}
+.prog-mini-fill{height:100%;background:var(--navy);border-radius:2px}
+.prog-pct{font-size:9px;color:#666;margin-left:4px}
+
+/* ACTIVIDAD */
+.act-app{padding:10px;overflow-y:auto;height:100%}
+.act-day{font-size:10px;font-weight:bold;text-transform:uppercase;letter-spacing:1px;color:#666;margin:10px 0 5px;padding-bottom:3px;border-bottom:1px solid #ddd}
+.act-item{display:flex;gap:8px;align-items:flex-start;padding:5px 6px;margin-bottom:3px;background:#fff;border:1px solid #e0e0e0;font-size:11px}
+.act-av{width:24px;height:24px;background:var(--navy);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;flex-shrink:0}
+.act-body{flex:1}
+.act-who{font-weight:bold}
+.act-what{color:#333}
+.act-song{color:var(--navy);font-style:italic}
+.act-time{font-size:9px;color:#888;flex-shrink:0}
+
+/* SPRINT */
+.sprint-app{display:flex;flex-direction:column;height:100%}
+.sprint-main{flex:1;display:flex;overflow:hidden;min-height:0}
+.sprint-left{width:260px;flex-shrink:0;border-right:1px solid #808080;overflow-y:auto;background:#e8e8e8}
+.sprint-right{flex:1;overflow-y:auto;padding:10px;background:#f5f5f5}
+.sprint-left-h{padding:6px 8px;font-weight:bold;font-size:11px;border-bottom:1px solid #808080;background:var(--c0)}
+.sprint-song-item{display:flex;align-items:center;gap:6px;padding:6px 8px;border-bottom:1px solid #d0d0d0;font-size:11px;cursor:pointer}
+.sprint-song-item:hover{background:#d8d8d8}
+.sprint-song-item input[type=checkbox]{flex-shrink:0}
+.sprint-card{background:#fff;border:1px solid #999;padding:8px 10px;margin-bottom:8px;box-shadow:1px 1px 3px rgba(0,0,0,.15)}
+.sprint-card-title{font-weight:bold;font-size:12px;margin-bottom:4px}
+.sprint-stage-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;margin-top:6px}
+.sprint-stage{font-size:10px;text-align:center;padding:2px 4px;border:1px solid;border-radius:2px}
+.sprint-stage.done{background:#d4edda;color:#155724;border-color:#155724}
+.sprint-stage.todo{background:#f8f8f8;color:#888;border-color:#ddd}
+
+/* PRODUCTION STAGES */
+.stage-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #eee;font-size:11px}
+.stage-row input[type=checkbox]{flex-shrink:0}
+.stage-name{width:80px;font-weight:bold}
+.stage-assign{flex:1}
+.stage-assign select{width:100%;border:1px solid #999;background:#fff;padding:2px;font-size:10px}
+.prod-prog{height:12px;background:#e0e0e0;border:1px solid #999;margin-bottom:12px;overflow:hidden;position:relative}
+.prod-prog-fill{height:100%;background:linear-gradient(to right,#000080,#1084d0);transition:width .3s}
+.prod-prog-lbl{position:absolute;right:4px;top:0;font-size:9px;line-height:12px;color:#000;font-weight:bold}
+
 /* SCROLLBARS */
 ::-webkit-scrollbar{width:16px;height:16px}
 ::-webkit-scrollbar-track{background:var(--c0)}
@@ -468,7 +519,7 @@ async function loadUserData(user){
   }
   CP=p;
   if(!p.approved){showScreen('scr-pending');return;}
-  await Promise.all([loadSongs(),loadArtists(),loadProfiles(),loadMessages(),loadNotes(),loadEvents()]);
+  await Promise.all([loadSongs(),loadArtists(),loadProfiles(),loadMessages(),loadNotes(),loadEvents(),loadActivityLog()]);
   setupDesktop();
   setupRealtime();
   showScreen('scr-desktop');
@@ -727,6 +778,10 @@ function toggleStart(){
       <div class="sm-item" onclick="openAgenda();toggleStart()">📅 Agenda</div>
       <div class="sm-item" onclick="openNotas();toggleStart()">📝 Notas</div>
       <div class="sm-item" onclick="openStats();toggleStart()">📊 Estadísticas</div>
+      <div class="sm-divider"></div>
+      <div class="sm-item" onclick="openMiPanel();toggleStart()">🧑‍💻 Mi Panel</div>
+      <div class="sm-item" onclick="openActividad();toggleStart()">📡 Actividad</div>
+      <div class="sm-item" onclick="openSprint();toggleStart()">🚀 Sprint</div>
       ${CP&&CP.role==='admin'?'<div class="sm-divider"></div><div class="sm-item" onclick="openAdmin();toggleStart()">👥 Usuarios</div>':''}
       <div class="sm-divider"></div>
       <div class="sm-item" onclick="openProfile();toggleStart()">👤 Mi Perfil</div>
@@ -749,6 +804,9 @@ function setupDesktop(){
     {id:'stats',icon:'📊',label:'Estadísticas',fn:'openStats()'},
     {id:'profile',icon:'👤',label:'Mi Perfil',fn:'openProfile()'},
   ];
+  apps.push({id:'mipanel',icon:'🧑‍💻',label:'Mi Panel',fn:'openMiPanel()'});
+  apps.push({id:'actividad',icon:'📡',label:'Actividad',fn:'openActividad()'});
+  apps.push({id:'sprint',icon:'🚀',label:'Sprint',fn:'openSprint()'});
   if(CP&&CP.role==='admin')apps.push({id:'admin',icon:'👥',label:'Usuarios',fn:'openAdmin()'});
   bg.innerHTML=apps.map(a=>`
     <div class="desk-icon" ondblclick="${a.fn}" onclick="selIcon(this)" oncontextmenu="event.preventDefault()">
@@ -836,6 +894,7 @@ function renderTable(){
       <td>${esc(s.genero||'')}</td>
       <td>${s.bpm||''}</td>
       <td>${fmtD(s.updated_at)}</td>
+      <td><span style="font-size:10px;color:var(--navy)">${songProgress(s)>0?songProgress(s)+'%':''}</span></td>
       <td onclick="event.stopPropagation()"><button class="rbtn danger" onclick="deleteSong('${s.id}')">✕</button></td>
     </tr>`).join('')}</tbody></table>`;
 }
@@ -858,6 +917,7 @@ function renderKanban(){
             ondblclick="openSongModal('${s.id}')">
             <div class="k-card-t">${esc(s.titulo)}</div>
             <div class="k-card-a">${esc((s.artistas||[]).join(', '))}</div>
+            ${(()=>{const p=songProgress(s);return p>0?`<div class="prog-mini" title="${p}% producción"><div class="prog-mini-fill" style="width:${p}%"></div></div>`:'';})()}
           </div>`).join('')}
       </div>
     </div>`).join('');
@@ -946,6 +1006,7 @@ function renderSongModal(id){
         <div class="mtab on" id="mt-general" onclick="switchMTab('general','${id||''}')">General</div>
         <div class="mtab" id="mt-links" onclick="switchMTab('links','${id||''}')">Links</div>
         <div class="mtab" id="mt-tareas" onclick="switchMTab('tareas','${id||''}')">Tareas</div>
+        <div class="mtab" id="mt-produccion" onclick="switchMTab('produccion','${id||''}')">⚙️ Producción</div>
         ${!isNew?`<div class="mtab" id="mt-comentarios" onclick="switchMTab('comentarios','${id||''}')">Comentarios</div>`:''}
         ${!isNew?`<div class="mtab" id="mt-historial" onclick="switchMTab('historial','${id||''}')">Historial</div>`:''}
       </div>
@@ -1045,6 +1106,26 @@ function renderMTabContent(id){
       <div style="margin-top:10px;border-top:1px solid #ddd;padding-top:10px">
         <textarea id="com-text" placeholder="Escribe un comentario..." style="width:100%;height:60px;border:2px solid;border-color:#808080 #fff #fff #808080;padding:6px;font-size:11px;resize:vertical;font-family:Arial"></textarea>
         <button class="rbtn" onclick="addComment()" style="margin-top:4px">Añadir comentario</button>
+      </div>`;
+  } else if(mTab==='produccion'){
+    const stages=s.production_stages&&s.production_stages.length?s.production_stages:getDefaultStages();
+    curSong.production_stages=stages;
+    const done=stages.filter(x=>x.done).length;const pct=Math.round(done/stages.length*100);
+    const memOpts='<option value="">—</option>'+profiles.map(p=>`<option value="${p.id}">${esc(p.artist_name||p.nombre||p.email)}</option>`).join('');
+    c.innerHTML=`
+      <div class="prod-prog"><div class="prod-prog-fill" style="width:${pct}%"></div><span class="prod-prog-lbl">${pct}%</span></div>
+      <div id="stages-list">
+      ${stages.map((st,i)=>`
+        <div class="stage-row">
+          <input type="checkbox" ${st.done?'checked':''} onchange="toggleStage(${i},this.checked)">
+          <span class="stage-name">${esc(st.name)}</span>
+          <div class="stage-assign">
+            <select onchange="assignStage(${i},this.value,this.options[this.selectedIndex].text)">
+              ${memOpts.replace(`value="${st.assignee_id||''}"`,`value="${st.assignee_id||''}" selected`)}
+            </select>
+          </div>
+          <span style="font-size:10px;color:#666">${st.assignee_name&&st.assignee_id?'→ '+esc(st.assignee_name):''}</span>
+        </div>`).join('')}
       </div>`;
   } else if(mTab==='historial'){
     const hist=s.historial||[];
@@ -1499,6 +1580,268 @@ async function admDelete(id){
   if(!confirm('¿Eliminar usuario permanentemente?'))return;
   await SB.from('profiles').delete().eq('id',id);
   loadAdminPanel();notify('Admin','Usuario eliminado','ok');
+}
+
+// ===== PRODUCTION STAGES =====
+const DEFAULT_STAGES_DEF=[
+  {id:'beat',name:'Beat'},{id:'letra',name:'Letra'},{id:'vocal',name:'Vocal'},
+  {id:'mezcla',name:'Mezcla'},{id:'master',name:'Máster'},{id:'arte',name:'Arte'},
+  {id:'video',name:'Vídeo'},{id:'pub',name:'Publicación'}
+];
+function getDefaultStages(){return DEFAULT_STAGES_DEF.map(s=>({...s,done:false,assignee_id:'',assignee_name:''}));}
+function songProgress(song){
+  const st=song.production_stages||[];if(!st.length)return 0;
+  return Math.round(st.filter(s=>s.done).length/st.length*100);
+}
+function toggleStage(i,done){
+  if(!curSong.production_stages)curSong.production_stages=getDefaultStages();
+  const st=curSong.production_stages[i];if(!st)return;
+  const wasDone=st.done;st.done=done;
+  if(done&&!wasDone)logActivity('stage_completada',curSong.id||'',curSong.titulo,{stage:st.name});
+  renderMTabContent(curSong.id);
+}
+function assignStage(i,uid,uname){
+  if(!curSong.production_stages)curSong.production_stages=getDefaultStages();
+  const st=curSong.production_stages[i];if(!st)return;
+  st.assignee_id=uid;st.assignee_name=uid?uname:'';
+  renderMTabContent(curSong.id);
+}
+
+// ===== ACTIVITY LOG =====
+let activityLog=[];
+async function loadActivityLog(){
+  const{data}=await SB.from('activity_log').select('*').order('created_at',{ascending:false}).limit(100);
+  activityLog=data||[];
+}
+async function logActivity(action,song_id,song_titulo,detail){
+  try{await SB.from('activity_log').insert({user_id:CU.id,action,song_id:song_id||null,song_titulo,detail});}catch(e){}
+}
+
+// Patch saveSong to log
+const _origSaveSong=saveSong;
+async function saveSong(id){
+  const isNew=!id;
+  await _origSaveSong(id);
+  if(isNew)logActivity('tema_nuevo','',curSong.titulo||'',{});
+}
+
+// Patch dropKanban to log
+const _origDrop=dropKanban;
+async function dropKanban(e,estado){
+  const id=e.dataTransfer.getData('songId');
+  const s=songs.find(x=>x.id===id);
+  const prev=s?s.estado:'';
+  await _origDrop(e,estado);
+  if(id&&prev!==estado)logActivity('estado_cambio',id,s?s.titulo:'',{from:prev,to:estado});
+}
+
+// Patch addComment to log
+const _origAddComment=addComment;
+function addComment(){
+  _origAddComment();
+  if(curSong)logActivity('comentario',curSong.id||'',curSong.titulo,{});
+}
+
+// ===========================
+// ===== APP: MI PANEL ========
+// ===========================
+function openMiPanel(){
+  if(wins['mipanel']){if(wins['mipanel'].minimized)unmin('mipanel');else focusWin('mipanel');return;}
+  mkWin('mipanel','Mi Panel','🧑‍💻',720,520,`<div class="panel-app" id="mipanel-inner">Cargando...</div>`);
+  renderMiPanel();
+}
+function renderMiPanel(){
+  const c=$('mipanel-inner');if(!c)return;
+  // Mis tareas pendientes
+  const misTareas=[];
+  songs.forEach(s=>(s.tareas||[]).forEach(t=>{if(t.assignee_id===CU.id&&!t.done)misTareas.push({song:s,task:t});}));
+  // Mis temas
+  const miNombre=(CP.artist_name||CP.nombre||'').toLowerCase();
+  const misTemas=songs.filter(s=>s.user_id===CU.id||(s.artistas||[]).some(a=>a.toLowerCase()===miNombre));
+  // Sprint activo
+  const sprintSongs=songs.filter(s=>s.in_sprint);
+  // Mis eventos próximos
+  const hoy=new Date();hoy.setHours(0,0,0,0);
+  const misEvts=events.filter(e=>e.user_id===CU.id&&new Date(e.event_date)>=hoy).slice(0,5);
+
+  c.innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div>
+        <div class="panel-section">
+          <h3>⚡ Mis tareas pendientes (${misTareas.length})</h3>
+          ${misTareas.length?misTareas.map(({song:s,task:t})=>`
+            <div class="panel-task" onclick="openSongModal('${s.id}');switchMTab('tareas','${s.id}')">
+              <span class="pt-song">${esc(s.titulo)}</span>
+              <span class="pt-task">${esc(t.texto)}</span>
+              <span class="pt-badge e-${s.estado.replace(/ /g,'_')}" style="background:${ECOLORS[s.estado]};color:${ETCOLORS[s.estado]};border-color:${ETCOLORS[s.estado]}">${esc(s.estado)}</span>
+            </div>`).join(''):'<div class="panel-empty">✅ Sin tareas pendientes</div>'}
+        </div>
+        <div class="panel-section">
+          <h3>🚀 Sprint actual (${sprintSongs.length} temas)</h3>
+          ${sprintSongs.length?sprintSongs.map(s=>`
+            <div class="panel-task" onclick="openSongModal('${s.id}')">
+              <span class="pt-song">${esc(s.titulo)}</span>
+              <span class="pt-badge e-${s.estado.replace(/ /g,'_')}" style="background:${ECOLORS[s.estado]};color:${ETCOLORS[s.estado]};border-color:${ETCOLORS[s.estado]}">${esc(s.estado)}</span>
+              <span class="prog-pct">${songProgress(s)}%</span>
+            </div>`).join(''):'<div class="panel-empty">Sin temas en sprint activo. Abre <strong>🚀 Sprint</strong> para añadir.</div>'}
+        </div>
+      </div>
+      <div>
+        <div class="panel-section">
+          <h3>🎵 Mis temas (${misTemas.length})</h3>
+          ${misTemas.length?misTemas.slice(0,8).map(s=>`
+            <div class="panel-task" onclick="openSongModal('${s.id}')">
+              <span class="pt-song">${esc(s.titulo)}</span>
+              <div style="flex:1">
+                <div class="prog-mini"><div class="prog-mini-fill" style="width:${songProgress(s)}%"></div></div>
+              </div>
+              <span class="pt-badge e-${s.estado.replace(/ /g,'_')}" style="background:${ECOLORS[s.estado]};color:${ETCOLORS[s.estado]};border-color:${ETCOLORS[s.estado]}">${esc(s.estado)}</span>
+            </div>`).join(''):'<div class="panel-empty">No tienes temas asignados</div>'}
+        </div>
+        <div class="panel-section">
+          <h3>📅 Mis próximos eventos (${misEvts.length})</h3>
+          ${misEvts.length?misEvts.map(e=>{const t=ETYPES[e.type]||ETYPES.other;return`
+            <div class="panel-task">
+              <span>${t.icon}</span>
+              <span class="pt-song">${esc(e.title)}</span>
+              <span style="font-size:10px;color:#666">${fmtD(e.event_date)}</span>
+            </div>`;}).join(''):'<div class="panel-empty">Sin eventos próximos</div>'}
+        </div>
+      </div>
+    </div>`;
+}
+
+// ===========================
+// ===== APP: ACTIVIDAD =======
+// ===========================
+function openActividad(){
+  if(wins['actividad']){if(wins['actividad'].minimized)unmin('actividad');else focusWin('actividad');return;}
+  mkWin('actividad','Actividad del grupo','📡',620,480,`<div class="act-app" id="act-inner">Cargando...</div>`);
+  loadAndRenderActividad();
+}
+async function loadAndRenderActividad(){
+  await loadActivityLog();renderActividad();
+}
+function renderActividad(){
+  const c=$('act-inner');if(!c)return;
+  if(!activityLog.length){c.innerHTML='<div style="padding:20px;color:#666">Sin actividad registrada todavía.</div>';return;}
+  const LABELS={tema_nuevo:'añadió el tema',estado_cambio:'cambió estado',tarea_completada:'completó tarea',comentario:'comentó en',stage_completada:'completó fase en'};
+  // Group by day
+  const groups={};
+  activityLog.forEach(a=>{
+    const d=new Date(a.created_at).toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'});
+    if(!groups[d])groups[d]=[];groups[d].push(a);
+  });
+  c.innerHTML='<div style="display:flex;justify-content:flex-end;margin-bottom:6px"><button class="rbtn" onclick="loadAndRenderActividad()">↺ Actualizar</button></div>'+
+    Object.entries(groups).map(([day,items])=>`
+    <div class="act-day">${day}</div>
+    ${items.map(a=>{
+      const name=pname(a.user_id);const init=name.charAt(0).toUpperCase();
+      const label=LABELS[a.action]||a.action;
+      let detail='';
+      if(a.action==='estado_cambio'&&a.detail){detail=` <span style="color:#808080">${esc(a.detail.from||'')} → ${esc(a.detail.to||'')}</span>`;}
+      if(a.action==='stage_completada'&&a.detail){detail=` <em>${esc(a.detail.stage||'')}</em>`;}
+      return`<div class="act-item">
+        <div class="act-av">${init}</div>
+        <div class="act-body">
+          <span class="act-who">${esc(name)}</span> <span class="act-what">${label}</span>
+          ${a.song_titulo?` <span class="act-song">"${esc(a.song_titulo)}"</span>`:''}${detail}
+        </div>
+        <div class="act-time">${fmtT(a.created_at)}</div>
+      </div>`;}).join('')}`).join('');
+}
+
+// ===========================
+// ===== APP: SPRINT ==========
+// ===========================
+function openSprint(){
+  if(wins['sprint']){if(wins['sprint'].minimized)unmin('sprint');else focusWin('sprint');return;}
+  mkWin('sprint','Sprint semanal','🚀',760,520,`<div class="sprint-app">
+    <div class="win-tb">
+      <button class="rbtn" onclick="exportSprint()">📋 Exportar resumen</button>
+      <span style="font-size:10px;color:#666;margin-left:6px">Marca los temas que trabajáis esta semana</span>
+    </div>
+    <div class="sprint-main">
+      <div class="sprint-left">
+        <div class="sprint-left-h">Todos los temas</div>
+        <div id="sprint-list"></div>
+      </div>
+      <div class="sprint-right" id="sprint-board"></div>
+    </div>
+  </div>`);
+  renderSprintList();renderSprintBoard();
+}
+
+function renderSprintList(){
+  const c=$('sprint-list');if(!c)return;
+  c.innerHTML=songs.map(s=>`
+    <div class="sprint-song-item" onclick="toggleSprint('${s.id}',this)">
+      <input type="checkbox" ${s.in_sprint?'checked':''} onclick="event.stopPropagation();toggleSprint('${s.id}',this.parentElement)">
+      <span style="flex:1">${esc(s.titulo)}</span>
+      <span style="font-size:9px;padding:1px 4px;background:${ECOLORS[s.estado]};color:${ETCOLORS[s.estado]}">${esc(s.estado)}</span>
+    </div>`).join('');
+}
+
+async function toggleSprint(id,row){
+  const s=songs.find(x=>x.id===id);if(!s)return;
+  s.in_sprint=!s.in_sprint;
+  const cb=row.querySelector('input[type=checkbox]');if(cb)cb.checked=s.in_sprint;
+  await SB.from('songs').update({in_sprint:s.in_sprint}).eq('id',id);
+  renderSprintBoard();
+  if(wins['mipanel'])renderMiPanel();
+}
+
+function renderSprintBoard(){
+  const c=$('sprint-board');if(!c)return;
+  const sp=songs.filter(s=>s.in_sprint);
+  if(!sp.length){c.innerHTML='<div style="padding:20px;color:#666;text-align:center">Selecciona temas de la lista de la izquierda para añadirlos al sprint.</div>';return;}
+  c.innerHTML=sp.map(s=>{
+    const stages=s.production_stages&&s.production_stages.length?s.production_stages:getDefaultStages();
+    const pct=songProgress(s);
+    const pendStages=stages.filter(st=>!st.done);
+    // Group tasks by assignee
+    const assigneeMap={};
+    [...stages.filter(st=>!st.done&&st.assignee_name),...(s.tareas||[]).filter(t=>!t.done&&t.assignee_name)].forEach(item=>{
+      const name=item.assignee_name;if(!assigneeMap[name])assigneeMap[name]=[];
+      assigneeMap[name].push(item.name||item.texto);
+    });
+    return`<div class="sprint-card">
+      <div class="sprint-card-title">🎵 ${esc(s.titulo)} <span style="font-weight:normal;font-size:10px;color:#666">${esc((s.artistas||[]).join(', '))}</span></div>
+      <div style="display:flex;gap:8px;align-items:center;margin:4px 0">
+        <div class="prog-mini" style="flex:1;height:6px"><div class="prog-mini-fill" style="width:${pct}%"></div></div>
+        <span class="prog-pct">${pct}%</span>
+        <span class="pt-badge" style="background:${ECOLORS[s.estado]};color:${ETCOLORS[s.estado]};border-color:${ETCOLORS[s.estado]};font-size:9px;padding:1px 5px;border:1px solid">${esc(s.estado)}</span>
+      </div>
+      <div class="sprint-stage-grid">
+        ${stages.map(st=>`<div class="sprint-stage ${st.done?'done':'todo'}" title="${st.assignee_name?'→ '+st.assignee_name:''}">${esc(st.name)}</div>`).join('')}
+      </div>
+      ${Object.keys(assigneeMap).length?`<div style="margin-top:6px;font-size:10px;color:#444">
+        ${Object.entries(assigneeMap).map(([who,tasks])=>`<div><strong>${esc(who)}</strong>: ${tasks.map(t=>esc(t)).join(', ')}</div>`).join('')}
+      </div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function exportSprint(){
+  const sp=songs.filter(s=>s.in_sprint);
+  if(!sp.length){notify('Sprint','No hay temas en el sprint','err');return;}
+  const now=new Date();
+  const semana=`Semana ${Math.ceil(now.getDate()/7)} - ${now.toLocaleDateString('es-ES',{month:'long',year:'numeric'})}`;
+  let txt=`🚀 SPRINT PERKYMAFIA\n${semana}\n${'─'.repeat(30)}\n\n`;
+  sp.forEach(s=>{
+    const stages=s.production_stages&&s.production_stages.length?s.production_stages:getDefaultStages();
+    const pct=songProgress(s);
+    txt+=`🎵 ${s.titulo}\n`;
+    txt+=`   Estado: ${s.estado} | Progreso: ${pct}%\n`;
+    const pend=stages.filter(st=>!st.done);
+    if(pend.length)txt+=`   Pendiente: ${pend.map(st=>st.name+(st.assignee_name?' ('+st.assignee_name+')':'')).join(', ')}\n`;
+    const tasks=(s.tareas||[]).filter(t=>!t.done);
+    if(tasks.length)txt+=`   Tareas: ${tasks.map(t=>t.texto+(t.assignee_name?' → '+t.assignee_name:'')).join(', ')}\n`;
+    txt+='\n';
+  });
+  navigator.clipboard.writeText(txt).then(()=>notify('Sprint','Resumen copiado al portapapeles ✅','ok')).catch(()=>{
+    const a=document.createElement('a');a.href='data:text/plain;charset=utf-8,'+encodeURIComponent(txt);a.download='sprint_perkymafia.txt';a.click();
+  });
 }
 
 // ===== INIT =====
