@@ -492,21 +492,28 @@ function showReg(){$('f-login').hidden=true;$('f-reg').hidden=false;}
 
 async function doLogin(){
   const email=$('l-email').value.trim(),pass=$('l-pass').value;
-  $('l-err').textContent='';
-  if(!email||!pass){$('l-err').textContent='Completa todos los campos';return;}
-  const{error}=await SB.auth.signInWithPassword({email,password:pass});
-  if(error)$('l-err').textContent=error.message;
+  const errEl=$('l-err');errEl.textContent='';errEl.style.color='red';
+  if(!email||!pass){errEl.textContent='Completa todos los campos';return;}
+  errEl.style.color='#555';errEl.textContent='Entrando...';
+  try{
+    const{error}=await SB.auth.signInWithPassword({email,password:pass});
+    if(error){errEl.style.color='red';errEl.textContent=error.message;}
+    else{errEl.textContent='';}
+  }catch(e){errEl.style.color='red';errEl.textContent='Error: '+e.message;}
 }
 
 async function doRegister(){
   const nombre=$('r-nombre').value.trim(),email=$('r-email').value.trim(),pass=$('r-pass').value;
-  $('r-err').textContent='';
-  if(!nombre||!email||!pass){$('r-err').textContent='Completa todos los campos';return;}
-  if(pass.length<6){$('r-err').textContent='Contraseña mínimo 6 caracteres';return;}
-  const{error}=await SB.auth.signUp({email,password:pass,options:{data:{nombre}}});
-  if(error){$('r-err').textContent=error.message;return;}
-  $('r-err').style.color='green';$('r-err').textContent='Cuenta creada. Inicia sesión.';
-  setTimeout(showLogin,1500);
+  const errEl=$('r-err');errEl.textContent='';errEl.style.color='red';
+  if(!nombre||!email||!pass){errEl.textContent='Completa todos los campos';return;}
+  if(pass.length<6){errEl.textContent='Contraseña mínimo 6 caracteres';return;}
+  errEl.style.color='#555';errEl.textContent='Creando cuenta...';
+  try{
+    const{error}=await SB.auth.signUp({email,password:pass,options:{data:{nombre}}});
+    if(error){errEl.style.color='red';errEl.textContent=error.message;return;}
+    errEl.style.color='green';errEl.textContent='✅ Cuenta creada. Ahora inicia sesión.';
+    setTimeout(showLogin,2000);
+  }catch(e){errEl.style.color='red';errEl.textContent='Error: '+e.message;}
 }
 
 async function loadUserData(user){
