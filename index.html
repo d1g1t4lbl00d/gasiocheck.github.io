@@ -136,6 +136,20 @@ body{width:100vw;height:100vh;overflow:hidden;font-family:Arial,sans-serif;font-
 .rtable tr:hover td{background:#eeeef8}
 .ebadge{display:inline-block;padding:1px 6px;border-radius:2px;font-size:10px;font-weight:bold;border:1px solid}
 
+/* LISTA DE TEMAS */
+.song-list{padding:8px;display:flex;flex-direction:column;gap:8px}
+.song-card{background:#fff;border:2px solid;border-color:#fff #808080 #808080 #fff;padding:9px 10px}
+.sc-head{display:flex;align-items:center;gap:8px;cursor:pointer}
+.sc-title{font-weight:bold;font-size:13px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sc-sub{font-size:11px;color:#555;margin-top:3px;cursor:pointer}
+.sc-bar{height:6px;background:#e0e0e0;border:1px solid #bbb;margin-top:7px;overflow:hidden}
+.sc-fill{height:100%;background:var(--navy)}
+.sc-pct{font-size:9px;color:#666;margin-top:2px}
+.sc-actions{display:flex;gap:6px;justify-content:flex-end;margin-top:8px}
+.sc-empty{padding:26px 18px;text-align:center;color:#666;font-size:12px;line-height:1.6}
+.rbtn-main{font-weight:bold}
+.pkm-hint{padding:6px 8px;font-size:10px;color:#555;background:#e8e8e8;border-bottom:1px solid #999}
+
 /* KANBAN */
 .kanban-wrap{display:flex;gap:8px;padding:8px;height:100%;overflow-x:auto;align-items:flex-start}
 .k-col{min-width:170px;max-width:190px;flex-shrink:0;background:#b8b8b8;border:1px solid #808080;display:flex;flex-direction:column;max-height:100%}
@@ -147,22 +161,6 @@ body{width:100vw;height:100vh;overflow:hidden;font-family:Arial,sans-serif;font-
 .k-card-a{font-size:10px;color:#666}
 .k-col.drag-over{background:#c8c8e8}
 
-/* PKM TIMELINE */
-.timeline-wrap{padding:10px;overflow-y:auto;height:100%}
-.tl-song{border-left:3px solid var(--navy);margin-bottom:16px;padding-left:10px}
-.tl-song-title{font-weight:bold;font-size:12px;margin-bottom:4px}
-.tl-entries{display:flex;flex-direction:column;gap:3px}
-.tl-entry{display:flex;gap:8px;align-items:center;font-size:10px}
-.tl-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.tl-date{color:#666;min-width:80px}
-.tl-estado{font-weight:bold}
-
-/* PKM STATS */
-.pkm-stats-wrap{padding:10px}
-.stat-tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
-.stat-tile{background:#fff;border:2px solid;border-color:#808080 #fff #fff #808080;padding:10px;text-align:center}
-.stat-num{font-size:28px;font-weight:bold;color:var(--navy)}
-.stat-lbl{font-size:10px;color:#555;margin-top:2px}
 .bar-chart{display:flex;flex-direction:column;gap:4px}
 .bar-row{display:flex;align-items:center;gap:6px;font-size:11px}
 .bar-lbl{width:130px;text-align:right;font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0}
@@ -184,6 +182,17 @@ body{width:100vw;height:100vh;overflow:hidden;font-family:Arial,sans-serif;font-
 .modal-body textarea{resize:vertical;min-height:55px}
 .frow{display:flex;gap:8px}
 .frow>*{flex:1;min-width:0}
+
+/* SECCIONES PLEGABLES DEL MODAL */
+.mdetail{border:1px solid #999;background:#e8e8e8;margin-top:10px}
+.mdetail>summary{padding:6px 9px;cursor:pointer;font-size:11px;font-weight:bold;list-style:none}
+.mdetail>summary::-webkit-details-marker{display:none}
+.mdetail>summary::before{content:'▸ '}
+.mdetail[open]>summary::before{content:'▾ '}
+.mdetail-body{padding:9px;background:var(--c0);border-top:1px solid #999}
+.mdetail-body label{margin-top:4px}
+.hist-row{display:flex;gap:8px;font-size:10px;padding:3px 0;border-bottom:1px solid #ddd;flex-wrap:wrap}
+.hist-date{color:#666;min-width:105px}
 
 /* LINK/TASK/COMMENT items */
 .litem,.titem,.citem{display:flex;gap:6px;align-items:center;padding:4px 0;border-bottom:1px solid #e0e0e0;font-size:11px}
@@ -380,7 +389,7 @@ body{width:100vw;height:100vh;overflow:hidden;font-family:Arial,sans-serif;font-
   .notes-ed{min-height:45vh}
 
   /* Rejillas más estrechas */
-  .stat-tiles,.kpi-grid{grid-template-columns:repeat(2,1fr)}
+  .kpi-grid{grid-template-columns:repeat(2,1fr)}
   .sprint-stage-grid{grid-template-columns:repeat(2,1fr)}
   .wp-grid{grid-template-columns:repeat(3,1fr)}
   .bar-lbl{width:78px}
@@ -539,7 +548,7 @@ let CU=null,CP=null;
 let songs=[],artists=[],profiles=[],messages=[],notes=[],events=[];
 let PM={};// profiles map by id
 let wins={},zTop=100,focId=null;
-let pkmTab='tabla',pkmQ='',mTab='general',curSong=null;
+let pkmTab='lista',pkmQ='',mTab='general',curSong=null;
 let agDate=new Date(),agSel=null;
 let selNoteId=null;
 let chatSub=null,noteTimer=null,unread=0,atIdx=0;
@@ -1055,20 +1064,17 @@ function openPKM(){
   if(wins['pkm']){if(wins['pkm'].minimized)unmin('pkm');else focusWin('pkm');return;}
   mkWin('pkm','Control de Temas','🎵',920,580,`<div class="pkm-app">
     <div class="win-tb">
-      <button class="rbtn" onclick="openSongModal(null)">+ Nueva tema</button>
+      <button class="rbtn rbtn-main" onclick="openSongModal(null)">+ Nuevo tema</button>
+      <input class="rinp" id="pkm-search" placeholder="Buscar..." oninput="renderTemas()" style="flex:1;min-width:110px">
       <select class="rsel" id="pkm-filter-estado" onchange="renderTemas()">
-        <option value="">Todos los estados</option>
+        <option value="">Todos</option>
         ${ESTADOS.map(e=>`<option value="${e}">${e}</option>`).join('')}
       </select>
-      <input class="rinp" id="pkm-search" placeholder="Buscar..." oninput="renderTemas()" style="width:150px">
-      <button class="rbtn" onclick="pkmExport('json')">↓ JSON</button>
-      <button class="rbtn" onclick="pkmExport('csv')">↓ CSV</button>
+      <button class="rbtn" onclick="pkmExport('csv')" title="Descargar como CSV">↓</button>
     </div>
     <div class="pkm-tabs">
-      <div class="pkm-tab on" id="ptab-tabla" onclick="setPKMTab('tabla')">📋 Tabla</div>
+      <div class="pkm-tab on" id="ptab-lista" onclick="setPKMTab('lista')">📋 Lista</div>
       <div class="pkm-tab" id="ptab-kanban" onclick="setPKMTab('kanban')">🗂️ Kanban</div>
-      <div class="pkm-tab" id="ptab-timeline" onclick="setPKMTab('timeline')">📅 Timeline</div>
-      <div class="pkm-tab" id="ptab-stats" onclick="setPKMTab('stats')">📊 Stats</div>
     </div>
     <div class="pkm-content" id="pkm-content"></div>
   </div>`);
@@ -1095,32 +1101,40 @@ function filteredSongs(){
 
 function renderTemas(){
   const c=$('pkm-content');if(!c)return;
-  if(pkmTab==='tabla')c.innerHTML=renderTable();
-  else if(pkmTab==='kanban'){
-    c.innerHTML=(isMobile()?'<div style="padding:6px 8px;font-size:10px;color:#555;background:#e8e8e8;border-bottom:1px solid #999">Toca un tema para abrirlo y cambiarle el estado. Desliza para ver más columnas.</div>':'')
+  if(pkmTab==='kanban'){
+    c.innerHTML=(isMobile()?'<div class="pkm-hint">Toca un tema para abrirlo y cambiarle el estado. Desliza para ver más columnas.</div>':'')
       +'<div class="kanban-wrap" id="kanban-inner"></div>';
     renderKanban();
+  } else {
+    c.innerHTML=renderLista();
   }
-  else if(pkmTab==='timeline'){c.innerHTML='<div class="timeline-wrap">'+renderTimeline()+'</div>';}
-  else if(pkmTab==='stats')c.innerHTML=renderStatsTab();
 }
 
-function renderTable(){
+function renderLista(){
   const fs=filteredSongs();
-  if(!fs.length)return '<div style="padding:20px;color:#666">No hay temas. ¡Añade el primero!</div>';
-  return `<table class="rtable"><thead><tr>
-    <th>Título</th><th>Artistas</th><th>Estado</th><th>Género</th><th>BPM</th><th>Actualizado</th><th></th>
-  </tr></thead><tbody>${fs.map(s=>`
-    <tr onclick="openSongModal('${s.id}')">
-      <td><strong>${esc(s.titulo)}</strong></td>
-      <td>${esc((s.artistas||[]).join(', '))}</td>
-      <td><span class="ebadge e-${s.estado.replace(/ /g,'_')}" style="background:${ECOLORS[s.estado]||'#eee'};color:${ETCOLORS[s.estado]||'#000'};border-color:${ETCOLORS[s.estado]||'#999'}">${esc(s.estado)}</span></td>
-      <td>${esc(s.genero||'')}</td>
-      <td>${s.bpm||''}</td>
-      <td>${fmtD(s.updated_at)}</td>
-      <td><span style="font-size:10px;color:var(--navy)">${songProgress(s)>0?songProgress(s)+'%':''}</span></td>
-      <td onclick="event.stopPropagation()"><button class="rbtn danger" onclick="deleteSong('${s.id}')">✕</button></td>
-    </tr>`).join('')}</tbody></table>`;
+  if(!fs.length){
+    const hayFiltro=($('pkm-search')||{value:''}).value||($('pkm-filter-estado')||{value:''}).value;
+    return `<div class="sc-empty">${hayFiltro
+      ? 'Ningún tema coincide con la búsqueda.'
+      : 'Todavía no hay temas.<br><br><button class="rbtn rbtn-main" onclick="openSongModal(null)">+ Crear el primero</button>'}</div>`;
+  }
+  return '<div class="song-list">'+fs.map(s=>{
+    const pct=songProgress(s);
+    const sub=[(s.artistas||[]).join(', '),s.genero,s.bpm?s.bpm+' BPM':''].filter(Boolean).join(' · ');
+    return `<div class="song-card">
+      <div class="sc-head" onclick="openSongModal('${s.id}')">
+        <span class="sc-title">${esc(s.titulo)}</span>
+        <span class="ebadge" style="background:${ECOLORS[s.estado]||'#eee'};color:${ETCOLORS[s.estado]||'#000'};border-color:${ETCOLORS[s.estado]||'#999'}">${esc(s.estado)}</span>
+      </div>
+      ${sub?`<div class="sc-sub" onclick="openSongModal('${s.id}')">${esc(sub)}</div>`:''}
+      ${pct>0?`<div class="sc-bar" title="${pct}% de producción"><div class="sc-fill" style="width:${pct}%"></div></div>
+        <div class="sc-pct">${pct}% producción</div>`:''}
+      <div class="sc-actions">
+        <button class="rbtn" onclick="openSongModal('${s.id}')">✏️ Editar</button>
+        <button class="rbtn danger" onclick="deleteSong('${s.id}')">🗑️ Borrar</button>
+      </div>
+    </div>`;
+  }).join('')+'</div>';
 }
 
 function renderKanban(){
@@ -1160,61 +1174,6 @@ async function dropKanban(e,estado){
   logActivity('estado_cambio',id,s.titulo,{from:prev,to:estado});
 }
 
-function renderTimeline(){
-  const fs=[...songs].sort((a,b)=>new Date(b.creado||b.updated_at)-new Date(a.creado||a.updated_at));
-  if(!fs.length)return '<div style="padding:20px;color:#666">Sin temas.</div>';
-  return fs.map(s=>{
-    const hist=s.historial||[];
-    const entries=[{date:s.creado||s.updated_at,estado:'Idea',first:true},...hist];
-    return `<div class="tl-song">
-      <div class="tl-song-title">🎵 ${esc(s.titulo)} <span style="color:#888;font-weight:normal;font-size:10px">${esc((s.artistas||[]).join(', '))}</span></div>
-      <div class="tl-entries">${entries.map(h=>`
-        <div class="tl-entry">
-          <div class="tl-dot" style="background:${ECOLORS[h.estado]||'#999'};border:1px solid ${ETCOLORS[h.estado]||'#666'}"></div>
-          <span class="tl-date">${fmtD(h.date)}</span>
-          <span class="tl-estado" style="color:${ETCOLORS[h.estado]||'#000'}">${esc(h.estado)}</span>
-          ${h.user?`<span style="color:#888;font-size:10px">— ${esc(h.user)}</span>`:''}
-        </div>`).join('')}
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function renderStatsTab(){
-  const total=songs.length,pub=songs.filter(s=>s.estado==='Publicado').length;
-  const enProg=songs.filter(s=>s.estado!=='Idea'&&s.estado!=='Publicado').length;
-  const maxBar=Math.max(...ESTADOS.map(e=>songs.filter(s=>s.estado===e).length),1);
-  const bars=ESTADOS.map(e=>{
-    const c=songs.filter(s=>s.estado===e).length;
-    const pct=Math.round(c/maxBar*100);
-    return `<div class="bar-row"><span class="bar-lbl">${esc(e)}</span><div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${ECOLORS[e]};border-right:${c>0?'2px solid '+ETCOLORS[e]:'none'}"></div></div><span class="bar-val">${c}</span></div>`;
-  }).join('');
-  // Top artistas
-  const amap={};songs.forEach(s=>(s.artistas||[]).forEach(a=>{amap[a]=(amap[a]||0)+1;}));
-  const topArts=Object.entries(amap).sort((a,b)=>b[1]-a[1]).slice(0,5);
-  return `<div class="pkm-stats-wrap">
-    <div class="stat-tiles">
-      <div class="stat-tile"><div class="stat-num">${total}</div><div class="stat-lbl">Total temas</div></div>
-      <div class="stat-tile"><div class="stat-num">${pub}</div><div class="stat-lbl">Publicados</div></div>
-      <div class="stat-tile"><div class="stat-num">${enProg}</div><div class="stat-lbl">En progreso</div></div>
-      <div class="stat-tile"><div class="stat-num">${artists.length}</div><div class="stat-lbl">Artistas</div></div>
-    </div>
-    <div class="grid2">
-      <div>
-        <div class="ss"><h3>Por estado</h3><div class="bar-chart">${bars}</div></div>
-      </div>
-      <div>
-        <div class="ss"><h3>Top artistas</h3>
-          ${topArts.length?topArts.map(([n,c])=>`<div class="top-row"><span class="top-name">${esc(n)}</span><span class="top-num">${c} temas</span></div>`).join(''):'<div style="color:#666;font-size:11px">Sin datos</div>'}
-        </div>
-        <div class="ss"><h3>Recientes</h3>
-          ${songs.slice(0,5).map(s=>`<div class="top-row"><span class="top-name">${esc(s.titulo)}</span><span style="font-size:10px;color:#666">${fmtD(s.updated_at)}</span></div>`).join('')}
-        </div>
-      </div>
-    </div>
-  </div>`;
-}
-
 // spotify y soundcloud son jsonb con forma {url, publicado}, pero versiones
 // anteriores guardaron ahi una cadena suelta. Normaliza ambos casos.
 function normLink(v){
@@ -1235,15 +1194,12 @@ function renderSongModal(id){
   const s=curSong;
   const isNew=!id;
   const html=`<div class="modal-win">
-    <div class="modal-ttl">${isNew?'➕ Nueva tema':'✏️ '+esc(s.titulo)}<button class="wbtn" style="background:transparent;border:none;color:#fff;font-size:14px" onclick="closeModal()">✕</button></div>
+    <div class="modal-ttl">${isNew?'➕ Nuevo tema':'✏️ '+esc(s.titulo)}<button class="wbtn" style="background:transparent;border:none;color:#fff;font-size:14px" onclick="closeModal()">✕</button></div>
     <div class="modal-body" style="padding:0">
       <div class="mtabs" style="margin:0;padding:0 12px;padding-top:8px">
         <div class="mtab on" id="mt-general" onclick="switchMTab('general','${id||''}')">General</div>
-        <div class="mtab" id="mt-links" onclick="switchMTab('links','${id||''}')">Links</div>
         <div class="mtab" id="mt-tareas" onclick="switchMTab('tareas','${id||''}')">Tareas</div>
         <div class="mtab" id="mt-produccion" onclick="switchMTab('produccion','${id||''}')">⚙️ Producción</div>
-        ${!isNew?`<div class="mtab" id="mt-comentarios" onclick="switchMTab('comentarios','${id||''}')">Comentarios</div>`:''}
-        ${!isNew?`<div class="mtab" id="mt-historial" onclick="switchMTab('historial','${id||''}')">Historial</div>`:''}
       </div>
       <div id="mtab-content" style="padding:12px;overflow-y:auto;max-height:400px"></div>
     </div>
@@ -1281,32 +1237,40 @@ function renderMTabContent(id){
       <label>Artistas (separados por coma)</label>
       <input id="sf-artistas" value="${esc(arts)}" oninput="curSong.artistas=this.value.split(',').map(x=>x.trim()).filter(Boolean)">
       <label>Notas</label>
-      <textarea id="sf-notas" oninput="curSong.notas=this.value">${esc(s.notas||'')}</textarea>`;
-  } else if(mTab==='links'){
-    const links=s.links||[];
-    c.innerHTML=`
-      <div id="links-list">${links.map((l,i)=>`
-        <div class="litem">
-          <span>${l.type==='spotify'?'🎵':l.type==='soundcloud'?'☁️':l.type==='drive'?'📁':'🔗'}</span>
-          <a onclick="window.open('${esc(l.url)}','_blank')">${esc(l.name||l.url)}</a>
-          <button class="rbtn" style="padding:1px 6px;font-size:10px" onclick="removeLink(${i})">✕</button>
-        </div>`).join('')}</div>
-      <div style="margin-top:10px;border-top:1px solid #ddd;padding-top:10px">
-        <label>Spotify</label><input id="lk-spotify" value="${esc(s.spotify.url)}" placeholder="URL de Spotify" oninput="curSong.spotify.url=this.value">
-        <label>SoundCloud</label><input id="lk-sc" value="${esc(s.soundcloud.url)}" placeholder="URL de SoundCloud" oninput="curSong.soundcloud.url=this.value">
-        <label>Añadir enlace personalizado</label>
-        <div class="frow" style="gap:4px">
-          <input id="lk-name" placeholder="Nombre (ej: Drive)" style="flex:1">
-          <input id="lk-url" placeholder="https://..." style="flex:2">
-          <select id="lk-type" style="flex:0.6;border:2px solid;border-color:#808080 #fff #fff #808080;background:#fff;padding:3px;font-size:11px">
-            <option value="other">🔗 Otro</option>
-            <option value="drive">📁 Drive</option>
-            <option value="spotify">🎵 Spotify</option>
-            <option value="soundcloud">☁️ SoundCloud</option>
-          </select>
-          <button class="rbtn" onclick="addLink()">+</button>
+      <textarea id="sf-notas" oninput="curSong.notas=this.value">${esc(s.notas||'')}</textarea>
+
+      <details class="mdetail">
+        <summary>🔗 Enlaces</summary>
+        <div class="mdetail-body">
+          <label>Spotify</label>
+          <input id="lk-spotify" value="${esc(s.spotify.url)}" placeholder="https://open.spotify.com/..." oninput="curSong.spotify.url=this.value">
+          <label>SoundCloud</label>
+          <input id="lk-sc" value="${esc(s.soundcloud.url)}" placeholder="https://soundcloud.com/..." oninput="curSong.soundcloud.url=this.value">
+          ${(s.links||[]).length?`<label>Otros enlaces</label><div id="links-list">${(s.links||[]).map((l,i)=>`
+            <div class="litem">
+              <span>${l.type==='drive'?'📁':'🔗'}</span>
+              <a onclick="openWeb('${esc(l.url)}')">${esc(l.name||l.url)}</a>
+              <button class="rbtn danger" style="padding:1px 6px;font-size:10px" onclick="removeLink(${i})">✕</button>
+            </div>`).join('')}</div>`:''}
+          <label>Añadir otro enlace</label>
+          <div style="display:flex;gap:4px">
+            <input id="lk-name" placeholder="Nombre" style="flex:1;margin:0">
+            <input id="lk-url" placeholder="https://..." style="flex:2;margin:0">
+            <button class="rbtn" onclick="addLink()">+</button>
+          </div>
         </div>
-      </div>`;
+      </details>
+
+      ${(s.historial||[]).length?`<details class="mdetail">
+        <summary>🕓 Historial de estados (${s.historial.length})</summary>
+        <div class="mdetail-body">
+          ${s.historial.slice().reverse().map(h=>`<div class="hist-row">
+            <span class="hist-date">${fmtDT(h.date)}</span>
+            <span style="font-weight:bold;color:${ETCOLORS[h.estado]||'#000'}">${esc(h.estado)}</span>
+            ${h.user?`<span style="color:#888">— ${esc(h.user)}</span>`:''}
+          </div>`).join('')}
+        </div>
+      </details>`:''}`;
   } else if(mTab==='tareas'){
     const tareas=s.tareas||[];
     const memOpts=profiles.map(p=>`<option value="${p.id}">${esc(p.artist_name||p.nombre||p.email)}</option>`).join('');
@@ -1324,23 +1288,6 @@ function renderMTabContent(id){
           <option value="">Sin asignar</option>${memOpts}
         </select>
         <button class="rbtn" onclick="addTask()">+</button>
-      </div>`;
-  } else if(mTab==='comentarios'){
-    const coms=s.comentarios||[];
-    c.innerHTML=`
-      <div id="coms-list">${coms.map(cm=>`
-        <div class="citem">
-          <div class="c-hdr">
-            <span class="c-name">${esc(cm.nombre)}</span>
-            <span class="c-date">${fmtDT(cm.created_at)}</span>
-            ${cm.user_id===CU.id?`<button class="rbtn danger" style="padding:1px 5px;font-size:10px;margin-left:auto" onclick="removeCom('${cm.id}')">✕</button>`:''}
-          </div>
-          <div class="c-text">${esc(cm.texto)}</div>
-        </div>`).join('')}
-      </div>
-      <div style="margin-top:10px;border-top:1px solid #ddd;padding-top:10px">
-        <textarea id="com-text" placeholder="Escribe un comentario..." style="width:100%;height:60px;border:2px solid;border-color:#808080 #fff #fff #808080;padding:6px;font-size:11px;resize:vertical;font-family:Arial"></textarea>
-        <button class="rbtn" onclick="addComment()" style="margin-top:4px">Añadir comentario</button>
       </div>`;
   } else if(mTab==='produccion'){
     const stages=s.production_stages&&s.production_stages.length?s.production_stages:getDefaultStages();
@@ -1362,19 +1309,13 @@ function renderMTabContent(id){
           <span style="font-size:10px;color:#666">${st.assignee_name&&st.assignee_id?'→ '+esc(st.assignee_name):''}</span>
         </div>`).join('')}
       </div>`;
-  } else if(mTab==='historial'){
-    const hist=s.historial||[];
-    c.innerHTML=hist.length?`<table class="rtable" style="font-size:11px">
-      <thead><tr><th>Fecha</th><th>Estado</th><th>Usuario</th></tr></thead>
-      <tbody>${hist.map(h=>`<tr><td>${fmtDT(h.date)}</td><td>${esc(h.estado)}</td><td>${esc(h.user||'')}</td></tr>`).join('')}</tbody>
-    </table>`:'<div style="padding:12px;color:#666">Sin historial.</div>';
   }
 }
 
 function addLink(){
-  const name=$('lk-name').value.trim(),url=$('lk-url').value.trim(),type=$('lk-type').value;
+  const name=$('lk-name').value.trim(),url=$('lk-url').value.trim();
   if(!url)return;
-  curSong.links=[...(curSong.links||[]),{id:gid(),name:name||url,url,type}];
+  curSong.links=[...(curSong.links||[]),{id:gid(),name:name||url,url,type:'other'}];
   $('lk-name').value='';$('lk-url').value='';
   renderMTabContent(curSong.id);
 }
@@ -1391,14 +1332,6 @@ function addTask(){
 function toggleTask(i,done){curSong.tareas=(curSong.tareas||[]).map((t,j)=>j===i?{...t,done}:t);renderMTabContent(curSong.id);}
 function removeTask(i){curSong.tareas=(curSong.tareas||[]).filter((_,j)=>j!==i);renderMTabContent(curSong.id);}
 
-function addComment(){
-  const txt=$('com-text').value.trim();if(!txt)return;
-  const nc={id:gid(),user_id:CU.id,nombre:CP.artist_name||CP.nombre||CP.email,texto:txt,created_at:new Date().toISOString()};
-  curSong.comentarios=[...(curSong.comentarios||[]),nc];
-  $('com-text').value='';renderMTabContent(curSong.id);
-  logActivity('comentario',curSong.id||'',curSong.titulo,{});
-}
-function removeCom(cid){curSong.comentarios=(curSong.comentarios||[]).filter(c=>c.id!==cid);renderMTabContent(curSong.id);}
 
 async function saveSong(id){
   const s=curSong;const isNew=!id;
